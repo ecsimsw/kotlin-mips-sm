@@ -17,4 +17,8 @@ class Memory(
     operator fun get(index : Int) : String {
         return instructions[index]
     }
+
+    fun size() : Int {
+        return instructions.size
+    }
 }
