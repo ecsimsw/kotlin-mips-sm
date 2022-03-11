@@ -16,7 +16,7 @@ enum class Opcode(val code: String) {
     companion object {
         fun of(code:String) : Opcode {
             return values().find { it.code == code }
-                ?: throw IllegalArgumentException("Non existence operation code")
+                ?: throw IllegalArgumentException("Non existence operation code : $code")
         }
     }
 }
