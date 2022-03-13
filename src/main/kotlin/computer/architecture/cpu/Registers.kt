@@ -1,7 +1,7 @@
 package computer.architecture.cpu
 
-operator fun Array<Int>.set(index:Int, value: Boolean) {
-    this[index] = if(value) 1 else 0
+operator fun Array<Int>.set(index: Int, value: Boolean) {
+    this[index] = if (value) 1 else 0
 }
 
 class Registers {

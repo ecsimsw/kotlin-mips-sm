@@ -5,7 +5,6 @@ import java.io.File
 class Memory(
     private val instructions: Array<String>
 ) {
-
     companion object {
         fun load(path: String): Memory {
             val instructions: MutableList<String> = arrayListOf();
@@ -14,7 +13,7 @@ class Memory(
         }
     }
 
-    fun size() : Int {
+    fun size(): Int {
         return instructions.size
     }
 
