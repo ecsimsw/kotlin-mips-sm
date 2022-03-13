@@ -9,9 +9,4 @@ class Registers(
 ) {
     var pc: Int = 0
     var r: Array<Int> = Array(size) { 0 }
-
-    override fun toString(): String {
-        return "pc : $pc \n" +
-                "registers : ${r.joinToString(" ")}"
-    }
 }

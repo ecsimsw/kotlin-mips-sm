@@ -8,7 +8,8 @@ class Results {
 
     fun log(instruction: String, registers: Registers) {
         addLine("instruction : $instruction")
-        addLine(registers.toString()+"\n")
+        addLine("pc : $registers.pc")
+        addLine("registers : ${registers.r.joinToString(" ")} \n")
     }
 
     fun printAll() {

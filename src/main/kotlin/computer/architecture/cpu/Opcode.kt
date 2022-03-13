@@ -5,6 +5,10 @@ enum class Opcode(val code: String) {
     MINUS("-"),
     MULTIPLY("*"),
     DIVIDE("/"),
+    SLL("<<"),
+    SRL(">>"),
+    AND("&&"),
+    OR("||"),
     JUMP("J"),
     BRANCH("B"),
     CONDITION("C"),
@@ -12,9 +16,7 @@ enum class Opcode(val code: String) {
     HALT("H");
 
     companion object {
-        fun of(code: String): Opcode {
-            return values().find { it.code == code }
-                ?: throw IllegalArgumentException("Non existence operation code : $code")
-        }
+        fun of(code: String) = values().find { it.code == code }
+            ?: throw IllegalArgumentException("Non existence operation code : $code")
     }
 }

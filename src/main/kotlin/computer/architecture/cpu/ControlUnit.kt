@@ -28,9 +28,9 @@ class ControlUnit(
     private fun decode(instruction: String): ExecutionInfo {
         try {
             val split = instruction.split(" ")
-            return ExecutionInfo(Opcode.of(split[0]), split[1], split[2])
+            return ExecutionInfo(Opcode.of(split[0]), Operand.of(split[1]), Operand.of(split[2]))
         } catch (e: IllegalArgumentException) {
-            throw IllegalArgumentException("invalid instruction in : $instruction\n${e.message}")
+            throw IllegalArgumentException("invalid instruction in : $instruction \n" + "${e.message}")
         }
     }
 
