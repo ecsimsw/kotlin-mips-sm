@@ -3,50 +3,24 @@ package computer.architecture.cpu
 class ALU(
     private val registers: Registers
 ) {
+    private val operations: MutableMap<Opcode, (String, String) -> Unit> = mutableMapOf()
+
+    init {
+        operations[Opcode.ADD] = { op1, op2 -> registers.r[0] = value(op1) + value(op2) }
+        operations[Opcode.MINUS] = { op1, op2 -> registers.r[0] = value(op1) - value(op2) }
+        operations[Opcode.MULTIPLY] = { op1, op2 -> registers.r[0] = value(op1) * value(op2) }
+        operations[Opcode.DIVIDE] = { op1, op2 -> registers.r[0] = value(op1) / value(op2) }
+        operations[Opcode.CONDITION] = { op1, op2 -> registers.r[0] = value(op1) < value(op2) }
+        operations[Opcode.MOVE] = { op1, op2 -> registers.r[registerNumber(op1)] = value(op2) }
+        operations[Opcode.JUMP] = { op1, op2 -> registers.pc = registers.r[value(op1)] }
+        operations[Opcode.BRANCH] = { op1, op2 -> if (registers.r[0] == 1) registers.pc = value(op1) }
+        operations[Opcode.HALT] = { op1, op2 -> registers.pc = Int.MAX_VALUE }
+    }
 
     fun process(executionInfo: ExecutionInfo) {
         val opcode = executionInfo.opcode
-        val operand1 = executionInfo.operand1
-        val operand2 = executionInfo.operand2
-
-        if (opcode == Opcode.HALT) {
-            registers.pc = Int.MAX_VALUE
-            return
-        }
-
-        if (opcode == Opcode.ADD) {
-            registers.r[0] = value(operand1) + value(operand2)
-        }
-
-        if (opcode == Opcode.MINUS) {
-            registers.r[0] = value(operand1) - value(operand2)
-        }
-
-        if (opcode == Opcode.MULTIPLY) {
-            registers.r[0] = value(operand1) * value(operand2)
-        }
-
-        if (opcode == Opcode.DIVIDE) {
-            registers.r[0] = value(operand1) / value(operand2)
-        }
-
-        if (opcode == Opcode.CONDITION) {
-            registers.r[0] = value(operand1) < value(operand2)
-        }
-
-        if (opcode == Opcode.JUMP) {
-            registers.pc = registers.r[value(operand1)]
-        }
-
-        if (opcode == Opcode.MOVE) {
-            registers.r[registerNumber(operand1)] = value(operand2)
-        }
-
-        if (opcode == Opcode.BRANCH) {
-            if (registers.r[0] == 1) {
-                registers.pc = value(operand1)
-            }
-        }
+        val operation = operations[opcode] ?: throw IllegalArgumentException("Opcodes that cannot be computed")
+        operation.invoke(executionInfo.operand1, executionInfo.operand2)
     }
 
     private fun value(operand: String): Int {

@@ -4,7 +4,14 @@ operator fun Array<Int>.set(index: Int, value: Boolean) {
     this[index] = if (value) 1 else 0
 }
 
-class Registers {
+class Registers(
+    size: Int = 10
+) {
     var pc: Int = 0
-    var r: Array<Int> = Array(10) { 0 }
+    var r: Array<Int> = Array(size) { 0 }
+
+    override fun toString(): String {
+        return "pc : $pc \n" +
+                "registers : ${r.joinToString(" ")}"
+    }
 }
