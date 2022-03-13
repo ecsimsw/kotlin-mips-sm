@@ -1,30 +1,34 @@
 package computer.architecture.cpu
 
 class Operand(
-    private val operand: String
+    operand: String
 ) {
-    companion object {
-        private const val PREFIX_REGISTER_NUMBER = "R"
-        private const val PREFIX_HEXADECIMAL_NUMBER = "0x"
-
-        fun of(operand: String) = Operand(operand)
-    }
-
-    fun isRegisterNumber() = operand.startsWith(PREFIX_REGISTER_NUMBER)
-
-    fun isHexadecimalNumber() = operand.startsWith(PREFIX_HEXADECIMAL_NUMBER)
+    val type: OperandType = OperandType.of(operand)
+    val number: Int = OperandType.number(operand)
 
     fun registerNumber(): Int {
-        if (isRegisterNumber()) {
-            return operand.substring(PREFIX_REGISTER_NUMBER.length).toInt()
+        if (type == OperandType.REGISTER_NUMBER) {
+            return number
         }
-        throw IllegalArgumentException("This is not the register number operand")
+        throw IllegalArgumentException("Not register number operand")
     }
+}
 
-    fun getIntValue(): Int {
-        if (isHexadecimalNumber()) {
-            return Integer.decode(operand.substring(PREFIX_HEXADECIMAL_NUMBER.length))
+enum class OperandType(
+    private val prefix: String
+) {
+    REGISTER_NUMBER("R"), HEXADECIMAL_NUMBER("0x");
+
+    companion object {
+        fun of(operand: String) = values().find { operand.startsWith(it.prefix) }
+            ?: throw IllegalArgumentException("Invalid format of operand")
+
+        fun number(operand: String): Int {
+            val type = of(operand)
+            if (type == HEXADECIMAL_NUMBER) {
+                return Integer.decode(operand)
+            }
+            return operand.substring(type.prefix.length).toInt()
         }
-        throw IllegalArgumentException("This is not the number value operand")
     }
 }

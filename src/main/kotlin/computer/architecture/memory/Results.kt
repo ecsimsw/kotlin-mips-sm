@@ -7,9 +7,9 @@ class Results {
     private val lines: MutableList<String> = mutableListOf()
 
     fun log(instruction: String, registers: Registers) {
-        addLine("instruction : $instruction")
-        addLine("pc : $registers.pc")
-        addLine("registers : ${registers.r.joinToString(" ")} \n")
+        addLine("Inst : $instruction")
+        addLine("PC   : ${registers.pc}")
+        addLine("REGs : ${registers.r.joinToString(" ")} \n")
     }
 
     fun printAll() {

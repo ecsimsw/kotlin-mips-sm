@@ -1,5 +1,7 @@
 package computer.architecture.cpu
 
+import kotlin.math.pow
+
 class ALU(
     private val registers: Registers
 ) {
@@ -10,10 +12,11 @@ class ALU(
         operations[Opcode.MINUS] = { op1, op2 -> registers.r[0] = value(op1) - value(op2) }
         operations[Opcode.MULTIPLY] = { op1, op2 -> registers.r[0] = value(op1) * value(op2) }
         operations[Opcode.DIVIDE] = { op1, op2 -> registers.r[0] = value(op1) / value(op2) }
-//        operations[Opcode.SLL] = { op1, op2 -> registers.r[0] = value(op1) / value(op2) }
-//        operations[Opcode.SRL] = { op1, op2 -> registers.r[0] = value(op1) / value(op2) }
-//        operations[Opcode.AND] = { op1, op2 -> registers.r[0] = value(op1) / value(op2) }
-//        operations[Opcode.OR] = { op1, op2 -> registers.r[0] = value(op1) / value(op2) }
+        operations[Opcode.POWER] = {op1, op2 -> registers.r[0] = value(op1).pow(value(op2)) }
+        operations[Opcode.SLL] = { op1, op2 -> registers.r[0] = value(op1) shl value(op2) }
+        operations[Opcode.SRL] = { op1, op2 -> registers.r[0] = value(op1) shr value(op2) }
+        operations[Opcode.AND] = { op1, op2 -> registers.r[0] = value(op1) and value(op2) }
+        operations[Opcode.OR] = { op1, op2 -> registers.r[0] = value(op1) or value(op2) }
         operations[Opcode.CONDITION] = { op1, op2 -> registers.r[0] = value(op1) < value(op2) }
         operations[Opcode.MOVE] = { op1, op2 -> registers.r[op1.registerNumber()] = value(op2) }
         operations[Opcode.JUMP] = { op1, op2 -> registers.pc = registers.r[value(op1)] }
@@ -31,12 +34,20 @@ class ALU(
     }
 
     private fun value(operand: Operand): Int {
-        if (operand.isRegisterNumber()) {
-            return registers.r[operand.registerNumber()]
+        if (operand.type == OperandType.REGISTER_NUMBER) {
+            return registers.r[operand.number]
         }
-        if (operand.isHexadecimalNumber()) {
-            return operand.getIntValue()
+        if (operand.type == OperandType.HEXADECIMAL_NUMBER) {
+            return operand.number
         }
         throw IllegalArgumentException("This is not the format of operand")
     }
+}
+
+private fun Int.pow(value: Int): Int {
+    val result = this.toDouble().pow(value)
+    if(result.isInfinite()) {
+        throw IllegalArgumentException("The result is too big")
+    }
+    return result.toInt()
 }
