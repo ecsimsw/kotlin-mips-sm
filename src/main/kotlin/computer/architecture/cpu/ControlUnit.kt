@@ -39,9 +39,8 @@ class ControlUnit(
     }
 
     private fun store(instruction: String) {
-        println("Inst : $instruction")
-        println("PC   : ${registers.pc}")
-        println("REGs : ${registers.r.joinToString(" ")} \n")
         results.log(instruction, registers)
     }
+
+    fun registers(index: Int) = registers.r[index]
 }

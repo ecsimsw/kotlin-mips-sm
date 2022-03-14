@@ -15,7 +15,7 @@ enum class Opcode(val code: String) {
     BRANCH("B"),
     BRANCH_ON_EQUAL("BEQ"),
     BRANCH_ON_NOT_EQUAL("BNE"),
-    CONDITION("<"),
+    CONDITION("C"),
     MOVE("M"),
     HALT("H");
 

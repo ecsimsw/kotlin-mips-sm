@@ -3,16 +3,13 @@ package computer.architecture.memory
 import java.io.File
 
 class Memory(
-    private val instructions: Array<String>
+    private val instructions: List<String>
 ) {
     companion object {
         fun load(path: String): Memory {
             val instructions: MutableList<String> = arrayListOf();
-            File(path).forEachLine {
-                println(it)
-                instructions.add(it)
-            }
-            return Memory(instructions.toTypedArray())
+            File(path).forEachLine { instructions.add(it) }
+            return Memory(instructions)
         }
     }
 
