@@ -8,7 +8,10 @@ class Memory(
     companion object {
         fun load(path: String): Memory {
             val instructions: MutableList<String> = arrayListOf();
-            File(path).forEachLine { instructions.add(it) }
+            File(path).forEachLine {
+                println(it)
+                instructions.add(it)
+            }
             return Memory(instructions.toTypedArray())
         }
     }

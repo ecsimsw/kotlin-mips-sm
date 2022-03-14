@@ -12,6 +12,7 @@ class ALU(
         operations[Opcode.MINUS] = { op1, op2 -> registers.r[0] = value(op1) - value(op2) }
         operations[Opcode.MULTIPLY] = { op1, op2 -> registers.r[0] = value(op1) * value(op2) }
         operations[Opcode.DIVIDE] = { op1, op2 -> registers.r[0] = value(op1) / value(op2) }
+        operations[Opcode.MOD] = { op1, op2 -> registers.r[0] = value(op1) % value(op2) }
         operations[Opcode.POWER] = {op1, op2 -> registers.r[0] = value(op1).pow(value(op2)) }
         operations[Opcode.SLL] = { op1, op2 -> registers.r[0] = value(op1) shl value(op2) }
         operations[Opcode.SRL] = { op1, op2 -> registers.r[0] = value(op1) shr value(op2) }
@@ -19,7 +20,7 @@ class ALU(
         operations[Opcode.OR] = { op1, op2 -> registers.r[0] = value(op1) or value(op2) }
         operations[Opcode.CONDITION] = { op1, op2 -> registers.r[0] = value(op1) < value(op2) }
         operations[Opcode.MOVE] = { op1, op2 -> registers.r[op1.registerNumber()] = value(op2) }
-        operations[Opcode.JUMP] = { op1, op2 -> registers.pc = registers.r[value(op1)] }
+        operations[Opcode.JUMP] = { op1, op2 -> registers.pc = value(op1) }
         operations[Opcode.BRANCH] = { op1, op2 -> if (registers.r[0] == 1) registers.pc = value(op1) }
         operations[Opcode.HALT] = { op1, op2 -> registers.pc = Int.MAX_VALUE }
     }

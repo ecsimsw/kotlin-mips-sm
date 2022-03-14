@@ -5,6 +5,7 @@ enum class Opcode(val code: String) {
     MINUS("-"),
     MULTIPLY("*"),
     DIVIDE("/"),
+    MOD("%"),
     POWER("^"),
     SLL("<<"),
     SRL(">>"),

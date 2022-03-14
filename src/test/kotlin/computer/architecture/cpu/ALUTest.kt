@@ -45,6 +45,9 @@ internal class ALUTest {
             process(Opcode.DIVIDE, "0x02", "0x01")
             assertThat(registers.r[0]).isEqualTo(2)
 
+            process(Opcode.MOD, "0x04", "0x03")
+            assertThat(registers.r[0]).isEqualTo(1)
+
             process(Opcode.POWER, "0x0A", "0x02")
             assertThat(registers.r[0]).isEqualTo(100)
         }
@@ -88,8 +91,8 @@ internal class ALUTest {
             process(Opcode.MOVE, "R2", "0x02")
             assertThat(registers.r[2]).isEqualTo(2)
 
-            process(Opcode.JUMP, "0x02", "0x02")
-            assertThat(registers.pc).isEqualTo(2)
+            process(Opcode.JUMP, "0x03", "0x02")
+            assertThat(registers.pc).isEqualTo(3)
 
             registers.r[0] = 1
             process(Opcode.BRANCH, "0x02", "0x01")

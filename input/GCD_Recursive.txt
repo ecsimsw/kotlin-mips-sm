@@ -1,0 +1,9 @@
+M R1 0x4       // R1 = a = 4
+M R2 0x2       // R2 = b = 2
+M R0 R2        // R0 = b = 2
+B 0x00 0x00    // if(R0 == 1) 0x03
+% R1 R2        // R0 = R1 % R2 = a%b
+M R1 R2        // R1 = b = 2
+M R2 R0        // R2 = R0 = a%b
+J 0x03 0x00
+

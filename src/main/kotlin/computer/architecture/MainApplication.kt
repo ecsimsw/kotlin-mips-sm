@@ -5,7 +5,8 @@ import computer.architecture.memory.Memory
 import computer.architecture.memory.Results
 
 fun main() {
-    val memory = Memory.load("input/Von Neumann architecture.txt")
+//    val memory = Memory.load("input/Von Neumann architecture.txt")
+    val memory = Memory.load("input/GCD_Recursive.txt")
     val results = Results()
 
     val controlUnit = ControlUnit(memory, results)
