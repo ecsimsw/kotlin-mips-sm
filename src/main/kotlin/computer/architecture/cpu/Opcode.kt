@@ -13,7 +13,9 @@ enum class Opcode(val code: String) {
     OR("||"),
     JUMP("J"),
     BRANCH("B"),
-    CONDITION("C"),
+    BRANCH_ON_EQUAL("BEQ"),
+    BRANCH_ON_NOT_EQUAL("BNE"),
+    CONDITION("<"),
     MOVE("M"),
     HALT("H");
 
