@@ -5,11 +5,10 @@ import computer.architecture.memory.Memory
 import computer.architecture.memory.Results
 
 fun main() {
-    val memory = Memory.load("input/LCM.txt")
+    val memory = Memory(1000)
+    memory.load("input/LCM.txt", 0)
+
     val results = Results()
-
-    val controlUnit = ControlUnit(memory, results)
-    controlUnit.process()
-
-    results.printAll()
+    ControlUnit(memory, results).process()
+    results.printLogs()
 }

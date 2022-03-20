@@ -3,21 +3,24 @@ package computer.architecture.memory
 import java.io.File
 
 class Memory(
-    private val instructions: List<String>
+    val size: Int
 ) {
-    companion object {
-        fun load(path: String): Memory {
-            val instructions: MutableList<String> = arrayListOf();
-            File(path).forEachLine { instructions.add(it) }
-            return Memory(instructions)
-        }
+    private val memory: Array<String> = Array(size) { "" }
+
+    fun load(path: String, address:Int) {
+        load(File(path).readLines(), address)
     }
 
-    fun size(): Int {
-        return instructions.size
+    fun load(instructions: List<String>, address: Int) {
+        var index = address
+        instructions.forEach { memory[index++] = it }
     }
 
-    fun readLine(index: Int): String {
-        return instructions[index]
+    fun store(address:Int, value:String) {
+        memory[address] = value
+    }
+
+    fun read(address: Int): String {
+        return memory[address]
     }
 }

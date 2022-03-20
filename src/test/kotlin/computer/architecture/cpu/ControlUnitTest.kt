@@ -18,6 +18,8 @@ internal class ControlUnitTest {
     @MockK
     private lateinit var mockResults: Results
 
+    private val memorySize = 1000
+
     @BeforeEach
     private fun setUp() {
         every { mockResults.log(any(), any()) } returns Unit
@@ -28,9 +30,9 @@ internal class ControlUnitTest {
     fun testGCD_recursive() {
         val op1 = 25
         val op2 = 30
-        val instructions = instructions("input/GCD_Recursive.txt", op1, op2)
+        val memory = memory(instructions("input/GCD_Recursive.txt", op1, op2))
 
-        val cu = ControlUnit(Memory(instructions), mockResults)
+        val cu = ControlUnit(memory, mockResults)
         cu.process()
 
         val expected = TestUtils.gcd(op1, op2)
@@ -42,9 +44,9 @@ internal class ControlUnitTest {
     fun testGCD_loop() {
         val op1 = 34
         val op2 = 30
-        val instructions = instructions("input/GCD_Loop.txt", op1, op2)
+        val memory = memory(instructions("input/GCD_LOOP.txt", op1, op2))
 
-        val cu = ControlUnit(Memory(instructions), mockResults)
+        val cu = ControlUnit(memory, mockResults)
         cu.process()
 
         val expected = TestUtils.gcd(op1, op2)
@@ -56,24 +58,33 @@ internal class ControlUnitTest {
     fun testLCM() {
         val op1 = 28
         val op2 = 30
-        val instructions = instructions("input/LCM.txt", op1, op2)
+        val memory = memory(instructions("input/LCM.txt", op1, op2))
 
-        val cu = ControlUnit(Memory(instructions), mockResults)
+        val cu = ControlUnit(memory, mockResults)
         cu.process()
 
         val expected = TestUtils.lcm(op1, op2)
         assertThat(cu.registers(0)).isEqualTo(expected)
     }
 
-    private fun instructions(filePath : String, vararg args : Int): MutableList<String> {
-        val instructions: MutableList<String> = arrayListOf();
-        File(filePath).forEachLine { instructions.add(it) }
+    private fun memory(instructions: List<String>): Memory {
+        val memory = Memory(memorySize)
+        memory.load(instructions, 0)
+        return memory
+    }
 
-        for(index:Int in args.indices) {
-            instructions.removeAt(index)
-            val operand = Integer.toHexString(args[index])
-            instructions.add(index, "M R${index+1} 0x${operand}")
-        }
+    private fun instructions(filePath: String, vararg args: Int): List<String> {
+        val instructions: MutableList<String> = arrayListOf()
+        File(filePath).forEachLine { instructions.add(it) }
+        replaceArguments(instructions, args)
         return instructions
+    }
+
+    private fun replaceArguments(instructions: MutableList<String>, args: IntArray) {
+        for (index: Int in args.indices) {
+            val operand = Integer.toHexString(args[index])
+            instructions.removeAt(index)
+            instructions.add(index, "M R${index + 1} 0x${operand}")
+        }
     }
 }

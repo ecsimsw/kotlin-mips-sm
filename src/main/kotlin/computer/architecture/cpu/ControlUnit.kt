@@ -11,7 +11,7 @@ class ControlUnit(
     private val alu = ALU(registers)
 
     fun process() {
-        while (registers.pc < memory.size()) {
+        while (registers.pc < memory.size) {
             val instruction = fetch(registers.pc)
             val executionInfo = decode(instruction)
             execute(executionInfo)
@@ -19,8 +19,8 @@ class ControlUnit(
         }
     }
 
-    private fun fetch(index: Int): String {
-        val instruction = memory.readLine(index)
+    private fun fetch(address: Int): String {
+        val instruction = memory.read(address)
         registers.pc++
         return instruction
     }
