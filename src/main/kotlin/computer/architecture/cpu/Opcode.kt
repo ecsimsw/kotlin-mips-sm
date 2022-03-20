@@ -6,7 +6,6 @@ enum class Opcode(val code: String) {
     MULTIPLY("*"),
     DIVIDE("/"),
     MOD("%"),
-    POWER("^"),
     SLL("<<"),
     SRL(">>"),
     AND("&&"),
@@ -17,6 +16,8 @@ enum class Opcode(val code: String) {
     BRANCH_ON_NOT_EQUAL("BNE"),
     CONDITION("C"),
     MOVE("M"),
+    LOAD_WORD("LW"),
+    STORE_WORD("SW"),
     ANNOTATION("//"),
     HALT("H");
 

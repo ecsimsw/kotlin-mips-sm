@@ -69,7 +69,7 @@ internal class ControlUnitTest {
 
     private fun memory(instructions: List<String>): Memory {
         val memory = Memory(memorySize)
-        memory.load(instructions, 0)
+        memory.loadFile(instructions, 0)
         return memory
     }
 

@@ -7,20 +7,20 @@ class Memory(
 ) {
     private val memory: Array<String> = Array(size) { "" }
 
-    fun load(path: String, address:Int) {
-        load(File(path).readLines(), address)
+    fun loadFile(path: String, address:Int) {
+        loadFile(File(path).readLines(), address)
     }
 
-    fun load(instructions: List<String>, address: Int) {
+    fun loadFile(instructions: List<String>, address: Int) {
         var index = address
         instructions.forEach { memory[index++] = it }
     }
 
-    fun store(address:Int, value:String) {
-        memory[address] = value
+    operator fun get(address: Int): String {
+        return memory[address]
     }
 
-    fun read(address: Int): String {
-        return memory[address]
+    operator fun set(address: Int, value: String) {
+        memory[address] = value
     }
 }

@@ -8,7 +8,7 @@ class ControlUnit(
     private val results: Results,
 ) {
     private var registers = Registers(10)
-    private val alu = ALU(registers)
+    private val alu = ALU(registers, memory)
 
     fun process() {
         while (registers.pc < memory.size) {
@@ -20,7 +20,7 @@ class ControlUnit(
     }
 
     private fun fetch(address: Int): String {
-        val instruction = memory.read(address)
+        val instruction = memory[address]
         registers.pc++
         return instruction
     }

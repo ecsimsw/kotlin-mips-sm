@@ -1,5 +1,6 @@
 package computer.architecture.cpu
 
+import computer.architecture.memory.Memory
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 
@@ -11,7 +12,7 @@ internal class ALUTest {
     @BeforeEach
     fun setUp() {
         registers = Registers()
-        alu = ALU(registers)
+        alu = ALU(registers, Memory(1000))
     }
 
     private fun process(opcode: Opcode, operand1: String, operand2: String) {
@@ -26,6 +27,50 @@ internal class ALUTest {
         fun testHalt() {
             process(Opcode.HALT, "0x02", "0x02")
             assertThat(registers.pc).isEqualTo(Int.MAX_VALUE)
+        }
+
+        @DisplayName("LW 명령어로 메모리 주소의 값을 읽는다")
+        @Test
+        fun testLW() {
+            val memory = Memory(1000)
+            val address = "0x0A"
+            val value = "0x1A"
+
+            memory[Integer.decode(address)] = value
+            alu = ALU(registers, memory)
+
+            process(Opcode.LOAD_WORD, address, "0x00")
+            assertThat(registers.r[0]).isEqualTo(Integer.decode(value))
+        }
+
+        @DisplayName("SW 명령어로 메모리 주소에 값을 저장한다")
+        @Test
+        fun testSW() {
+            val memory = Memory(1000)
+            val address = "0x0A"
+            val value = "0x1A"
+
+            alu = ALU(registers, memory)
+
+            process(Opcode.STORE_WORD, value, address)
+            assertThat(memory[Integer.decode(address)]).isEqualTo(value)
+        }
+
+        @DisplayName("레지스터 값으로 LW, SW 명령을 수행할 수 있다.")
+        @Test
+        fun testLoadAndStoreWithRegs() {
+            val registers = Registers()
+            val memory = Memory(1000)
+            alu = ALU(registers, memory)
+
+            registers.r[0] = 1
+            registers.r[4] = 26
+            process(Opcode.STORE_WORD, "R4", "R0")
+            assertThat(memory[1]).isEqualTo("0x1A")
+
+            registers.r[2] = 1
+            process(Opcode.LOAD_WORD, "R2", "0x00")
+            assertThat(registers.r[0]).isEqualTo(26)
         }
     }
 
@@ -53,13 +98,6 @@ internal class ALUTest {
         fun testMod() {
             process(Opcode.MOD, "0x04", "0x03")
             assertThat(registers.r[0]).isEqualTo(1)
-        }
-
-        @DisplayName("POWER 연산자로 피연산자1의 피연산자2 제곱수를 계산한다.")
-        @Test
-        fun testPower() {
-            process(Opcode.POWER, "0x0A", "0x02")
-            assertThat(registers.r[0]).isEqualTo(100)
         }
 
         @DisplayName("비트 연산을 수행한다.")
