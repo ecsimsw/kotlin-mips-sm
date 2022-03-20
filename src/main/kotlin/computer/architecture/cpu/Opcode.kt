@@ -17,6 +17,7 @@ enum class Opcode(val code: String) {
     BRANCH_ON_NOT_EQUAL("BNE"),
     CONDITION("C"),
     MOVE("M"),
+    ANNOTATION("//"),
     HALT("H");
 
     companion object {

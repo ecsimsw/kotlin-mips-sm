@@ -24,6 +24,7 @@ class ALU(
         operations[Opcode.BRANCH] = { op1, op2 -> if (registers.r[0] == 1) registers.pc = value(op1) }
         operations[Opcode.BRANCH_ON_EQUAL] = { op1, op2 -> if (registers.r[0] == value(op1)) registers.pc = value(op2) }
         operations[Opcode.BRANCH_ON_NOT_EQUAL] = { op1, op2 -> if (registers.r[0] != value(op1)) registers.pc = value(op2) }
+        operations[Opcode.ANNOTATION] = { op1, op2 ->  }
         operations[Opcode.HALT] = { op1, op2 -> registers.pc = Int.MAX_VALUE }
     }
 
