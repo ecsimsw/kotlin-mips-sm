@@ -18,7 +18,6 @@ enum class Opcode(val code: String) {
     MOVE("M"),
     LOAD_WORD("LW"),
     STORE_WORD("SW"),
-    ANNOTATION("//"),
     HALT("H");
 
     companion object {

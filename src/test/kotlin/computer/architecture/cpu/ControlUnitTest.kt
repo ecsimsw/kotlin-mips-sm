@@ -30,7 +30,7 @@ internal class ControlUnitTest {
     fun testGCD_recursive() {
         val op1 = 25
         val op2 = 30
-        val memory = memory(instructions("input/GCD_Recursive.txt", op1, op2))
+        val memory = memory(instructions("input/gcd_recursive.txt", op1, op2))
 
         val cu = ControlUnit(memory, mockResults)
         cu.process()
@@ -44,7 +44,7 @@ internal class ControlUnitTest {
     fun testGCD_loop() {
         val op1 = 34
         val op2 = 30
-        val memory = memory(instructions("input/GCD_LOOP.txt", op1, op2))
+        val memory = memory(instructions("input/gcd_loop.txt", op1, op2))
 
         val cu = ControlUnit(memory, mockResults)
         cu.process()
@@ -58,7 +58,7 @@ internal class ControlUnitTest {
     fun testLCM() {
         val op1 = 28
         val op2 = 30
-        val memory = memory(instructions("input/LCM.txt", op1, op2))
+        val memory = memory(instructions("input/lcm.txt", op1, op2))
 
         val cu = ControlUnit(memory, mockResults)
         cu.process()

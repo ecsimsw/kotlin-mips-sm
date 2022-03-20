@@ -6,7 +6,7 @@ import computer.architecture.memory.Results
 
 fun main() {
     val memory = Memory(1000)
-    memory.loadFile("input/LCM.txt", 0)
+    memory.loadFile("input/gcd_recursive.txt", 0)
 
     val results = Results()
     ControlUnit(memory, results).process()

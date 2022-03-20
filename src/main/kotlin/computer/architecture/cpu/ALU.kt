@@ -26,7 +26,6 @@ class ALU(
         operations[Opcode.MOVE] = { op1, op2 -> registers.r[op1.registerNumber()] = value(op2) }
         operations[Opcode.LOAD_WORD] = { op1, op2 -> registers.r[0] = Integer.decode(memory[value(op1)]) }
         operations[Opcode.STORE_WORD] = { op1, op2 -> memory[value(op2)] = "0x" + Integer.toHexString(value(op1)).uppercase() }
-        operations[Opcode.ANNOTATION] = { op1, op2 -> }
         operations[Opcode.HALT] = { op1, op2 -> registers.pc = Int.MAX_VALUE }
     }
 

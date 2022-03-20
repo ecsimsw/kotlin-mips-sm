@@ -1,0 +1,46 @@
+M R1 0x02    // SET INITIAL ARGUMENTS
+M R2 0x00
+M R9 0xFF    // SET INITIAL STACK_POINTER
+- R9 0x04    // GCD
+M R9 R0
+SW R9 R0
++ R9 0x01
+M R9 R0
+SW R1 R0
++ R9 0x01
+M R9 R0
+SW R2 R0
+M R9 R0
+M R0 R2
+BEQ 0x00 0x15
+% R1 R2       // FALSE
+M R3 R0
+M R1 R2
+M R2 R3
+J 0x04 0x00
++ R9 0x01     // TRUE
+SW R1 R0
+- R9 0x03
+M R9 R0
+LW R9 0x00
+J R0
+H 0x00 0x00
+
+// CODE
+int gcd(int a, int b) {
+   if(b == 0) {
+      return a;
+   }
+   return gcd(b, a%b);
+}
+
+M R1 0x19
+M R2 0x1E
+M R0 R2
+BEQ 0x00 0x08
+% R1 R2
+M R1 R2
+M R2 R0
+J 0x03 0x00
+M R0 R1
+H 0x00 0x00
