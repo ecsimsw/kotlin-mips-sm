@@ -1,12 +1,28 @@
 package computer.architecture.cpu
 
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow
 import org.junit.jupiter.api.DisplayName
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
 
 internal class OperandTest {
+
+    @DisplayName("16진수의 피연산자를 10진수 정수를 받는다")
+    @Test
+    fun parseHexNumber() {
+        val operand = Operand("0xA5")
+        assertThat(operand.number).isEqualTo(21)
+    }
+
+    @DisplayName("피연산자가 레지스터일 경우 레지스터 번호를 반환한다.")
+    @Test
+    fun parseRegisterNumber() {
+        val operand = Operand("R9")
+        assertThat(operand.number).isEqualTo(9)
+    }
 
     @DisplayName("Operand가 유효한 prefix를 갖고 있는지 확인한다")
     @ParameterizedTest
