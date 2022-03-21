@@ -5,7 +5,7 @@ operator fun Array<Int>.set(index: Int, value: Boolean) {
 }
 
 class Registers(
-    size: Int = 10
+    size: Int
 ) {
     var pc: Int = 0
     var r: Array<Int> = Array(size) { 0 }

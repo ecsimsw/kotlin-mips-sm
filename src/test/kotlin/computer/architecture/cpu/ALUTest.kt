@@ -11,7 +11,7 @@ internal class ALUTest {
 
     @BeforeEach
     fun setUp() {
-        registers = Registers()
+        registers = Registers(10)
         alu = ALU(registers, Memory(1000))
     }
 
@@ -59,7 +59,6 @@ internal class ALUTest {
         @DisplayName("레지스터 값으로 LW, SW 명령을 수행할 수 있다.")
         @Test
         fun testLoadAndStoreWithRegs() {
-            val registers = Registers()
             val memory = Memory(1000)
             alu = ALU(registers, memory)
 

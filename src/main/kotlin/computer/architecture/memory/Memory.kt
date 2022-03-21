@@ -7,7 +7,7 @@ class Memory(
 ) {
     private val memory: Array<String> = Array(size) { "" }
 
-    fun loadFile(path: String, address:Int) {
+    fun loadFile(path: String, address: Int) {
         loadFile(File(path).readLines(), address)
     }
 

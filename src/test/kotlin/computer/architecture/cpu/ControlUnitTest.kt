@@ -18,11 +18,14 @@ internal class ControlUnitTest {
     @MockK
     private lateinit var mockResults: Results
 
+    private lateinit var registers: Registers
+
     private val memorySize = 1000
 
     @BeforeEach
     private fun setUp() {
         every { mockResults.log(any(), any()) } returns Unit
+        registers = Registers(10)
     }
 
     @DisplayName("input/GCD_Recursive 를 파라미터 테스트한다.")
@@ -32,11 +35,11 @@ internal class ControlUnitTest {
         val op2 = 30
         val memory = memory(instructions("input/gcd_recursive.txt", op1, op2))
 
-        val cu = ControlUnit(memory, mockResults)
+        val cu = ControlUnit(memory, registers, mockResults)
         cu.process()
 
         val expected = TestUtils.gcd(op1, op2)
-        assertThat(cu.registers(0)).isEqualTo(expected)
+        assertThat(registers.r[0]).isEqualTo(expected)
     }
 
     @DisplayName("input/GCD_Loop 를 파라미터 테스트한다.")
@@ -46,11 +49,11 @@ internal class ControlUnitTest {
         val op2 = 30
         val memory = memory(instructions("input/gcd_loop.txt", op1, op2))
 
-        val cu = ControlUnit(memory, mockResults)
+        val cu = ControlUnit(memory, registers, mockResults)
         cu.process()
 
         val expected = TestUtils.gcd(op1, op2)
-        assertThat(cu.registers(0)).isEqualTo(expected)
+        assertThat(registers.r[0]).isEqualTo(expected)
     }
 
     @DisplayName("input/LCM 를 파라미터 테스트한다.")
@@ -60,11 +63,11 @@ internal class ControlUnitTest {
         val op2 = 30
         val memory = memory(instructions("input/lcm.txt", op1, op2))
 
-        val cu = ControlUnit(memory, mockResults)
+        val cu = ControlUnit(memory, registers, mockResults)
         cu.process()
 
         val expected = TestUtils.lcm(op1, op2)
-        assertThat(cu.registers(0)).isEqualTo(expected)
+        assertThat(registers.r[0]).isEqualTo(expected)
     }
 
     private fun memory(instructions: List<String>): Memory {

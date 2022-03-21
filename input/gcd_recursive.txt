@@ -1,24 +1,24 @@
-M R1 0x02    // SET INITIAL ARGUMENTS
-M R2 0x00
-M R9 0xFF    // SET INITIAL STACK_POINTER
-- R9 0x04    // GCD
-M R9 R0
-SW R9 R0
+M R1 0x02       // SET INITIAL ARGUMENT_1
+M R2 0x00       // SET INITIAL ARGUMENT_2
+M R9 0xFF       // SET INITIAL STACK_POINTER
+M R8 Ox00       // SET INITIAL RETURN_ADDRESS
+- R9 0x04       // :: GCD ::
+M R9 R0         // SP = SP-4
+SW R8 R9        // M[SP] = RA
 + R9 0x01
-M R9 R0
-SW R1 R0
+M R9 R0         // SP = SP+1
+SW R1 R9        // M[SP] = R1
 + R9 0x01
-M R9 R0
-SW R2 R0
-M R9 R0
+M R9 R0         // SP = SP+1
+SW R2 R9        // M[SP] = R2
 M R0 R2
-BEQ 0x00 0x15
-% R1 R2       // FALSE
-M R3 R0
-M R1 R2
-M R2 R3
-J 0x04 0x00
-+ R9 0x01     // TRUE
+BEQ 0x00 0x15   // IF(R2 == 0) JUMP to GCD
+% R1 R2         // :: FALSE ::
+M R3 R0         // R3 = R1 % R2
+M R1 R2         // R1 = R2
+M R2 R3         // R2 = R3
+J GCD 0x00      // JUMP to GCD
++ R9 0x01       // TRUE
 SW R1 R0
 - R9 0x03
 M R9 R0
