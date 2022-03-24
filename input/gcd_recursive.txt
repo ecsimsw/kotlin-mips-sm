@@ -12,13 +12,13 @@ SW R1 R9        // M[SP] = R1
 M R9 R0         // SP = SP+1
 SW R2 R9        // M[SP] = R2
 M R0 R2
-BEQ 0x00 0x15   // IF(R2 == 0) JUMP to GCD
+BEQ 0x00 0x15   // IF(R2 == 0) JUMP to EXIT
 % R1 R2         // :: FALSE ::
 M R3 R0         // R3 = R1 % R2
 M R1 R2         // R1 = R2
 M R2 R3         // R2 = R3
 J GCD 0x00      // JUMP to GCD
-+ R9 0x01       // TRUE
++ R9 0x01       // :: EXIT ::
 SW R1 R0
 - R9 0x03
 M R9 R0

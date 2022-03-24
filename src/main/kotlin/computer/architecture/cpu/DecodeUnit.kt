@@ -29,6 +29,7 @@ enum class Opcode(val code: String) {
     AND("&&"),
     OR("||"),
     JUMP("J"),
+    JUMP_AND_LINK("JAL"),
     BRANCH("B"),
     BRANCH_ON_EQUAL("BEQ"),
     BRANCH_ON_NOT_EQUAL("BNE"),

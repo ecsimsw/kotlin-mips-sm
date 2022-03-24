@@ -19,6 +19,10 @@ class ALU(
         operations[Opcode.AND] = { op1, op2 -> registers.r[0] = value(op1) and value(op2) }
         operations[Opcode.OR] = { op1, op2 -> registers.r[0] = value(op1) or value(op2) }
         operations[Opcode.JUMP] = { op1, op2 -> registers.pc = value(op1) }
+        operations[Opcode.JUMP_AND_LINK] = { op1, op2 ->
+            registers.pc = value(op2)
+            registers.r[op1.registerNumber()] = registers.pc + 1
+        }
         operations[Opcode.BRANCH] = { op1, op2 -> if (registers.r[0] == 1) registers.pc = value(op1) }
         operations[Opcode.BRANCH_ON_EQUAL] = { op1, op2 -> if (registers.r[0] == value(op1)) registers.pc = value(op2) }
         operations[Opcode.BRANCH_ON_NOT_EQUAL] = { op1, op2 -> if (registers.r[0] != value(op1)) registers.pc = value(op2) }
