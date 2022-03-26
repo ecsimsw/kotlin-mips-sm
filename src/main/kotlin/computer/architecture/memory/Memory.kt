@@ -5,7 +5,7 @@ import java.io.File
 class Memory(
     val size: Int
 ) {
-    private val memory: Array<String> = Array(size) { "" }
+    private val memory: Array<String> = Array(size) { "0x00" }
 
     fun loadFile(path: String, address: Int) {
         loadFile(File(path).readLines(), address)
