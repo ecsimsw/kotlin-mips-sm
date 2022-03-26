@@ -9,9 +9,9 @@ class Results(
 
     fun log(instruction: String, registers: Registers, memory: Memory) {
         println("Inst : $instruction")
-        println("PC   : ${registers.pc}")
-        println("SP   : ${registers.r[9]}")
-        println("RA   : ${registers.r[8]}")
+//        println("PC   : ${registers.pc}")
+//        println("SP   : ${registers.r[9]}")
+//        println("RA   : ${registers.r[8]}")
         println("REGs : ${registers.r.joinToString(" ")} \n")
         Thread.sleep(sleepTime)
 

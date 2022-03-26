@@ -9,7 +9,7 @@ fun main() {
     val memory = Memory(1000)
     memory.loadFile("input/gcd_recursive.txt", 0)
 
-    val results = Results(200L)
+    val results = Results(100L)
     ControlUnit(memory, Registers(10), results).process()
 //    results.printLogs()
 }
