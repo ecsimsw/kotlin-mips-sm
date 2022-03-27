@@ -11,7 +11,7 @@ class Memory(
         loadFile(File(path).readLines(), address)
     }
 
-    fun loadFile(instructions: List<String>, address: Int) {
+    private fun loadFile(instructions: List<String>, address: Int) {
         var index = address
         instructions.forEach { memory[index++] = it }
     }
@@ -22,5 +22,9 @@ class Memory(
 
     operator fun set(address: Int, value: String) {
         memory[address] = value
+    }
+
+    operator fun set(address: Int, value: Int) {
+        memory[address] = "0x" + Integer.toHexString(value).uppercase()
     }
 }

@@ -14,9 +14,6 @@ class ControlUnit(
     fun process() {
         while (registers.pc < memory.size) {
             val instruction = fetch(registers.pc)
-            if(instruction.trim() == "" || instruction.trim() == "0x00" || instruction.split(" ")[0] == "//") {
-                continue
-            }
             val executionInfo = decode(instruction)
             execute(executionInfo)
             store(instruction)
@@ -38,6 +35,6 @@ class ControlUnit(
     }
 
     private fun store(instruction: String) {
-        results.log(instruction, registers, memory)
+        results.saveLog(instruction, registers)
     }
 }

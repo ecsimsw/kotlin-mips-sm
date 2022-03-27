@@ -1,14 +1,12 @@
 package computer.architecture.cpu
 
-class DecodeUnit {
-
+class DecodeUnit(
+    val registers: Registers
+) {
     fun decode(instruction: String): ExecutionInfo {
-        try {
-            val split = instruction.split(" ")
-            return ExecutionInfo(Opcode.of(split[0]), Operand(split[1]), Operand(split[2]))
-        } catch (e: IllegalArgumentException) {
-            throw IllegalArgumentException("Invalid instruction : $instruction \n" + "${e.message}")
-        }
+        if (instruction == "" || instruction.startsWith("//"))
+            return ExecutionInfo(Opcode.ANNOTATION, Operand.NONE, Operand.NONE)
+        return ExecutionInfo.of(instruction)
     }
 }
 
@@ -16,7 +14,22 @@ data class ExecutionInfo(
     val opcode: Opcode,
     val operand1: Operand,
     val operand2: Operand
-)
+) {
+    companion object {
+        fun of(instruction: String): ExecutionInfo {
+            try {
+                val split = instruction.split(" ")
+                return of(split[0], split[1], split[2])
+            } catch (e: IllegalArgumentException) {
+                throw IllegalArgumentException("Invalid instruction format : $instruction \n" + "${e.message}")
+            }
+        }
+
+        private fun of(opcode: String, operand1: String, operand2: String): ExecutionInfo {
+            return ExecutionInfo(Opcode.of(opcode), Operand(operand1), Operand(operand2))
+        }
+    }
+}
 
 enum class Opcode(val code: String) {
     ADD("+"),
@@ -49,6 +62,10 @@ enum class Opcode(val code: String) {
 class Operand(
     operand: String
 ) {
+    companion object {
+        val NONE = Operand("0x00")
+    }
+
     val type: OperandType = OperandType.of(operand)
     val number: Int = OperandType.number(operand)
 
