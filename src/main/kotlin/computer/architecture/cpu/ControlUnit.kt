@@ -9,7 +9,7 @@ class ControlUnit(
     private val results: Results
 ) {
     private val alu = ALU(registers, memory)
-    private val decodeUnit = DecodeUnit()
+    private val decodeUnit = DecodeUnit(registers)
 
     fun process() {
         while (registers.pc < memory.size) {

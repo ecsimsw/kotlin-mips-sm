@@ -6,6 +6,7 @@ import org.junit.jupiter.api.*
 
 internal class ALUTest {
 
+    private val memory = Memory(1000)
     private lateinit var registers: Registers
     private lateinit var alu: ALU
 
@@ -15,61 +16,53 @@ internal class ALUTest {
         alu = ALU(registers, Memory(1000))
     }
 
-    private fun process(opcode: Opcode, operand1: String, operand2: String) {
-        alu.process(opcode, Operand(operand1), Operand(operand2))
-    }
-
     @Nested
     inner class SystemOperation {
 
         @DisplayName("HALT 명령어로 pc를 Int.MAX_VALUE로 한다.")
         @Test
         fun testHalt() {
-            process(Opcode.HALT, "0x02", "0x02")
+            alu.process(Opcode.HALT, 0, 0)
             assertThat(registers.pc).isEqualTo(Int.MAX_VALUE)
         }
 
         @DisplayName("LW 명령어로 메모리 주소의 값을 읽는다")
         @Test
         fun testLW() {
-            val memory = Memory(1000)
-            val address = "0x0A"
-            val value = "0x1A"
+            val address = 10
+            val value = 16
 
-            memory[Integer.decode(address)] = value
+            memory[address] = value
             alu = ALU(registers, memory)
 
-            process(Opcode.LOAD_WORD, address, "0x00")
-            assertThat(registers.r[0]).isEqualTo(Integer.decode(value))
+            alu.process(Opcode.LOAD_WORD, address, value)
+            assertThat(registers.r[0]).isEqualTo(value)
         }
 
         @DisplayName("SW 명령어로 메모리 주소에 값을 저장한다")
         @Test
         fun testSW() {
-            val memory = Memory(1000)
-            val address = "0x0A"
-            val value = "0x1A"
+            val address = 10
+            val value = 16
 
             alu = ALU(registers, memory)
 
-            process(Opcode.STORE_WORD, value, address)
-            assertThat(memory[Integer.decode(address)]).isEqualTo(value)
+            alu.process(Opcode.STORE_WORD, value, address)
+            assertThat(Integer.decode(memory[address])).isEqualTo(value)
         }
 
-        @DisplayName("레지스터 값으로 LW, SW 명령을 수행할 수 있다.")
+        @DisplayName("JAL 명령어로 다음 PC를 지정하고, RA를 저장한다")
         @Test
-        fun testLoadAndStoreWithRegs() {
-            val memory = Memory(1000)
+        fun testJAL() {
+            val currentPC = registers.pc
+            val afterPC = 10
+            val raRegister = 8
+
             alu = ALU(registers, memory)
+            alu.process(Opcode.JUMP_AND_LINK, raRegister, afterPC)
 
-            registers.r[0] = 1
-            registers.r[4] = 26
-            process(Opcode.STORE_WORD, "R4", "R0")
-            assertThat(memory[1]).isEqualTo("0x1A")
-
-            registers.r[2] = 1
-            process(Opcode.LOAD_WORD, "R2", "0x00")
-            assertThat(registers.r[0]).isEqualTo(26)
+            assertThat(registers.pc).isEqualTo(afterPC)
+            assertThat(registers.r[raRegister]).isEqualTo(currentPC)
         }
     }
 
@@ -79,53 +72,40 @@ internal class ALUTest {
         @DisplayName("사칙 연산을 수행한다.")
         @Test
         fun testArithmeticOperation() {
-            process(Opcode.ADD, "0x01", "0x02")
+            alu.process(Opcode.ADD, 1, 2)
             assertThat(registers.r[0]).isEqualTo(3)
 
-            process(Opcode.MINUS, "0x02", "0x01")
+            alu.process(Opcode.MINUS, 2, 1)
             assertThat(registers.r[0]).isEqualTo(1)
 
-            process(Opcode.MULTIPLY, "0x01", "0x02")
+            alu.process(Opcode.MULTIPLY, 1, 2)
             assertThat(registers.r[0]).isEqualTo(2)
 
-            process(Opcode.DIVIDE, "0x02", "0x01")
+            alu.process(Opcode.DIVIDE, 2, 1)
             assertThat(registers.r[0]).isEqualTo(2)
         }
 
         @DisplayName("MOD 연산으로 나머지를 계산한다.")
         @Test
         fun testMod() {
-            process(Opcode.MOD, "0x04", "0x03")
+            alu.process(Opcode.MOD, 4, 3)
             assertThat(registers.r[0]).isEqualTo(1)
         }
 
         @DisplayName("비트 연산을 수행한다.")
         @Test
         fun testBitwiseOperation() {
-            process(Opcode.AND, "0x0C", "0x19")
+            alu.process(Opcode.AND, 12, 25)
             assertThat(registers.r[0]).isEqualTo(8)
 
-            process(Opcode.OR, "0x0C", "0x19")
+            alu.process(Opcode.OR, 12, 25)
             assertThat(registers.r[0]).isEqualTo(29)
 
-            process(Opcode.SLL, "0xD4", "0x01")
-            assertThat(registers.r[0]).isEqualTo(424)
+            alu.process(Opcode.SLL, 1, 2)
+            assertThat(registers.r[0]).isEqualTo(4)
 
-            process(Opcode.SRL, "0xD4", "0x01")
-            assertThat(registers.r[0]).isEqualTo(106)
-        }
-
-        @DisplayName("레지스터 값으로도 산술 연산을 수행할 수 있다.")
-        @Test
-        fun operateWithRegister() {
-            registers.r[1] = 1
-            registers.r[2] = 2
-
-            process(Opcode.ADD, "R1", "R2")
-            assertThat(registers.r[0]).isEqualTo(3)
-
-            process(Opcode.MULTIPLY, "R1", "R2")
-            assertThat(registers.r[0]).isEqualTo(2)
+            alu.process(Opcode.SRL, 4, 2)
+            assertThat(registers.r[0]).isEqualTo(1)
         }
     }
 
@@ -135,13 +115,13 @@ internal class ALUTest {
         @DisplayName("논리 연산을 수행한다.")
         @Test
         fun testLogicalOperation() {
-            process(Opcode.CONDITION, "0x01", "0x02")
+            alu.process(Opcode.CONDITION, 1, 2)
             assertThat(registers.r[0]).isEqualTo(1)
 
-            process(Opcode.MOVE, "R2", "0x02")
+            alu.process(Opcode.MOVE, 2, 2)
             assertThat(registers.r[2]).isEqualTo(2)
 
-            process(Opcode.JUMP, "0x03", "0x00")
+            alu.process(Opcode.JUMP, 3, 0)
             assertThat(registers.pc).isEqualTo(3)
         }
 
@@ -149,7 +129,7 @@ internal class ALUTest {
         @Test
         fun testBranch() {
             registers.r[0] = 1
-            process(Opcode.BRANCH, "0x02", "0x00")
+            alu.process(Opcode.BRANCH, 2, 0)
             assertThat(registers.pc).isEqualTo(2)
         }
 
@@ -157,7 +137,7 @@ internal class ALUTest {
         @Test
         fun testBranchOnEqual() {
             registers.r[0] = 1
-            process(Opcode.BRANCH_ON_EQUAL, "0x01", "0x03")
+            alu.process(Opcode.BRANCH_ON_EQUAL, 1, 3)
             assertThat(registers.pc).isEqualTo(3)
         }
 
@@ -165,28 +145,8 @@ internal class ALUTest {
         @Test
         fun testBranchOnNotEqual() {
             registers.r[0] = 1
-            process(Opcode.BRANCH_ON_NOT_EQUAL, "0x02", "0x03")
+            alu.process(Opcode.BRANCH_ON_NOT_EQUAL, 2, 3)
             assertThat(registers.pc).isEqualTo(3)
-        }
-
-        @DisplayName("레지스터 값으로도 논리 연산을 수행할 수 있다.")
-        @Test
-        fun operateWithRegister() {
-            registers.r[0] = 1
-            registers.r[1] = 1
-            registers.r[2] = 2
-
-            process(Opcode.JUMP, "R1", "0x02")
-            assertThat(registers.pc).isEqualTo(1)
-
-            process(Opcode.BRANCH, "R2", "0x01")
-            assertThat(registers.pc).isEqualTo(2)
-        }
-
-        @DisplayName("MOVE의 첫번째 피연산자는 Register Number이어야만 한다")
-        @Test
-        fun invalidMoveOperand() {
-            assertThrows<IllegalArgumentException> { process(Opcode.MOVE, "0x01", "0x02") }
         }
     }
 }
