@@ -1,6 +1,4 @@
-package computer.architecture.memory
-
-import computer.architecture.cpu.Registers
+package computer.architecture.cpu
 
 class Results {
     private val logs: MutableList<String> = mutableListOf()

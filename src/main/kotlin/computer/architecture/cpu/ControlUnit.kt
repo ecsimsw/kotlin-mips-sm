@@ -1,7 +1,6 @@
 package computer.architecture.cpu
 
 import computer.architecture.memory.Memory
-import computer.architecture.memory.Results
 
 class ControlUnit(
     private val memory: Memory,

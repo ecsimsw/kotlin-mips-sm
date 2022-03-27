@@ -3,7 +3,7 @@ package computer.architecture
 import computer.architecture.cpu.ControlUnit
 import computer.architecture.cpu.Registers
 import computer.architecture.memory.Memory
-import computer.architecture.memory.Results
+import computer.architecture.cpu.Results
 
 fun main() {
     val memory = Memory(1000)
