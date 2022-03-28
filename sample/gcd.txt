@@ -8,14 +8,14 @@ H 0x00 0x00
 // GCD 0x07
 - R9 0x04
 M R9 R0         // SP = SP-4
-SW R8 R9        // M[SP] = RA  // 12
+SW R8 R9        // M[SP] = RA
 + R9 0x01
-SW R1 R0        // M[SP+1] = R1  // 13
+SW R1 R0        // M[SP+1] = R1
 + R9 0x02
-SW R2 R0        // M[SP+2] = R2  // 14
+SW R2 R0        // M[SP+2] = R2
 + R9 0x03
 M R7 R1         // V0 = R1
-SW R7 R0        // M[SP+3] = V0  // 15
+SW R7 R0        // M[SP+3] = V0
 M R0 R2
 BEQ 0x00 0x1D   // IF(R2 == 0) JUMP to EXIT
 J 0x16 0x00     // JUMP to FALSE
@@ -32,11 +32,11 @@ JAL R8 0x08     // JUMP to GCD
 M R9 R0         // SP = SP+4
 - R9 0x02
 LW R0 0x00
-M R2 R0         // R2 = M[SP-2]  // 14
+M R2 R0         // R2 = M[SP-2]
 - R9 0x03
 LW R0 0x00
-M R1 R0         // R1 = M[SP-3]   // 13
+M R1 R0         // R1 = M[SP-3]
 - R9 0x04
 LW R0 0x00
-M R8 R0         // RA = M[SP-4]    // 12
+M R8 R0         // RA = M[SP-4]
 J R8 0x00       // JUMP to RA

@@ -1,20 +1,22 @@
 package computer.architecture
 
 import computer.architecture.cpu.ControlUnit
-import computer.architecture.cpu.Registers
 import computer.architecture.memory.Memory
-import computer.architecture.cpu.Results
 
-fun main() {
+fun main(args: Array<String>) {
+    val executionFiles = mutableListOf(*args)
+    if (executionFiles.isEmpty())
+        executionFiles.add("sample/gcd.txt")
+
+    for (path in executionFiles) {
+        process(path)
+    }
+}
+
+private fun process(path: String) {
     val memory = Memory(1000)
-    memory.loadFile("input/gcd_recursive.txt", 0)
+    val controlUnit = ControlUnit(memory)
 
-    val registers = Registers(10)
-    val results = Results()
-
-    val controlUnit = ControlUnit(memory, registers, results)
+    memory.loadFile(path, 0)
     controlUnit.process()
-
-    results.printLogs()
-    println("result value : ${registers.r[7]}")
 }

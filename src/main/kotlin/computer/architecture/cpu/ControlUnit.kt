@@ -4,11 +4,12 @@ import computer.architecture.memory.Memory
 
 class ControlUnit(
     private val memory: Memory,
-    private val registers: Registers,
-    private val results: Results
+    registerSize: Int = 10
 ) {
-    private val alu = ALU(registers, memory)
+    private val registers = Registers(registerSize)
     private val decodeUnit = DecodeUnit(registers)
+    private val alu = ALU(registers, memory)
+    private val results = Results(registers)
 
     fun process() {
         while (registers.pc < memory.size) {
@@ -17,6 +18,7 @@ class ControlUnit(
             execute(executionInfo)
             store(instruction)
         }
+        printLogs()
     }
 
     private fun fetch(address: Int): String {
@@ -34,6 +36,11 @@ class ControlUnit(
     }
 
     private fun store(instruction: String) {
-        results.saveLog(instruction, registers)
+        results.saveLog(instruction)
+    }
+
+    private fun printLogs() {
+        results.printLogs()
+        results.printResultValue()
     }
 }
