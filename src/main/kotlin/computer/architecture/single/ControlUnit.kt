@@ -5,11 +5,12 @@ class ControlUnit(
 ) {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
+    private val controlSignal = ControlSignal()
 
     fun process() {
         while (registers.pc < memory.size) {
             val instruction = fetch(registers.pc)
-            decode(instruction)
+            val executionInfo = decode(instruction)
         }
     }
 
@@ -19,7 +20,9 @@ class ControlUnit(
         return instruction
     }
 
-    private fun decode(instruction : String) {
-        decodeUnit.decode(instruction)
+    private fun decode(instruction: String): ExecutionInfo {
+        val executionInfo = decodeUnit.decode(instruction)
+        controlSignal.setSignals(executionInfo.opcode)
+        return executionInfo
     }
 }
