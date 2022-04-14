@@ -11,18 +11,24 @@ class ControlUnit(
         while (registers.pc < memory.size) {
             val instruction = fetch(registers.pc)
             val executionInfo = decode(instruction)
+            println(executionInfo.opcode)
+            readRegister(executionInfo)
         }
     }
 
-    private fun fetch(address: Int): String {
+    private fun fetch(address: Int): Int {
         val instruction = memory[address]
         registers.pc++
         return instruction
     }
 
-    private fun decode(instruction: String): ExecutionInfo {
+    private fun decode(instruction: Int): ExecutionInfo {
         val executionInfo = decodeUnit.decode(instruction)
         controlSignal.setSignals(executionInfo.opcode)
         return executionInfo
+    }
+
+    private fun readRegister(executionInfo : ExecutionInfo) {
+
     }
 }
