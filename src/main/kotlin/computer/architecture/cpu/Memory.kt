@@ -1,4 +1,4 @@
-package computer.architecture.memory
+package computer.architecture.cpu
 
 import java.io.File
 
@@ -13,7 +13,10 @@ class Memory(
 
     private fun loadFile(instructions: List<String>, address: Int) {
         var index = address
-        instructions.forEach { memory[index++] = it }
+        instructions.forEach {
+            println(it.toInt(2))
+            memory[index++] = it
+        }
     }
 
     operator fun get(address: Int): String {

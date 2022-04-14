@@ -1,22 +1,13 @@
 package computer.architecture
 
-import computer.architecture.cpu.ControlUnit
-import computer.architecture.memory.Memory
+import computer.architecture.single.ControlUnit
+import computer.architecture.single.MemoryBinary
 
-fun main(args: Array<String>) {
-    val executionFiles = mutableListOf(*args)
-    if (executionFiles.isEmpty())
-        executionFiles.add("sample/gcd.txt")
 
-    for (path in executionFiles) {
-        process(path)
-    }
-}
-
-private fun process(path: String) {
-    val memory = Memory(1000)
+fun main() {
+    val memory = MemoryBinary(1000)
     val controlUnit = ControlUnit(memory)
 
-    memory.loadFile(path, 0)
+    memory.loadFile("test_prog/simple.bin", 0)
     controlUnit.process()
 }

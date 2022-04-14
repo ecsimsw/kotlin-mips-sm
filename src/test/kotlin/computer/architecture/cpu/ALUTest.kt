@@ -1,6 +1,5 @@
 package computer.architecture.cpu
 
-import computer.architecture.memory.Memory
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.*
 

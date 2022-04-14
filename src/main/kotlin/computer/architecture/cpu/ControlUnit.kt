@@ -1,7 +1,5 @@
 package computer.architecture.cpu
 
-import computer.architecture.memory.Memory
-
 class ControlUnit(
     private val memory: Memory,
     registerSize: Int = 10

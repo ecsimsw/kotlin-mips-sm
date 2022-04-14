@@ -1,7 +1,5 @@
 package computer.architecture.cpu
 
-import computer.architecture.memory.Memory
-
 class ALU(
     private val registers: Registers,
     private val memory: Memory
