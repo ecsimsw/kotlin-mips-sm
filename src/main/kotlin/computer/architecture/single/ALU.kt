@@ -1,8 +1,11 @@
 package computer.architecture.single
 
-class ALU {
+class ALU(
+    private val controlSignal: ControlSignal
+) {
     private val operations: MutableMap<Opcode, (Int, Int) -> Unit> = mutableMapOf()
 
+//
 //    init {
 //        operations[Opcode.ADD] = { op1, op2 -> R[0] = op1 + op2 }
 //        operations[Opcode.ADDI] = { op1, op2 -> R[0] = op1 - op2 }
@@ -27,9 +30,16 @@ class ALU {
 //        operations[Opcode.SUB] = { _, _ -> registers.pc = Int.MAX_VALUE }
 //        operations[Opcode.SUBU] = { _, _ -> registers.pc = Int.MAX_VALUE }
 //    }
+//
+//    fun process(opcode: Opcode, operand1: Int, operand2: Int) {
+//        operations[opcode]?.invoke(operand1, operand2)
+//            ?: throw IllegalArgumentException("Opcodes that cannot be computed")
+//    }
 
-    fun process(opcode: Opcode, operand1: Int, operand2: Int) {
-        operations[opcode]?.invoke(operand1, operand2)
+    fun operate(src1: Int, src2: Int): Any {
+        val operation = operations[controlSignal.aluOp]
             ?: throw IllegalArgumentException("Opcodes that cannot be computed")
+        operation.invoke(src1, src2)
+        TODO("Not yet implemented")
     }
 }

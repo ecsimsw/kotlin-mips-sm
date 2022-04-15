@@ -1,7 +1,7 @@
 package computer.architecture.single
 
 class ControlSignal {
-
+    var aluOp = Opcode.SRL
     var regDest = false
     var aluSrc = false
     var memToReg = false
@@ -12,6 +12,7 @@ class ControlSignal {
     var pcSrc2 = false
 
     fun setSignals(opcode: Opcode) {
+        aluOp = opcode
         regDest = opcode.type == Opcode.Type.R
         aluSrc = (opcode.type != Opcode.Type.R)
                 && (opcode != Opcode.BEQ)
@@ -24,8 +25,7 @@ class ControlSignal {
                 (opcode != Opcode.JR)
         memRead = opcode == Opcode.LW
         memWrite = opcode == Opcode.SW
-        pcSrc1 = (opcode == Opcode.J) ||
-                (opcode == Opcode.JAL)
+        pcSrc1 = (opcode == Opcode.J) || (opcode == Opcode.JAL)
 //        pcSrc2 = (opcode==Opcode.BNE) &&
     }
 }

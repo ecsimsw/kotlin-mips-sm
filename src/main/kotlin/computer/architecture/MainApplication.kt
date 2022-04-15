@@ -15,5 +15,6 @@ fun main() {
 }
 
 private fun initLoggingSignal() {
+    LoggingSignal.fetchLogging = true
     LoggingSignal.decodeLogging = true
 }

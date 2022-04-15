@@ -5,6 +5,11 @@ fun Int.toBinaryString(digits: Int): String {
     return binaryString.fillDigitsWith(digits, 0)
 }
 
+fun Int.toBinaryString(digits: Int, signBit: Int): String {
+    val binaryString = Integer.toBinaryString(this)
+    return binaryString.fillDigitsWith(digits, signBit)
+}
+
 fun String.fillDigitsWith(digits: Int, num: Int): String {
     var newBinary = this
     if (newBinary.length < digits) {
@@ -23,6 +28,6 @@ fun Byte.toBinary(digits: Int): String {
     return Integer.parseInt(String.format("%02X", this), 16).toBinaryString(digits)
 }
 
-class IntegerUtils {
+class NumberUtils {
 
 }

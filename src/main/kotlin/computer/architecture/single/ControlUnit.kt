@@ -1,18 +1,21 @@
 package computer.architecture.single
 
+import computer.architecture.single.Mux.Companion.mux
+import computer.architecture.single.log.Logger
+
 class ControlUnit(
     private val memory: Memory,
     private val registers: Registers = Registers(32),
-    private val decodeUnit: DecodeUnit = DecodeUnit()
 ) {
     private val controlSignal = ControlSignal()
-    private val alu = ALU()
+    private val decodeUnit: DecodeUnit = DecodeUnit(controlSignal, registers)
+    private val alu = ALU(controlSignal)
 
     fun process() {
         while (registers.pc < memory.size) {
             val instruction = fetch(registers.pc)
-            val executionInfo = decode(instruction)
-//            val executeResult = execute(executionInfo)
+            val decodeResult = decode(instruction)
+            val executeResult = execute(decodeResult)
 //            val memoryAccessResult = memoryAccess(executeResult)
 //            val processResult = writeBack(memoryAccessResult)
 //            storeLog(processResult)
@@ -22,22 +25,22 @@ class ControlUnit(
     private fun fetch(address: Int): Int {
         val instruction = memory[address]
         registers.pc++
+        Logger.fetchLog(registers.pc, instruction)
         return instruction
     }
 
-    private fun decode(instruction: Int): ExecutionInfo {
-        val executionInfo = decodeUnit.decode(instruction)
-        controlSignal.setSignals(executionInfo.opcode)
-        return executionInfo
+    private fun decode(instruction: Int): DecodeResult {
+        val decodeResult = decodeUnit.decode(instruction)
+        Logger.decodeLog(decodeResult)
+        return decodeResult
     }
 
-    private fun execute(executionInfo: ExecutionInfo) {
-        aluOperate(executionInfo)
+    private fun execute(input: DecodeResult) {
+        alu.operate(
+            input.readData1,
+            mux(controlSignal.aluSrc, input.address, input.readData2)
+        )
         calculateAddress()
-    }
-
-    private fun readRegister(executionInfo: ExecutionInfo) {
-        TODO("Not yet implemented")
     }
 
     private fun calculateAddress() {
@@ -48,15 +51,11 @@ class ControlUnit(
         TODO("Not yet implemented")
     }
 
-    private fun aluOperate(executionInfo: ExecutionInfo) {
+    private fun memoryOperate(decodeResult: DecodeResult) {
         TODO("Not yet implemented")
     }
 
-    private fun memoryOperate(executionInfo: ExecutionInfo) {
-        TODO("Not yet implemented")
-    }
-
-    private fun writeRegister(executionInfo: ExecutionInfo) {
+    private fun writeRegister(decodeResult: DecodeResult) {
         TODO("Not yet implemented")
     }
 
@@ -64,8 +63,7 @@ class ControlUnit(
         TODO("Not yet implemented")
     }
 
-    private fun writeBack(memoryAccessResult: Any) : Any {
+    private fun writeBack(memoryAccessResult: Any): Any {
         TODO("Not yet implemented")
     }
-
 }
