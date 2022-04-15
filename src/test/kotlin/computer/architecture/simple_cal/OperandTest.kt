@@ -1,4 +1,4 @@
-package computer.architecture.cpu
+package computer.architecture.simple_cal
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.assertDoesNotThrow

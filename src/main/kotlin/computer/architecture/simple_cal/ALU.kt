@@ -1,4 +1,4 @@
-package computer.architecture.cpu
+package computer.architecture.simple_cal
 
 class ALU(
     private val registers: Registers,

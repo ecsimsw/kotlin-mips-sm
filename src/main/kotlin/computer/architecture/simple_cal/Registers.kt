@@ -1,4 +1,4 @@
-package computer.architecture.cpu
+package computer.architecture.simple_cal
 
 operator fun Array<Int>.set(index: Int, value: Boolean) {
     this[index] = if (value) 1 else 0
