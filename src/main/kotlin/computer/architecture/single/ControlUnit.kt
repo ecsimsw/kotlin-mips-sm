@@ -12,10 +12,10 @@ class ControlUnit(
         while (registers.pc < memory.size) {
             val instruction = fetch(registers.pc)
             val executionInfo = decode(instruction)
-            val executeResult = execute(executionInfo)
-            val memoryAccessResult = memoryAccess(executeResult)
-            val processResult = writeBack(memoryAccessResult)
-            storeLog(processResult)
+//            val executeResult = execute(executionInfo)
+//            val memoryAccessResult = memoryAccess(executeResult)
+//            val processResult = writeBack(memoryAccessResult)
+//            storeLog(processResult)
         }
     }
 
@@ -28,7 +28,6 @@ class ControlUnit(
     private fun decode(instruction: Int): ExecutionInfo {
         val executionInfo = decodeUnit.decode(instruction)
         controlSignal.setSignals(executionInfo.opcode)
-        readRegister(executionInfo)
         return executionInfo
     }
 

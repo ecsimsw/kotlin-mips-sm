@@ -1,17 +1,24 @@
 package computer.architecture.single
 
+import computer.architecture.single.log.Logger
+
 class DecodeUnit {
 
-    fun decode(intInst: Int): ExecutionInfo {
-        val opcode = intInst shr 26 and 0x3F
-        val rs = intInst shr 21 and 0x1F
-        val rt = intInst shr 16 and 0x1F
-        val rd = intInst shr 11 and 0x1F
-        val shiftAmt = intInst shr 5 and 0x1F
-        val function = intInst and 0x3F
-        val immediate = intInst and 0xFFFF
-        val address = intInst and 0x3FFFFFF
-        return ExecutionInfo(Opcode.of(opcode, function), rs, rt, rd, shiftAmt, function, immediate, address)
+    fun decode(instruction: Int): ExecutionInfo {
+        val opcode = instruction shr 26 and 0x3F
+        val rs = instruction shr 21 and 0x1F
+        val rt = instruction shr 16 and 0x1F
+        val rd = instruction shr 11 and 0x1F
+        val shiftAmt = instruction shr 5 and 0x1F
+        val function = instruction and 0x3F
+        val immediate = instruction and 0xFFFF
+        val address = instruction and 0x3FFFFFF
+
+        Logger.decodeLog(opcode, function, rs, rt, rd, shiftAmt, immediate, address)
+
+        return ExecutionInfo(
+            Opcode.of(opcode, function), rs, rt, rd, shiftAmt, function, immediate, address
+        )
     }
 }
 

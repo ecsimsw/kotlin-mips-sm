@@ -42,15 +42,15 @@ enum class Opcode(
     enum class Type { R, I, J }
 
     companion object {
-        fun of(opcode: Int, funct: Int): Opcode {
+        fun of(opcode: Int, function: Int): Opcode {
             return values().find {
                 if (opcode == 0) {
-                    it.codeAsDec == funct
+                    it.codeAsDec == function
                 } else {
                     it.codeAsDec == opcode
                 }
             } ?: throw IllegalArgumentException(
-                "Invalid opcode!! opcode : ${opcode.toBinaryString(6)} funct : ${funct.toBinaryString(5)}"
+                "Invalid opcode!! opcode : ${opcode.toBinaryString(6)} funct : ${function.toBinaryString(5)}"
             )
         }
     }

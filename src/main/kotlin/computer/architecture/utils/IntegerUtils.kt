@@ -2,7 +2,6 @@ package computer.architecture.utils
 
 fun Int.toBinaryString(digits: Int): String {
     val binaryString = Integer.toBinaryString(this)
-    println(binaryString)
     return binaryString.fillDigitsWith(digits, 0)
 }
 
