@@ -1,4 +1,4 @@
-package computer.architecture.single
+package computer.architecture.cpu
 
 import computer.architecture.utils.toBinaryString
 
@@ -42,15 +42,14 @@ enum class Opcode(
     enum class Type { R, I, J }
 
     companion object {
-        fun of(opcode: Int, function: Int): Opcode {
+        fun of(op: Int, func: Int): Opcode {
             return values().find {
-                if (opcode == 0) {
-                    it.codeAsDec == function
-                } else {
-                    it.codeAsDec == opcode
-                }
+                if (op == 0)
+                    it.codeAsDec == func
+                else
+                    it.codeAsDec == op
             } ?: throw IllegalArgumentException(
-                "Invalid opcode!! opcode : ${opcode.toBinaryString(6)} funct : ${function.toBinaryString(5)}"
+                "Invalid opcode!! opcode : ${op.toBinaryString(6)}, function : ${func.toBinaryString(5)}"
             )
         }
     }

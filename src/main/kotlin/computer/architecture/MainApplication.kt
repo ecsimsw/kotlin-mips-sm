@@ -1,8 +1,8 @@
 package computer.architecture
 
-import computer.architecture.single.ControlUnit
-import computer.architecture.single.Memory
-import computer.architecture.single.log.LoggingSignal
+import computer.architecture.component.Memory
+import computer.architecture.cpu.ControlUnit
+import computer.architecture.utils.LoggingSignal
 
 fun main() {
     initLoggingSignal()
@@ -15,6 +15,8 @@ fun main() {
 }
 
 private fun initLoggingSignal() {
-    LoggingSignal.fetchLogging = true
-    LoggingSignal.decodeLogging = true
+    LoggingSignal.init(
+        fetchLogging = true,
+        decodeLogging = true
+    )
 }

@@ -1,4 +1,4 @@
-package computer.architecture.single
+package computer.architecture.cpu
 
 class ControlSignal {
     var aluOp = Opcode.SRL
@@ -26,6 +26,6 @@ class ControlSignal {
         memRead = opcode == Opcode.LW
         memWrite = opcode == Opcode.SW
         pcSrc1 = (opcode == Opcode.J) || (opcode == Opcode.JAL)
-//        pcSrc2 = (opcode==Opcode.BNE) &&
+        pcSrc2 = (opcode == Opcode.BNE)
     }
 }

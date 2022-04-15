@@ -1,20 +1,26 @@
-package computer.architecture.single
+package computer.architecture.cpu
 
-import computer.architecture.single.Mux.Companion.mux
-import computer.architecture.single.log.Logger
+import computer.architecture.component.Memory
+import computer.architecture.component.Mux.Companion.mux
+import computer.architecture.component.Registers
+import computer.architecture.utils.Logger
 
 class ControlUnit(
     private val memory: Memory,
     private val registers: Registers = Registers(32),
 ) {
     private val controlSignal = ControlSignal()
-    private val decodeUnit: DecodeUnit = DecodeUnit(controlSignal, registers)
-    private val alu = ALU(controlSignal)
+    private val du: DecodeUnit = DecodeUnit(controlSignal, registers)
+    private val alu = ALUnit(controlSignal)
 
     fun process() {
         while (registers.pc < memory.size) {
             val instruction = fetch(registers.pc)
+            Logger.fetchLog(registers.pc, instruction)
+
             val decodeResult = decode(instruction)
+            Logger.decodeLog(decodeResult)
+
             val executeResult = execute(decodeResult)
 //            val memoryAccessResult = memoryAccess(executeResult)
 //            val processResult = writeBack(memoryAccessResult)
@@ -25,22 +31,18 @@ class ControlUnit(
     private fun fetch(address: Int): Int {
         val instruction = memory[address]
         registers.pc++
-        Logger.fetchLog(registers.pc, instruction)
         return instruction
     }
 
     private fun decode(instruction: Int): DecodeResult {
-        val decodeResult = decodeUnit.decode(instruction)
-        Logger.decodeLog(decodeResult)
-        return decodeResult
+        return du.decode(instruction)
     }
 
-    private fun execute(input: DecodeResult) {
-        alu.operate(
-            input.readData1,
-            mux(controlSignal.aluSrc, input.address, input.readData2)
+    private fun execute(decodeResult: DecodeResult) {
+        val aluResult = alu.operate(
+            src1 = decodeResult.readData1,
+            src2 = mux(controlSignal.aluSrc, decodeResult.address, decodeResult.readData2)
         )
-        calculateAddress()
     }
 
     private fun calculateAddress() {
