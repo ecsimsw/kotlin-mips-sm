@@ -1,39 +1,27 @@
 package computer.architecture.single
 
-import computer.architecture.utils.fillDigitsWith
-
 class DecodeUnit {
 
-    fun decode(instruction: Int): ExecutionInfo {
-        val binaryInst = Integer.toBinaryString(instruction).fillDigitsWith(32, 0)
-        return decode(binaryInst)
-    }
-
-    fun decode(binaryInst: String): ExecutionInfo {
-        try {
-            val opcode = binaryInst.substring(0, 6)
-            val rs = binaryInst.substring(6, 11)
-            val rt = binaryInst.substring(11, 16)
-            val rd = binaryInst.substring(16, 21)
-            val shamt = binaryInst.substring(21, 26)
-            val funct = binaryInst.substring(26, 32)
-            val imm = binaryInst.substring(16, 32)
-            val addr = binaryInst.substring(6, 32)
-            return ExecutionInfo(Opcode.of(opcode, funct), rs, rt, rd, shamt, funct, imm, addr)
-        } catch (e: StringIndexOutOfBoundsException) {
-            e.printStackTrace()
-            throw IllegalArgumentException("Invalid instruction : $binaryInst")
-        }
+    fun decode(intInst: Int): ExecutionInfo {
+        val opcode = intInst shr 26 and 0x3F
+        val rs = intInst shr 21 and 0x1F
+        val rt = intInst shr 16 and 0x1F
+        val rd = intInst shr 11 and 0x1F
+        val shiftAmt = intInst shr 5 and 0x1F
+        val function = intInst and 0x3F
+        val immediate = intInst and 0xFFFF
+        val address = intInst and 0x3FFFFFF
+        return ExecutionInfo(Opcode.of(opcode, function), rs, rt, rd, shiftAmt, function, immediate, address)
     }
 }
 
 data class ExecutionInfo(
     val opcode: Opcode,
-    val rs: String,
-    val rt: String,
-    val rd: String,
-    val shamt: String,
-    val funct: String,
-    val imm: String,
-    val addr: String,
+    val rs: Int,
+    val rt: Int,
+    val rd: Int,
+    val shiftAmt: Int,
+    val function: Int,
+    val immediate: Int,
+    val address: Int,
 )

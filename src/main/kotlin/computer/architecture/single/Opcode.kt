@@ -1,8 +1,10 @@
 package computer.architecture.single
 
+import computer.architecture.utils.toBinaryString
+
 enum class Opcode(
     val type: Type,
-    val code: String,
+    code: String,
     val codeAsDec: Int = Integer.decode(code)
 ) {
     ADD(Type.R, "0x20"),
@@ -40,16 +42,16 @@ enum class Opcode(
     enum class Type { R, I, J }
 
     companion object {
-        fun of(binaryOpcode: String, binaryFunct: String): Opcode {
-            return values().find { isOpcode(it, binaryOpcode, binaryFunct) }
-                ?: throw IllegalArgumentException("Invalid opcode!! opcode : $binaryOpcode funct : $binaryFunct")
-        }
-
-        private fun isOpcode(opcode: Opcode, binaryOpcode: String, binaryFunct: String): Boolean {
-            if (binaryOpcode == "000000") {
-                return opcode.codeAsDec == Integer.parseInt(binaryFunct, 2)
-            }
-            return opcode.codeAsDec == Integer.parseInt(binaryOpcode, 2)
+        fun of(opcode: Int, funct: Int): Opcode {
+            return values().find {
+                if (opcode == 0) {
+                    it.codeAsDec == funct
+                } else {
+                    it.codeAsDec == opcode
+                }
+            } ?: throw IllegalArgumentException(
+                "Invalid opcode!! opcode : ${opcode.toBinaryString(6)} funct : ${funct.toBinaryString(5)}"
+            )
         }
     }
 }
