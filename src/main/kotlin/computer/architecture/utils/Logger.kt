@@ -32,7 +32,7 @@ class Logger {
 
         fun fetchLog(pc: Int, instruction: Int) {
             if (!LoggingSignal.fetchLogging) return
-            println("pc : ${pc * 4}, instruction : 0x${instruction.toString(16)}")
+            println("pc : ${pc * 4}, instruction : 0x${Integer.toHexString(instruction).uppercase()}")
         }
     }
 }

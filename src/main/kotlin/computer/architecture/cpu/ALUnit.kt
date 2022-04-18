@@ -5,7 +5,8 @@ class ALUnit(
 ) {
 
     init {
-
+        operations[Opcode.ADDIU] = { op1, op2 -> op1 + op2 }
+        operations[Opcode.SLTU] = { op1, op2 -> op1 + op2 }
     }
 
     fun operate(aluOp: Opcode, src1: Int, src2: Int): ALUResult {

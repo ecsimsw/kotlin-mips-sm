@@ -47,7 +47,7 @@ enum class Opcode(
                 if (op == 0)
                     it.codeAsDec == func
                 else
-                    it.codeAsDec == op
+                    it.type != Type.R && it.codeAsDec == op
             } ?: throw IllegalArgumentException(
                 "Invalid opcode!! opcode : ${op.toBinaryString(6)}, function : ${func.toBinaryString(5)}"
             )
