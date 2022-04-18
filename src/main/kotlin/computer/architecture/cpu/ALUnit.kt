@@ -1,7 +1,6 @@
 package computer.architecture.cpu
 
 class ALUnit(
-    private val controlSignal: ControlSignal,
     private val operations: MutableMap<Opcode, (Int, Int) -> Int> = mutableMapOf()
 ) {
 
@@ -9,8 +8,8 @@ class ALUnit(
 
     }
 
-    fun operate(src1: Int, src2: Int): ALUResult {
-        val operation = operations[controlSignal.aluOp]
+    fun operate(aluOp: Opcode, src1: Int, src2: Int): ALUResult {
+        val operation = operations[aluOp]
             ?: throw IllegalArgumentException("Opcodes that cannot be computed")
         return ALUResult(operation.invoke(src1, src2))
     }

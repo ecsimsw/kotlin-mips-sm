@@ -5,10 +5,10 @@ operator fun Array<Int>.set(index: Int, value: Boolean) {
 }
 
 class Registers(
-    size: Int
+    size: Int,
+    private val r: Array<Int> = Array(size) { 0 }
 ) {
     var pc: Int = 0
-    var r: Array<Int> = Array(size) { 0 }
 
     operator fun get(register: Int) = r[register]
 

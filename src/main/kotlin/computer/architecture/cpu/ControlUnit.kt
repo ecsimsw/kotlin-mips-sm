@@ -9,9 +9,9 @@ class ControlUnit(
     private val memory: Memory,
     private val registers: Registers = Registers(32),
 ) {
-    private val controlSignal = ControlSignal()
-    private val du: DecodeUnit = DecodeUnit(controlSignal, registers)
-    private val alu = ALUnit(controlSignal)
+    private val du: DecodeUnit = DecodeUnit(registers)
+    private val alu = ALUnit()
+    private var controlSignal = ControlSignal(Opcode.SLL)
 
     fun process() {
         while (registers.pc < memory.size) {
@@ -22,9 +22,9 @@ class ControlUnit(
             Logger.decodeLog(decodeResult)
 
             val executeResult = execute(decodeResult)
-//            val memoryAccessResult = memoryAccess(executeResult)
-//            val processResult = writeBack(memoryAccessResult)
-//            storeLog(processResult)
+            val memoryAccessResult = memoryAccess(executeResult)
+
+            writeBack(memoryAccessResult)
         }
     }
 
@@ -35,13 +35,29 @@ class ControlUnit(
     }
 
     private fun decode(instruction: Int): DecodeResult {
-        return du.decode(instruction)
+        val decodeResult = du.decode(instruction)
+        controlSignal = decodeResult.controlSignal
+        return decodeResult
     }
 
-    private fun execute(decodeResult: DecodeResult) {
+    private fun execute(decodeResult: DecodeResult): ExecutionResult {
+        val src2 = mux(
+            signal = controlSignal.aluSrc,
+            trueResult = decodeResult.address,
+            falseResult = decodeResult.readData2
+        )
+
         val aluResult = alu.operate(
+            aluOp = controlSignal.aluOp,
             src1 = decodeResult.readData1,
-            src2 = mux(controlSignal.aluSrc, decodeResult.address, decodeResult.readData2)
+            src2 = src2
+        )
+
+        return ExecutionResult(
+            zero = aluResult.isZero,
+            aluResult = aluResult.resultValue,
+            readData2 = decodeResult.readData2,
+            writeRegister = decodeResult.writeRegister
         )
     }
 
@@ -49,23 +65,60 @@ class ControlUnit(
         TODO("Not yet implemented")
     }
 
-    private fun memoryAccess(executeResult: Unit): Any {
-        TODO("Not yet implemented")
+    private fun memoryAccess(executeResult: ExecutionResult): MemoryAccessResult {
+        val readData = memory.read(
+            memRead = controlSignal.memRead,
+            address = executeResult.aluResult,
+        )
+
+        memory.write(
+            memWrite = controlSignal.memWrite,
+            address = executeResult.aluResult,
+            value = executeResult.readData2
+        )
+
+        return MemoryAccessResult(
+            readData = readData,
+            address = executeResult.aluResult,
+            writeRegister = executeResult.writeRegister
+        )
     }
 
-    private fun memoryOperate(decodeResult: DecodeResult) {
-        TODO("Not yet implemented")
-    }
+    private fun writeBack(memoryAccessResult: MemoryAccessResult) {
+        val writeData = mux(
+            signal = controlSignal.memToReg,
+            trueResult = memoryAccessResult.address,
+            falseResult = memoryAccessResult.readData
+        )
 
-    private fun writeRegister(decodeResult: DecodeResult) {
-        TODO("Not yet implemented")
-    }
-
-    private fun storeLog(processResult: Any) {
-        TODO("Not yet implemented")
-    }
-
-    private fun writeBack(memoryAccessResult: Any): Any {
-        TODO("Not yet implemented")
+        registers.write(
+            regWrite = controlSignal.regWrite,
+            writeRegister = memoryAccessResult.writeRegister,
+            writeData = writeData
+        )
     }
 }
+
+data class DecodeResult(
+    val opcode: Opcode,
+    val shiftAmt: Int,
+    val immediate: Int,
+    val address: Int,
+    val readData1: Int,
+    val readData2: Int,
+    val writeRegister: Int,
+    val controlSignal: ControlSignal
+)
+
+data class ExecutionResult(
+    val zero: Boolean,
+    val aluResult: Int,
+    val readData2: Int,
+    val writeRegister: Int
+)
+
+data class MemoryAccessResult(
+    val readData: Int,
+    val address: Int,
+    val writeRegister: Int,
+)

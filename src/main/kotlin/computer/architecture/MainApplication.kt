@@ -7,10 +7,10 @@ import computer.architecture.utils.LoggingSignal
 fun main() {
     initLoggingSignal()
 
-    val memory = Memory(1000)
-    val controlUnit = ControlUnit(memory)
+    val instructionMemory = Memory(1000)
+    val controlUnit = ControlUnit(instructionMemory)
 
-    memory.loadFile("test_prog/simple.bin", 0)
+    instructionMemory.loadFile("test_prog/simple.bin", 0)
     controlUnit.process()
 }
 
