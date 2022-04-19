@@ -7,6 +7,12 @@ class Logger {
 
     companion object {
 
+        fun fetchLog(pc: Int, instruction: Int) {
+            if (!LoggingSignal.fetchLogging) return
+            println("pc: ${pc}, " + " pc *4 : ${(pc*4).toHexString(2)}, " +
+                    "instruction : 0x${(instruction.toHexString(8)).uppercase()}")
+        }
+
         fun decodeLog(decodeResult: DecodeResult) {
             if (!LoggingSignal.decodeLogging) return
             if (decodeResult.opcode == Opcode.SLL && decodeResult.shiftAmt == 0) return
@@ -28,11 +34,10 @@ class Logger {
             if (opcode.type == Opcode.Type.J) {
                 println("address : ${decodeResult.address.toString(16)}")
             }
-        }
 
-        fun fetchLog(pc: Int, instruction: Int) {
-            if (!LoggingSignal.fetchLogging) return
-            println("pc : ${pc * 4}, instruction : 0x${Integer.toHexString(instruction).uppercase()}")
+//            println("address : " + decodeResult.address)
+//            println("address as binary : " + decodeResult.address.toBinaryString(32))
+//            println("address as hex : " + Integer.toHexString(decodeResult.address))
         }
     }
 }

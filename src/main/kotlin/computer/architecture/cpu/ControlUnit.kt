@@ -14,7 +14,7 @@ class ControlUnit(
     private var controlSignal = ControlSignal(Opcode.SLL)
 
     fun process() {
-        while (registers.pc < memory.size) {
+        while (registers.pc != (0xFFFFFFFF/4) || registers.pc < memory.size) {
             val instruction = fetch(registers.pc)
             Logger.fetchLog(registers.pc, instruction)
 
@@ -28,9 +28,21 @@ class ControlUnit(
         }
     }
 
+    fun processSingleInstruction(instruction: Int) {
+        Logger.fetchLog(registers.pc, instruction)
+
+        val decodeResult = decode(instruction)
+        Logger.decodeLog(decodeResult)
+
+        val executeResult = execute(decodeResult)
+        val memoryAccessResult = memoryAccess(executeResult)
+
+        writeBack(memoryAccessResult)
+    }
+
     private fun fetch(address: Int): Int {
         val instruction = memory[address]
-        registers.pc++
+        registers.pc ++
         return instruction
     }
 
@@ -48,7 +60,7 @@ class ControlUnit(
         )
 
         val aluResult = alu.operate(
-            aluOp = controlSignal.aluOp,
+            aluControl = ALUControl(controlSignal.aluOp, decodeResult.shiftAmt),
             src1 = decodeResult.readData1,
             src2 = src2
         )

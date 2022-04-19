@@ -45,7 +45,7 @@ enum class Opcode(
         fun of(op: Int, func: Int): Opcode {
             return values().find {
                 if (op == 0)
-                    it.codeAsDec == func
+                    it.type == Type.R && it.codeAsDec == func
                 else
                     it.type != Type.R && it.codeAsDec == op
             } ?: throw IllegalArgumentException(

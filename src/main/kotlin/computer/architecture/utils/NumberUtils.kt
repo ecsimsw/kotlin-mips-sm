@@ -10,6 +10,10 @@ fun Int.toBinaryString(digits: Int, signBit: Int): String {
     return binaryString.fillDigitsWith(digits, signBit)
 }
 
+fun Int.toHexString(digits: Int): String {
+    return Integer.toHexString(this).fillDigitsWith(digits, 0).uppercase()
+}
+
 fun String.fillDigitsWith(digits: Int, num: Int): String {
     var newBinary = this
     if (newBinary.length < digits) {
