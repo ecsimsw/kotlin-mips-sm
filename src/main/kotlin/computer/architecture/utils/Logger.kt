@@ -1,19 +1,35 @@
 package computer.architecture.utils
 
-import computer.architecture.cpu.DecodeResult
-import computer.architecture.cpu.ExecutionResult
-import computer.architecture.cpu.Opcode
+import computer.architecture.cpu.*
 
 class Logger {
 
     companion object {
 
-        fun fetchLog(pc: Int, instruction: Int) {
+        fun log(
+            fetchResult: FetchResult,
+            decodeResult: DecodeResult,
+            executionResult: ExecutionResult,
+            memoryAccessResult: MemoryAccessResult,
+            writeBackResult: WriteBackResult
+        ) {
+            fetchLog(fetchResult)
+            decodeLog(decodeResult)
+            executeLog(executionResult)
+            memoryAccessLog(memoryAccessResult)
+            writeBackLog(writeBackResult)
+        }
+
+        fun fetchLog(fetchResult: FetchResult) {
             if (!LoggingSignal.fetchLogging) return
 
             printStep("IF")
             println(
-                "pc: ${pc}, " + " origin : 0x${(pc * 4).toHexString(2)}, instruction : 0x${(instruction.toHexString(8))}"
+                "pc: ${fetchResult.pc}, " + " origin : 0x${((fetchResult.pc) * 4).toHexString(2)}, instruction : 0x${
+                    (fetchResult.instruction.toHexString(
+                        8
+                    ))
+                }"
             )
         }
 
@@ -36,24 +52,33 @@ class Logger {
             if (decodeResult.opcode.type == Opcode.Type.J) {
                 println("address : 0x${decodeResult.address.toHexString()}")
             }
-
-//            println("address : " + decodeResult.address)
-//            println("address as binary : " + decodeResult.address.toBinaryString(32))
-//            println("address as hex : " + Integer.toHexString(decodeResult.address))
         }
 
         fun executeLog(executionResult: ExecutionResult) {
             if (!LoggingSignal.executeLogging) return
-            printStep("EXE")
+            printStep("EX")
             println(
                 "result : ${executionResult.aluResult} [0x${executionResult.aluResult.toHexString()}], " +
                         "nextPc : ${executionResult.nextPc}"
             )
         }
 
-        fun breakLine() {
-            if (!LoggingSignal.breakLine) return
+        fun memoryAccessLog(memoryAccessResult: MemoryAccessResult) {
+        }
+
+        fun writeBackLog(writeBackResult: WriteBackResult) {
+            printStep("WB")
+            if (writeBackResult.regWrite) {
+                println("R[${writeBackResult.writeRegister}] = ${writeBackResult.writeData}")
+            } else {
+                println()
+            }
             println()
+        }
+
+        fun finalValue(vo: Int) {
+            printStep("RESULT")
+            println("V0 : $vo [0x${vo.toHexString()}]")
         }
 
         private fun printStep(stepName: String) {
@@ -69,18 +94,21 @@ class LoggingSignal {
         var decodeLogging = false
         var fetchLogging = false
         var executeLogging = false
-        var breakLine = false
+        var writeBackLogging = false
+        var finalValue = false
 
         fun init(
             decodeLogging: Boolean = false,
             fetchLogging: Boolean = false,
             executeLogging: Boolean = false,
-            breakLine: Boolean = false
+            writeBackLogging: Boolean = false,
+            finalValue: Boolean = false
         ) {
             this.decodeLogging = decodeLogging
             this.fetchLogging = fetchLogging
             this.executeLogging = executeLogging
-            this.breakLine = breakLine
+            this.writeBackLogging = writeBackLogging
+            this.finalValue = finalValue
         }
     }
 }

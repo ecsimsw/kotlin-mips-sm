@@ -4,22 +4,18 @@ import computer.architecture.component.Memory
 import computer.architecture.cpu.ControlUnit
 import computer.architecture.utils.LoggingSignal
 
+/*
+ covered : simple.bin
+ */
+
 fun main() {
     initLoggingSignal()
 
     val instructionMemory = Memory(16000000)
-    instructionMemory.loadFile("test_prog/simple.bin", 0)
+    instructionMemory.loadFile("test_prog/simple2.bin", 0)
 
     val controlUnit = ControlUnit(instructionMemory)
     controlUnit.process()
-
-//    println((0xFFFFFFFF.toInt() / 4))
-//    val s : Int =
-}
-
-private fun testSingleInstruction(instructionMemory: Memory, instruction: String) {
-    val controlUnit = ControlUnit(instructionMemory)
-    controlUnit.process(Integer.decode(instruction))
 }
 
 private fun initLoggingSignal() {
@@ -27,6 +23,6 @@ private fun initLoggingSignal() {
         fetchLogging = true,
         decodeLogging = true,
         executeLogging = true,
-        breakLine = true
+        finalValue = true,
     )
 }

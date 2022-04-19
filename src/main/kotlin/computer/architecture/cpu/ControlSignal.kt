@@ -1,7 +1,7 @@
 package computer.architecture.cpu
 
 data class ControlSignal(
-    val opcode: Opcode,
+    val opcode: Opcode = Opcode.SLL,
     val aluOp: Opcode = opcode,
     val regDest: Boolean = opcode.type == Opcode.Type.R,
     val aluSrc: Boolean = (opcode.type != Opcode.Type.R)
