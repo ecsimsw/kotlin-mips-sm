@@ -10,34 +10,29 @@ class ControlUnit(
     private val registers: Registers = Registers(32),
 ) {
     private val decodeUnit = DecodeUnit(registers)
-    private val pcControlUnit = PCControlUnit(registers)
+    private val pcControlUnit = PCControlUnit()
     private val alu = ALUnit()
     private var controlSignal = ControlSignal(Opcode.SLL)
 
     fun process() {
-        while (registers.pc != (0xFFFFFFFF / 4).toInt() && registers.pc < memory.size) {
+        while (registers.pc != (0xFFFFFFFF/4).toInt() && registers.pc < memory.size) {
             val instruction = fetch(registers.pc)
             Logger.fetchLog(registers.pc, instruction)
 
-            val decodeResult = decode(instruction)
-            Logger.decodeLog(decodeResult)
-
-            val executeResult = execute(decodeResult)
-            val memoryAccessResult = memoryAccess(executeResult)
-
-            writeBack(memoryAccessResult)
+            process(instruction)
+            Logger.breakLine()
         }
     }
 
-    fun processSingleInstruction(instruction: Int) {
-        Logger.fetchLog(registers.pc, instruction)
-
+    fun process(instruction: Int) {
         val decodeResult = decode(instruction)
         Logger.decodeLog(decodeResult)
 
         val executeResult = execute(decodeResult)
-        val memoryAccessResult = memoryAccess(executeResult)
+        registers.pc = executeResult.nextPc
+        Logger.executeLog(executeResult)
 
+        val memoryAccessResult = memoryAccess(executeResult)
         writeBack(memoryAccessResult)
     }
 
@@ -60,50 +55,45 @@ class ControlUnit(
             src2 = mux(controlSignal.aluSrc, decodeResult.address, decodeResult.readData2)
         )
 
-        pcControlUnit.jump(controlSignal, decodeResult.readData1)
+        val pcControlResult = pcControlUnit.jump(
+            controlSignal = controlSignal,
+            pc = registers.pc,
+            readData1 = decodeResult.readData1
+        )
 
         return ExecutionResult(
-            zero = aluResult.isZero,
+            isZero = aluResult.isZero,
             aluResult = aluResult.resultValue,
-            readData2 = decodeResult.readData2,
-            writeRegister = decodeResult.writeRegister
+            memoryWriteData = decodeResult.readData2,
+            writeRegister = decodeResult.writeRegister,
+            nextPc = pcControlResult.pc
         )
     }
 
-    private fun calculateAddress() {
-        TODO("Not yet implemented")
-    }
-
-    private fun memoryAccess(executeResult: ExecutionResult): MemoryAccessResult {
+    private fun memoryAccess(executionResult: ExecutionResult): MemoryAccessResult {
         val readData = memory.read(
             memRead = controlSignal.memRead,
-            address = executeResult.aluResult,
+            address = executionResult.aluResult,
         )
 
         memory.write(
             memWrite = controlSignal.memWrite,
-            address = executeResult.aluResult,
-            value = executeResult.readData2
+            address = executionResult.aluResult,
+            value = executionResult.memoryWriteData
         )
 
         return MemoryAccessResult(
             readData = readData,
-            address = executeResult.aluResult,
-            writeRegister = executeResult.writeRegister
+            address = executionResult.aluResult,
+            writeRegister = executionResult.writeRegister
         )
     }
 
     private fun writeBack(memoryAccessResult: MemoryAccessResult) {
-        val writeData = mux(
-            signal = controlSignal.memToReg,
-            trueResult = memoryAccessResult.address,
-            falseResult = memoryAccessResult.readData
-        )
-
         registers.write(
             regWrite = controlSignal.regWrite,
             writeRegister = memoryAccessResult.writeRegister,
-            writeData = writeData
+            writeData = mux(controlSignal.memToReg, memoryAccessResult.address, memoryAccessResult.readData)
         )
     }
 }
@@ -120,10 +110,11 @@ data class DecodeResult(
 )
 
 data class ExecutionResult(
-    val zero: Boolean,
+    val isZero: Boolean,
     val aluResult: Int,
-    val readData2: Int,
-    val writeRegister: Int
+    val memoryWriteData: Int,
+    val writeRegister: Int,
+    val nextPc: Int
 )
 
 data class MemoryAccessResult(
