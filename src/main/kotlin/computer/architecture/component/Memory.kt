@@ -42,7 +42,9 @@ class Memory(
         }
     }
 
-    operator fun get(address: Int) = memory[address]
+    operator fun get(address: Int): Int {
+        return memory[address]
+    }
 
     operator fun set(address: Int, value: Int) {
         memory[address] = value

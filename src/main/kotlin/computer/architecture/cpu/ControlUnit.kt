@@ -9,12 +9,13 @@ class ControlUnit(
     private val memory: Memory,
     private val registers: Registers = Registers(32),
 ) {
-    private val du: DecodeUnit = DecodeUnit(registers)
+    private val decodeUnit = DecodeUnit(registers)
+    private val pcControlUnit = PCControlUnit(registers)
     private val alu = ALUnit()
     private var controlSignal = ControlSignal(Opcode.SLL)
 
     fun process() {
-        while (registers.pc != (0xFFFFFFFF/4) || registers.pc < memory.size) {
+        while (registers.pc != (0xFFFFFFFF / 4).toInt() && registers.pc < memory.size) {
             val instruction = fetch(registers.pc)
             Logger.fetchLog(registers.pc, instruction)
 
@@ -42,28 +43,24 @@ class ControlUnit(
 
     private fun fetch(address: Int): Int {
         val instruction = memory[address]
-        registers.pc ++
+        registers.pc++
         return instruction
     }
 
     private fun decode(instruction: Int): DecodeResult {
-        val decodeResult = du.decode(instruction)
+        val decodeResult = decodeUnit.decode(instruction)
         controlSignal = decodeResult.controlSignal
         return decodeResult
     }
 
     private fun execute(decodeResult: DecodeResult): ExecutionResult {
-        val src2 = mux(
-            signal = controlSignal.aluSrc,
-            trueResult = decodeResult.address,
-            falseResult = decodeResult.readData2
-        )
-
         val aluResult = alu.operate(
             aluControl = ALUControl(controlSignal.aluOp, decodeResult.shiftAmt),
             src1 = decodeResult.readData1,
-            src2 = src2
+            src2 = mux(controlSignal.aluSrc, decodeResult.address, decodeResult.readData2)
         )
+
+        pcControlUnit.jump(controlSignal, decodeResult.readData1)
 
         return ExecutionResult(
             zero = aluResult.isZero,

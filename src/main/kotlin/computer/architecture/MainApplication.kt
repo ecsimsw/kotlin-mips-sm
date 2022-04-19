@@ -13,6 +13,9 @@ fun main() {
 
     val controlUnit = ControlUnit(instructionMemory)
     controlUnit.process()
+
+//    println((0xFFFFFFFF.toInt() / 4))
+//    val s : Int =
 }
 
 private fun testSingleInstruction(instructionMemory: Memory, instruction: String) {

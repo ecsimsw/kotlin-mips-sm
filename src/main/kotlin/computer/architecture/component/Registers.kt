@@ -5,9 +5,16 @@ operator fun Array<Int>.set(index: Int, value: Boolean) {
 }
 
 class Registers(
-    size: Int,
-    private val r: Array<Int> = Array(size) { 0 }
+    size: Int
 ) {
+    private val registerSize = if (size < 32) 32 else size
+    private val r: Array<Int> = Array(registerSize) { 0 }
+
+    init {
+        r[29] = 0x1000000
+        r[31] = (0xFFFFFFFF/4).toInt()
+    }
+
     var pc: Int = 0
 
     operator fun get(register: Int) = r[register]

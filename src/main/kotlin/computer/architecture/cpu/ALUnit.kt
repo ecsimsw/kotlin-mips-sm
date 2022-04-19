@@ -11,6 +11,7 @@ class ALUnit(
         operations[Opcode.SLL] = { op1, shiftAmt -> op1 shl shiftAmt }
         operations[Opcode.SW] = { op1, op2 -> (op1 + op2)/4 }
         operations[Opcode.LW] = { op1, op2 -> (op1 + op2)/4 }
+        operations[Opcode.JR] = { _, _ -> 0 }
     }
 
     fun operate(aluControl: ALUControl, src1: Int, src2: Int): ALUResult {
