@@ -8,9 +8,13 @@ class DecodeUnit {
             rt = instruction shr 16 and 0x1F,
             rd = instruction shr 11 and 0x1F,
             shiftAmt = instruction shr 5 and 0x1F,
-            immediate = instruction and 0xFFFF,
+            immediate = signExtension32(instruction and 0xFFFF, 16),
             address = instruction and 0x3FFFFFF
         )
+    }
+
+    private fun signExtension32(num : Int, nowBit : Int): Int {
+        return (num shl (32-nowBit)) shr (32 - nowBit)
     }
 }
 

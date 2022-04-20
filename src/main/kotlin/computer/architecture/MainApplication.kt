@@ -3,6 +3,7 @@ package computer.architecture
 import computer.architecture.component.Memory
 import computer.architecture.cpu.ControlUnit
 import computer.architecture.utils.LoggingSignal
+import computer.architecture.utils.toHexString
 
 /*
  covered : simple.bin

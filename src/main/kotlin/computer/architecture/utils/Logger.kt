@@ -25,11 +25,8 @@ class Logger {
 
             printStep("IF")
             println(
-                "pc: ${fetchResult.pc}, " + " origin : 0x${((fetchResult.pc) * 4).toHexString(2)}, instruction : 0x${
-                    (fetchResult.instruction.toHexString(
-                        8
-                    ))
-                }"
+                "pc: ${fetchResult.pc}, " + " origin : 0x${((fetchResult.pc) * 4).toHexString(2)}, " +
+                        "instruction : 0x${fetchResult.instruction.toHexString(8)}"
             )
         }
 
@@ -45,7 +42,8 @@ class Logger {
 
             if (decodeResult.opcode.type == Opcode.Type.I) {
                 println(
-                    "readData1 : ${decodeResult.readData1}, immediate : ${decodeResult.immediate} [0x${decodeResult.immediate.toHexString()}]"
+                    "readData1 : ${decodeResult.readData1} [0x${decodeResult.readData1.toHexString()}], " +
+                            "immediate : ${decodeResult.immediate} [0x${decodeResult.immediate.toHexString()}]"
                 )
             }
 
@@ -83,6 +81,10 @@ class Logger {
 
         private fun printStep(stepName: String) {
             print("[$stepName] :: ")
+        }
+
+        fun instructionDecode(result: InstructionDecodeResult) {
+            println("rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
         }
     }
 }

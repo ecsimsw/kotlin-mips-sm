@@ -25,7 +25,7 @@ data class ExecutionResult(
 
 data class MemoryAccessResult(
     val readData: Int,
-    val address: Int,
+    val aluResult: Int,
     val writeRegister: Int,
 )
 
