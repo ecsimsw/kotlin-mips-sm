@@ -9,4 +9,7 @@ class TestApplication {
 
 fun main() {
 
+    val pc = 0x4FFFFFFF
+    val first4bit = pc.toInt() shr 28 and 0xF
+    println(first4bit.toHexString())
 }

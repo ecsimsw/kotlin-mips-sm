@@ -68,7 +68,7 @@ class ControlUnit(
         val pcControlResult = pcControlUnit.jump(
             controlSignal = controlSignal,
             pc = registers.pc,
-            bcond = aluResult.isZero,
+            bcond = !aluResult.isZero,
             rsValue = decodeResult.readData1,
             address = decodeResult.address,
             immediate = decodeResult.immediate

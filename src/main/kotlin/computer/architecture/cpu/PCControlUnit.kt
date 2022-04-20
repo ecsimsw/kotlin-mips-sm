@@ -16,11 +16,11 @@ class PCControlUnit {
         }
 
         if (controlSignal.jump) {
-            return PCControlResult(jumpAddress(pc, address))
+            val jumpAddress = jumpAddress(pc, address)
+            return PCControlResult(jumpAddress)
         }
 
-        if(controlSignal.branch && !bcond) {
-            println("BRANCH!!")
+        if(controlSignal.branch && bcond) {
             val branchPc = pc + branchAddress(immediate)
             return PCControlResult(branchPc)
         }
@@ -28,9 +28,9 @@ class PCControlUnit {
     }
 
     private fun jumpAddress(pc :Int, address: Int): Int {
-        val first4bit = pc shr 26
-        val last28bit = address shl 2
-        return first4bit + last28bit
+        val first4bit = (pc shr 28 and 0xF).toBinaryString(4)
+        val last28bit = address.toBinaryString(26) + "00"
+        return (first4bit + last28bit).toLong(2).toInt()
     }
 
     private fun branchAddress(immediate: Int) :Int {

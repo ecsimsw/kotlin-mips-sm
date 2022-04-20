@@ -8,7 +8,7 @@ import computer.architecture.utils.LoggingSignal
  covered :
  simple.bin
  simple2.bin
-
+ simple3.bin
  */
 
 fun main() {
