@@ -43,12 +43,12 @@ class Logger {
             println("[ID] :: rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
         }
 
-        fun executeLog(executionResult: ExecutionResult) {
+        fun executeLog(executionResult: ExecutionResult, nextPc : Int) {
             if (!LoggingSignal.executeLogging) return
             printStep("EX")
             println(
                 "result : ${executionResult.aluResult} [0x${executionResult.aluResult.toHexString()}], " +
-                        "nextPc : ${executionResult.nextPc.toHexString()}"
+                        "nextPc : ${nextPc.toHexString()}"
             )
         }
 

@@ -15,7 +15,7 @@ fun main() {
     initLoggingSignal()
 
     val instructionMemory = Memory(16000000)
-    instructionMemory.loadFile("test_prog/simple3.bin", 0)
+    instructionMemory.loadFile("test_prog/simple4.bin", 0)
 
     val controlUnit = ControlUnit(instructionMemory)
     controlUnit.process()

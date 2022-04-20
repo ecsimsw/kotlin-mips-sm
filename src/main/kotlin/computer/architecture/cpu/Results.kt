@@ -20,7 +20,6 @@ data class ExecutionResult(
     val aluResult: Int,
     val memoryWriteData: Int,
     val writeRegister: Int,
-    val nextPc: Int
 )
 
 data class MemoryAccessResult(
