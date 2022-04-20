@@ -85,6 +85,14 @@ class Logger {
             if (!LoggingSignal.decodeLogging) return
             println("[ID] :: rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
         }
+
+        fun sleep() {
+            try {
+                Thread.sleep(LoggingSignal.sleepTime)
+            }catch (e : InterruptedException) {
+
+            }
+        }
     }
 }
 
@@ -98,6 +106,7 @@ class LoggingSignal {
         var memoryAccessLogging = false
         var writeBackLogging = false
         var finalValue = false
+        var sleepTime = 0L
 
         fun init(
             decodeLogging: Boolean = false,
@@ -105,7 +114,8 @@ class LoggingSignal {
             executeLogging: Boolean = false,
             memoryAccessLogging: Boolean = false,
             writeBackLogging: Boolean = false,
-            finalValue: Boolean = false
+            finalValue: Boolean = false,
+            sleepTime: Long = 1000L
         ) {
             this.decodeLogging = decodeLogging
             this.fetchLogging = fetchLogging
@@ -113,6 +123,7 @@ class LoggingSignal {
             this.memoryAccessLogging = memoryAccessLogging
             this.writeBackLogging = writeBackLogging
             this.finalValue = finalValue
+            this.sleepTime = sleepTime
         }
     }
 }

@@ -29,6 +29,7 @@ class ControlUnit(
 
             val writeBackResult = writeBack(memoryAccessResult)
             Logger.writeBackLog(writeBackResult)
+            Logger.sleep()
         }
         Logger.finalValue(registers[2])
     }
@@ -66,8 +67,12 @@ class ControlUnit(
         val pcControlResult = pcControlUnit.jump(
             controlSignal = controlSignal,
             pc = registers.pc,
-            readData1 = decodeResult.readData1
+            readData1 = decodeResult.readData1,
+            address = decodeResult.address
         )
+
+//        println("readData1 : ${decodeResult.readData1}")
+//        println("nextPc : ${pcControlResult.pc}")
 
         registers.pc = pcControlResult.pc
 
