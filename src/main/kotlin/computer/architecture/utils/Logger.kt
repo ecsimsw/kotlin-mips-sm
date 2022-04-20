@@ -6,26 +6,12 @@ class Logger {
 
     companion object {
 
-        fun log(
-            fetchResult: FetchResult,
-            decodeResult: DecodeResult,
-            executionResult: ExecutionResult,
-            memoryAccessResult: MemoryAccessResult,
-            writeBackResult: WriteBackResult
-        ) {
-            fetchLog(fetchResult)
-            decodeLog(decodeResult)
-            executeLog(executionResult)
-            memoryAccessLog(memoryAccessResult)
-            writeBackLog(writeBackResult)
-        }
-
         fun fetchLog(fetchResult: FetchResult) {
             if (!LoggingSignal.fetchLogging) return
 
             printStep("IF")
             println(
-                "pc: ${fetchResult.pc}, " + " origin : 0x${((fetchResult.pc) * 4).toHexString(2)}, " +
+                "pc: ${fetchResult.pc}, " + " origin : 0x${(fetchResult.pc).toHexString(2)}, " +
                         "instruction : 0x${fetchResult.instruction.toHexString(8)}"
             )
         }
@@ -57,17 +43,29 @@ class Logger {
             printStep("EX")
             println(
                 "result : ${executionResult.aluResult} [0x${executionResult.aluResult.toHexString()}], " +
-                        "nextPc : ${executionResult.nextPc}"
+                        "nextPc : ${executionResult.nextPc.toHexString()}"
             )
         }
 
-        fun memoryAccessLog(memoryAccessResult: MemoryAccessResult) {
+        fun memoryAccessLog(executionResult: ExecutionResult) {
+            if (!LoggingSignal.memoryAccessLogging) return
+
+            printStep("MA")
+        }
+
+
+        fun memoryRead(address: Int, value: Int) {
+            if (!LoggingSignal.memoryAccessLogging) return
+            printStep("MA")
+            println("M[0x${address.toHexString()}] = $value [0x${value.toHexString()}]")
         }
 
         fun writeBackLog(writeBackResult: WriteBackResult) {
+            if (!LoggingSignal.writeBackLogging) return
+
             printStep("WB")
             if (writeBackResult.regWrite) {
-                println("R[${writeBackResult.writeRegister}] = ${writeBackResult.writeData}")
+                println("R[${writeBackResult.writeRegister}] = ${writeBackResult.writeData} [0x${writeBackResult.writeData.toHexString()}]")
             } else {
                 println()
             }
@@ -84,7 +82,8 @@ class Logger {
         }
 
         fun instructionDecode(result: InstructionDecodeResult) {
-            println("rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
+            if (!LoggingSignal.decodeLogging) return
+            println("[ID] :: rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
         }
     }
 }
@@ -96,6 +95,7 @@ class LoggingSignal {
         var decodeLogging = false
         var fetchLogging = false
         var executeLogging = false
+        var memoryAccessLogging = false
         var writeBackLogging = false
         var finalValue = false
 
@@ -103,12 +103,14 @@ class LoggingSignal {
             decodeLogging: Boolean = false,
             fetchLogging: Boolean = false,
             executeLogging: Boolean = false,
+            memoryAccessLogging: Boolean = false,
             writeBackLogging: Boolean = false,
             finalValue: Boolean = false
         ) {
             this.decodeLogging = decodeLogging
             this.fetchLogging = fetchLogging
             this.executeLogging = executeLogging
+            this.memoryAccessLogging = memoryAccessLogging
             this.writeBackLogging = writeBackLogging
             this.finalValue = finalValue
         }

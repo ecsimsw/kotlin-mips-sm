@@ -4,7 +4,6 @@ import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Registers
 import computer.architecture.utils.Logger
-import computer.architecture.utils.toHexString
 
 class ControlUnit(
     private val memory: Memory,
@@ -16,7 +15,7 @@ class ControlUnit(
     private var controlSignal = ControlSignal()
 
     fun process() {
-        while (registers.pc != (0xFFFFFFFF / 4).toInt() && registers.pc < memory.size) {
+        while (registers.pc != (0xFFFFFFFF).toInt() && registers.pc < memory.size) {
             val fetchResult = fetch(registers.pc)
             Logger.fetchLog(fetchResult)
 
@@ -27,7 +26,6 @@ class ControlUnit(
             Logger.executeLog(executeResult)
 
             val memoryAccessResult = memoryAccess(executeResult)
-            Logger.memoryAccessLog(memoryAccessResult)
 
             val writeBackResult = writeBack(memoryAccessResult)
             Logger.writeBackLog(writeBackResult)
@@ -37,7 +35,7 @@ class ControlUnit(
 
     private fun fetch(address: Int): FetchResult {
         val fetchResult = FetchResult(registers.pc, memory[address])
-        registers.pc++
+        registers.pc += 4
         return fetchResult
     }
 
@@ -54,12 +52,11 @@ class ControlUnit(
             address = result.address,
             readData1 = registers[result.rs],
             readData2 = registers[result.rt],
-            writeRegister = mux(controlSignal.regWrite, result.rt, result.rd)
+            writeRegister = mux(controlSignal.regDest, result.rd, result.rt)
         )
     }
 
     private fun execute(decodeResult: DecodeResult): ExecutionResult {
-        println(decodeResult.immediate.toHexString())
         val aluResult = alu.operate(
             aluControl = ALUControl(controlSignal.aluOp, decodeResult.shiftAmt),
             src1 = decodeResult.readData1,

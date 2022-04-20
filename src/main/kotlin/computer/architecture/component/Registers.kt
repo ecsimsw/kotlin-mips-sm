@@ -11,8 +11,8 @@ class Registers(
     private val r: Array<Int> = Array(registerSize) { 0 }
 
     init {
-        r[29] = (0x1000000/4)
-        r[31] = (0xFFFFFFFF/4).toInt()
+        r[29] = 0x1000000
+        r[31] = 0xFFFFFFFF.toInt()
     }
 
     var pc: Int = 0

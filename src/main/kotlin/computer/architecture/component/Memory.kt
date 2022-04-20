@@ -1,5 +1,6 @@
 package computer.architecture.component
 
+import computer.architecture.utils.Logger
 import computer.architecture.utils.toBinary
 import java.io.DataInputStream
 import java.io.FileInputStream
@@ -30,23 +31,24 @@ class Memory(
     }
 
     fun read(memRead: Boolean, address: Int): Int {
-        return if (memRead)
-            memory[address]
-        else
+        return if (memRead){
+            memory[address/4]
+        } else
             0
     }
 
     fun write(memWrite: Boolean, address: Int, value: Int) {
         if (memWrite) {
-            memory[address] = value
+            memory[address/4] = value
         }
+        Logger.memoryRead(address, memory[address/4])
     }
 
     operator fun get(address: Int): Int {
-        return memory[address]
+        return memory[address/4]
     }
 
     operator fun set(address: Int, value: Int) {
-        memory[address] = value
+        memory[address/4] = value
     }
 }

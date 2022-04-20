@@ -3,10 +3,12 @@ package computer.architecture
 import computer.architecture.component.Memory
 import computer.architecture.cpu.ControlUnit
 import computer.architecture.utils.LoggingSignal
-import computer.architecture.utils.toHexString
 
 /*
- covered : simple.bin
+ covered :
+ simple.bin
+ simple2.bin
+
  */
 
 fun main() {
@@ -24,6 +26,8 @@ private fun initLoggingSignal() {
         fetchLogging = true,
         decodeLogging = true,
         executeLogging = true,
+        memoryAccessLogging = true,
+        writeBackLogging = true,
         finalValue = true,
     )
 }
