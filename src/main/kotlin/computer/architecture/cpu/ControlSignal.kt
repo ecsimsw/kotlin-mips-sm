@@ -18,5 +18,6 @@ data class ControlSignal(
     val pcSrc1: Boolean = (opcode == Opcode.J) || (opcode == Opcode.JAL),
     val pcSrc2: Boolean = (opcode == Opcode.BNE),
     val jumpRegister: Boolean = (opcode == Opcode.JR),
-    val jump : Boolean = (opcode == Opcode.J)
+    val jump : Boolean = (opcode == Opcode.J),
+    val branch : Boolean = (opcode == Opcode.BNE || opcode == Opcode.BEQ)
 )

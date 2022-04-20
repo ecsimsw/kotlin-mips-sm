@@ -1,6 +1,7 @@
 package computer.architecture.component
 
 import computer.architecture.utils.Logger
+import computer.architecture.utils.LoggingSignal
 import computer.architecture.utils.toBinary
 import java.io.DataInputStream
 import java.io.FileInputStream
@@ -31,7 +32,7 @@ class Memory(
     }
 
     fun read(memRead: Boolean, address: Int): Int {
-        return if (memRead){
+        return if (memRead) {
             memory[address/4]
         } else
             0
@@ -41,7 +42,6 @@ class Memory(
         if (memWrite) {
             memory[address/4] = value
         }
-        Logger.memoryRead(address, memory[address/4])
     }
 
     operator fun get(address: Int): Int {

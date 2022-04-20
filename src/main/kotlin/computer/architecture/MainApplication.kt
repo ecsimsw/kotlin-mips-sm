@@ -29,6 +29,6 @@ private fun initLoggingSignal() {
         memoryAccessLogging = true,
         writeBackLogging = true,
         finalValue = false,
-        sleepTime = 500
+        sleepTime = 0
     )
 }

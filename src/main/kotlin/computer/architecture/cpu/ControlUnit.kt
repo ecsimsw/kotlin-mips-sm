@@ -26,6 +26,7 @@ class ControlUnit(
             Logger.executeLog(executeResult)
 
             val memoryAccessResult = memoryAccess(executeResult)
+            Logger.memoryAccessLog(controlSignal, executeResult.aluResult, memory[executeResult.aluResult])
 
             val writeBackResult = writeBack(memoryAccessResult)
             Logger.writeBackLog(writeBackResult)
@@ -67,12 +68,11 @@ class ControlUnit(
         val pcControlResult = pcControlUnit.jump(
             controlSignal = controlSignal,
             pc = registers.pc,
-            readData1 = decodeResult.readData1,
-            address = decodeResult.address
+            bcond = aluResult.isZero,
+            rsValue = decodeResult.readData1,
+            address = decodeResult.address,
+            immediate = decodeResult.immediate
         )
-
-//        println("readData1 : ${decodeResult.readData1}")
-//        println("nextPc : ${pcControlResult.pc}")
 
         registers.pc = pcControlResult.pc
 

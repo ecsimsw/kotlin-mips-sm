@@ -14,16 +14,17 @@ class ALUnit(
         operations[Opcode.LW] = { op1, op2 -> (op1 + op2) }
         operations[Opcode.JR] = { _, _ -> 0 }
         operations[Opcode.J] = { _, _ -> 0 }
+        operations[Opcode.BNE] = { op1, op2 -> if(op1 != op2) 1 else 0 }
     }
 
     fun operate(aluControl: ALUControl, src1: Int, src2: Int): ALUResult {
-        val arguments = getArguments(aluControl, src1, src2)
+        val arguments = arguments(aluControl, src1, src2)
         val result = operations[aluControl.opcode]?.invoke(arguments.first, arguments.second)
             ?: throw IllegalArgumentException("Opcodes that cannot be computed")
         return ALUResult(result)
     }
 
-    private fun getArguments(aluControl: ALUControl, src1: Int, src2: Int): Pair<Int, Int> {
+    private fun arguments(aluControl: ALUControl, src1: Int, src2: Int): Pair<Int, Int> {
         if (aluControl.opcode == Opcode.SLL) {
             return Pair(src1, aluControl.shiftAmt)
         }

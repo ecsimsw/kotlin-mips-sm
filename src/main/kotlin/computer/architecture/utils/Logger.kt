@@ -38,6 +38,11 @@ class Logger {
             }
         }
 
+        fun instructionDecode(result: InstructionDecodeResult) {
+            if (!LoggingSignal.decodeLogging) return
+            println("[ID] :: rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
+        }
+
         fun executeLog(executionResult: ExecutionResult) {
             if (!LoggingSignal.executeLogging) return
             printStep("EX")
@@ -47,17 +52,15 @@ class Logger {
             )
         }
 
-        fun memoryAccessLog(executionResult: ExecutionResult) {
+        fun memoryAccessLog(controlSignal: ControlSignal, address:Int, value :Int) {
             if (!LoggingSignal.memoryAccessLogging) return
 
             printStep("MA")
-        }
-
-
-        fun memoryRead(address: Int, value: Int) {
-            if (!LoggingSignal.memoryAccessLogging) return
-            printStep("MA")
-            println("M[0x${address.toHexString()}] = $value [0x${value.toHexString()}]")
+            if(controlSignal.memRead || controlSignal.memWrite) {
+                println("M[0x${address.toHexString()}] = $value [0x${value.toHexString()}]")
+            } else {
+                println()
+            }
         }
 
         fun writeBackLog(writeBackResult: WriteBackResult) {
@@ -79,11 +82,6 @@ class Logger {
 
         private fun printStep(stepName: String) {
             print("[$stepName] :: ")
-        }
-
-        fun instructionDecode(result: InstructionDecodeResult) {
-            if (!LoggingSignal.decodeLogging) return
-            println("[ID] :: rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
         }
 
         fun sleep() {
