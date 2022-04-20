@@ -14,6 +14,7 @@ class ALUnit(
         operations[Opcode.LW] = { op1, op2 -> (op1 + op2) }
         operations[Opcode.JR] = { _, _ -> 0 }
         operations[Opcode.J] = { _, _ -> 0 }
+        operations[Opcode.JAL] = { _, _ -> 0 }
         operations[Opcode.BNE] = { op1, op2 -> if(op1 != op2) 1 else 0 }
     }
 

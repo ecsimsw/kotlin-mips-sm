@@ -10,12 +10,12 @@ class DecodeUnit {
             shiftAmt = instruction shr 5 and 0x1F,
             immediate = instruction and 0xFFFF,
             signExtImm = signExtension32(instruction and 0xFFFF, 16),
-            address = instruction and 0x3FFFFFF,
+            address = instruction and 0x3FFFFFF
         )
     }
 
-    private fun signExtension32(num : Int, nowBit : Int): Int {
-        return (num shl (32-nowBit)) shr (32 - nowBit)
+    private fun signExtension32(num: Int, nowBit: Int): Int {
+        return (num shl (32 - nowBit)) shr (32 - nowBit)
     }
 }
 
@@ -27,5 +27,5 @@ data class InstructionDecodeResult(
     val shiftAmt: Int,
     val immediate: Int,
     val signExtImm: Int,
-    val address: Int
+    val address: Int,
 )

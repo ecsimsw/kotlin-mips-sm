@@ -15,7 +15,11 @@ class ControlUnit(
     private var controlSignal = ControlSignal()
 
     fun process() {
+        var cycleCount = 0
         while (registers.pc != (0xFFFFFFFF).toInt() && registers.pc < memory.size) {
+            cycleCount++
+            Logger.cycleCount(cycleCount)
+
             val fetchResult = fetch(registers.pc)
             Logger.fetchLog(fetchResult)
 
@@ -23,13 +27,15 @@ class ControlUnit(
             Logger.decodeLog(decodeResult)
 
             val executeResult = execute(decodeResult)
-            Logger.executeLog(executeResult, registers.pc)
+            Logger.executeLog(executeResult, executeResult.nextPc)
 
             val memoryAccessResult = memoryAccess(executeResult)
             Logger.memoryAccessLog(controlSignal, executeResult.aluResult, memory[executeResult.aluResult])
 
             val writeBackResult = writeBack(memoryAccessResult)
             Logger.writeBackLog(writeBackResult)
+
+            registers.pc = writeBackResult.nextPc
             Logger.sleep()
         }
         Logger.finalValue(registers[2])
@@ -47,14 +53,18 @@ class ControlUnit(
 
         controlSignal = ControlSignal(result.opcode)
 
+        var writeRegister = mux(controlSignal.regDest, result.rd, result.rt)
+        writeRegister = mux(controlSignal.jal, 31, writeRegister)
+
         return DecodeResult(
             opcode = result.opcode,
             shiftAmt = result.shiftAmt,
             immediate = result.immediate,
+            signExtImm = result.signExtImm,
             address = result.address,
             readData1 = registers[result.rs],
             readData2 = registers[result.rt],
-            writeRegister = mux(controlSignal.regDest, result.rd, result.rt)
+            writeRegister = writeRegister
         )
     }
 
@@ -62,14 +72,14 @@ class ControlUnit(
         val aluResult = alu.operate(
             aluControl = ALUControl(controlSignal.aluOp, decodeResult.shiftAmt),
             src1 = decodeResult.readData1,
-            src2 = mux(controlSignal.aluSrc, decodeResult.immediate, decodeResult.readData2)
+            src2 = mux(controlSignal.aluSrc, decodeResult.signExtImm, decodeResult.readData2)
         )
 
-        registers.pc = pcControlUnit.next(
+        val nextPc = pcControlUnit.next(
             pc = registers.pc,
-            pcSrc1 = controlSignal.jump,
-            pcSrc2 = controlSignal.branch && !aluResult.isZero,
-            pcSrc3 = controlSignal.jumpReg,
+            pcSrc1 = controlSignal.pcSrc1,
+            pcSrc2 = controlSignal.pcSrc2 && !aluResult.isZero,
+            pcSrc3 = controlSignal.pcSrc3,
             address = decodeResult.address,
             immediate = decodeResult.immediate,
             rsValue = decodeResult.readData1
@@ -80,6 +90,7 @@ class ControlUnit(
             aluResult = aluResult.resultValue,
             memoryWriteData = decodeResult.readData2,
             writeRegister = decodeResult.writeRegister,
+            nextPc = nextPc
         )
     }
 
@@ -98,12 +109,14 @@ class ControlUnit(
         return MemoryAccessResult(
             readData = readData,
             aluResult = executionResult.aluResult,
-            writeRegister = executionResult.writeRegister
+            writeRegister = executionResult.writeRegister,
+            nextPc = executionResult.nextPc
         )
     }
 
     private fun writeBack(memoryAccessResult: MemoryAccessResult): WriteBackResult {
-        val writeData = mux(controlSignal.memToReg, memoryAccessResult.readData, memoryAccessResult.aluResult)
+        var writeData = mux(controlSignal.memToReg, memoryAccessResult.readData, memoryAccessResult.aluResult)
+        writeData = mux(controlSignal.jal, registers.pc+4, writeData)
 
         registers.write(
             regWrite = controlSignal.regWrite,
@@ -114,7 +127,8 @@ class ControlUnit(
         return WriteBackResult(
             regWrite = controlSignal.regWrite,
             writeRegister = memoryAccessResult.writeRegister,
-            writeData = writeData
+            writeData = writeData,
+            nextPc = memoryAccessResult.nextPc
         )
     }
 }

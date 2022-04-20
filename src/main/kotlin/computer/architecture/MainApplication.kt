@@ -9,12 +9,13 @@ import computer.architecture.utils.LoggingSignal
  simple.bin
  simple2.bin
  simple3.bin
+ simple4.bin
  */
 
 fun main() {
     initLoggingSignal()
 
-    val instructionMemory = Memory(16000000)
+    val instructionMemory = Memory(160000000)
     instructionMemory.loadFile("test_prog/simple4.bin", 0)
 
     val controlUnit = ControlUnit(instructionMemory)

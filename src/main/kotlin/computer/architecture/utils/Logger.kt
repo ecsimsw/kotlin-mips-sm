@@ -48,7 +48,7 @@ class Logger {
             printStep("EX")
             println(
                 "result : ${executionResult.aluResult} [0x${executionResult.aluResult.toHexString()}], " +
-                        "nextPc : ${nextPc.toHexString()}"
+                        "nextPc : 0x${nextPc.toHexString()}"
             )
         }
 
@@ -84,9 +84,13 @@ class Logger {
             print("[$stepName] :: ")
         }
 
-        fun sleep() {
+        fun cycleCount(cycleCount: Int) {
+            println("cycle : $cycleCount")
+        }
+
+        fun sleep(sleepTime: Long = LoggingSignal.sleepTime) {
             try {
-                Thread.sleep(LoggingSignal.sleepTime)
+                Thread.sleep(sleepTime)
             }catch (e : InterruptedException) {
 
             }
