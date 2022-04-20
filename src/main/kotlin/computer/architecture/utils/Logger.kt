@@ -85,7 +85,10 @@ class Logger {
         }
 
         fun cycleCount(cycleCount: Int) {
-            println("cycle : $cycleCount")
+            if(!LoggingSignal.cycleLogging) return
+            if(cycleCount%1000 ==0) {
+                println("cycle : $cycleCount")
+            }
         }
 
         fun sleep(sleepTime: Long = LoggingSignal.sleepTime) {
@@ -101,9 +104,9 @@ class Logger {
 class LoggingSignal {
 
     companion object {
-
-        var decodeLogging = false
+        var cycleLogging = false
         var fetchLogging = false
+        var decodeLogging = false
         var executeLogging = false
         var memoryAccessLogging = false
         var writeBackLogging = false
@@ -111,16 +114,18 @@ class LoggingSignal {
         var sleepTime = 0L
 
         fun init(
-            decodeLogging: Boolean = false,
+            cycleLogging: Boolean = false,
             fetchLogging: Boolean = false,
+            decodeLogging: Boolean = false,
             executeLogging: Boolean = false,
             memoryAccessLogging: Boolean = false,
             writeBackLogging: Boolean = false,
             finalValue: Boolean = false,
             sleepTime: Long = 1000L
         ) {
-            this.decodeLogging = decodeLogging
+            this.cycleLogging = cycleLogging
             this.fetchLogging = fetchLogging
+            this.decodeLogging = decodeLogging
             this.executeLogging = executeLogging
             this.memoryAccessLogging = memoryAccessLogging
             this.writeBackLogging = writeBackLogging

@@ -9,7 +9,6 @@ data class DecodeResult(
     val opcode: Opcode,
     val shiftAmt: Int,
     val immediate: Int,
-    val signExtImm: Int,
     val address: Int,
     val readData1: Int,
     val readData2: Int,

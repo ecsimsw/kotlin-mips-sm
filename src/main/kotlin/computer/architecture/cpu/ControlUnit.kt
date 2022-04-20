@@ -60,7 +60,6 @@ class ControlUnit(
             opcode = result.opcode,
             shiftAmt = result.shiftAmt,
             immediate = result.immediate,
-            signExtImm = result.signExtImm,
             address = result.address,
             readData1 = registers[result.rs],
             readData2 = registers[result.rt],
@@ -72,7 +71,7 @@ class ControlUnit(
         val aluResult = alu.operate(
             aluControl = ALUControl(controlSignal.aluOp, decodeResult.shiftAmt),
             src1 = decodeResult.readData1,
-            src2 = mux(controlSignal.aluSrc, decodeResult.signExtImm, decodeResult.readData2)
+            src2 = mux(controlSignal.aluSrc, decodeResult.immediate, decodeResult.readData2)
         )
 
         val nextPc = pcControlUnit.next(

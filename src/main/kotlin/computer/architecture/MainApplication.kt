@@ -16,7 +16,7 @@ fun main() {
     initLoggingSignal()
 
     val instructionMemory = Memory(160000000)
-    instructionMemory.loadFile("test_prog/simple4.bin", 0)
+    instructionMemory.loadFile("test_prog/gcd.bin", 0)
 
     val controlUnit = ControlUnit(instructionMemory)
     controlUnit.process()
@@ -24,12 +24,13 @@ fun main() {
 
 private fun initLoggingSignal() {
     LoggingSignal.init(
+        cycleLogging = true,
         fetchLogging = true,
         decodeLogging = true,
         executeLogging = true,
         memoryAccessLogging = true,
         writeBackLogging = true,
-        finalValue = false,
-        sleepTime = 0
+        finalValue = true,
+        sleepTime = 300
     )
 }
