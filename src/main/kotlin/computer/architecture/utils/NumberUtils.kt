@@ -5,11 +5,6 @@ fun Int.toBinaryString(digits: Int): String {
     return binaryString.fillDigitsWith(digits, 0)
 }
 
-fun Int.toBinaryString(digits: Int, signBit: Int): String {
-    val binaryString = Integer.toBinaryString(this)
-    return binaryString.fillDigitsWith(digits, signBit)
-}
-
 fun Int.toHexString(): String {
     return Integer.toHexString(this).uppercase()
 }
@@ -28,14 +23,6 @@ fun String.fillDigitsWith(digits: Int, num: Int): String {
     return newBinary
 }
 
-fun String.readAsBinary(): Int {
-    return Integer.parseInt(this, 2)
-}
-
 fun Byte.toBinary(digits: Int): String {
     return Integer.parseInt(String.format("%02X", this), 16).toBinaryString(digits)
-}
-
-class NumberUtils {
-
 }

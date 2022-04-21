@@ -7,7 +7,7 @@ class PCControlUnit {
 
     fun next(
         pc: Int,
-        jType: Boolean,
+        jump: Boolean,
         branch: Boolean,
         jr: Boolean,
         address: Int,
@@ -15,7 +15,7 @@ class PCControlUnit {
         rsValue: Int
     ): Int {
         var nextPc = pc
-        nextPc = mux(jType, jumpAddress(pc, address), nextPc)
+        nextPc = mux(jump, jumpAddress(pc, address), nextPc)
         nextPc = mux(branch, pc + branchAddress(immediate), nextPc)
         nextPc = mux(jr, rsValue, nextPc)
         return nextPc

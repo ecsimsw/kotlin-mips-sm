@@ -33,6 +33,5 @@ data class MemoryAccessResult(
 data class WriteBackResult(
     val regWrite: Boolean,
     val writeRegister: Int,
-    val writeData: Int,
-    val nextPc: Int
+    val writeData: Int
 )

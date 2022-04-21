@@ -15,27 +15,21 @@ class ControlUnit(
     private var controlSignal = ControlSignal()
 
     fun process() {
-        var cycleCount = 0
+        var cycleCount = 1
         while (registers.pc != (0xFFFFFFFF).toInt() && registers.pc < memory.size) {
-            cycleCount++
-            Logger.cycleCount(cycleCount)
-
             val fetchResult = fetch(registers.pc)
-            Logger.fetchLog(cycleCount, fetchResult)
-
             val decodeResult = decode(fetchResult)
-            Logger.decodeLog(decodeResult)
-
             val executeResult = execute(decodeResult)
-            Logger.executeLog(executeResult, executeResult.nextPc)
-
             val memoryAccessResult = memoryAccess(executeResult)
-            Logger.memoryAccessLog(controlSignal, executeResult.aluResult, memory[executeResult.aluResult])
-
             val writeBackResult = writeBack(memoryAccessResult)
-            Logger.writeBackLog(writeBackResult)
+            cycleCount++
 
-            registers.pc = writeBackResult.nextPc
+            Logger.cycleCount(cycleCount)
+            Logger.fetchLog(cycleCount, fetchResult)
+            Logger.decodeLog(decodeResult)
+            Logger.executeLog(executeResult, executeResult.nextPc)
+            Logger.memoryAccessLog(controlSignal, executeResult.aluResult, memory[executeResult.aluResult])
+            Logger.writeBackLog(writeBackResult)
             Logger.sleep()
         }
         Logger.finalValue(registers[2])
@@ -76,7 +70,7 @@ class ControlUnit(
 
         val nextPc = pcControlUnit.next(
             pc = registers.pc,
-            jType = controlSignal.jType,
+            jump = controlSignal.jType,
             branch = controlSignal.branch && !aluResult.isZero,
             jr = controlSignal.jr,
             address = decodeResult.address,
@@ -123,11 +117,12 @@ class ControlUnit(
             writeData = writeData
         )
 
+        registers.pc = memoryAccessResult.nextPc
+
         return WriteBackResult(
             regWrite = controlSignal.regWrite,
             writeRegister = memoryAccessResult.writeRegister,
-            writeData = writeData,
-            nextPc = memoryAccessResult.nextPc
+            writeData = writeData
         )
     }
 }
