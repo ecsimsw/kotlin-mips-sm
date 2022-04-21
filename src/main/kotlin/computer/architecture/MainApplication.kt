@@ -10,13 +10,15 @@ import computer.architecture.utils.LoggingSignal
  simple2.bin
  simple3.bin
  simple4.bin
+ gcd.bin
+ fib.bin
  */
 
 fun main() {
     initLoggingSignal()
 
     val instructionMemory = Memory(160000000)
-    instructionMemory.loadFile("test_prog/gcd.bin", 0)
+    instructionMemory.loadFile("test_prog/input4.bin", 0)
 
     val controlUnit = ControlUnit(instructionMemory)
     controlUnit.process()
@@ -26,11 +28,11 @@ private fun initLoggingSignal() {
     LoggingSignal.init(
         cycleLogging = true,
         fetchLogging = true,
-        decodeLogging = true,
-        executeLogging = true,
-        memoryAccessLogging = true,
-        writeBackLogging = true,
+        decodeLogging = false,
+        executeLogging = false,
+        memoryAccessLogging = false,
+        writeBackLogging = false,
         finalValue = true,
-        sleepTime = 300
+        sleepTime = 10
     )
 }

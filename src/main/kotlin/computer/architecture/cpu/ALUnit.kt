@@ -9,7 +9,7 @@ class ALUnit(
         operations[Opcode.ADDU] = { op1, op2 -> op1 + op2 }
         operations[Opcode.ADDI] = { op1, op2 -> op1 + op2 }
         operations[Opcode.SUBU] = { op1, op2 -> op1 - op2 }
-        operations[Opcode.ORI] = { op1, op2 -> op1 and op2 }
+        operations[Opcode.ORI] = { op1, op2 -> op1 or op2 }
         operations[Opcode.SLL] = { op1, shiftAmt -> op1 shl shiftAmt }
         operations[Opcode.SLT] = { op1, op2 -> if (op1 < op2) 1 else 0 }
         operations[Opcode.SLTI] = { op1, op2 -> if (op1 < op2) 1 else 0 }
@@ -25,7 +25,7 @@ class ALUnit(
     fun operate(aluControl: ALUControl, src1: Int, src2: Int): ALUResult {
         val arguments = arguments(aluControl, src1, src2)
         val result = operations[aluControl.opcode]?.invoke(arguments.first, arguments.second)
-            ?: throw IllegalArgumentException("Opcodes that cannot be computed")
+            ?: throw IllegalArgumentException("Opcodes that cannot be computed : " + aluControl.opcode)
         return ALUResult(result)
     }
 

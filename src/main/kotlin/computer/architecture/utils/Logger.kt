@@ -43,7 +43,7 @@ class Logger {
             println("[ID] :: rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
         }
 
-        fun executeLog(executionResult: ExecutionResult, nextPc : Int) {
+        fun executeLog(executionResult: ExecutionResult, nextPc: Int) {
             if (!LoggingSignal.executeLogging) return
             printStep("EX")
             println(
@@ -52,11 +52,11 @@ class Logger {
             )
         }
 
-        fun memoryAccessLog(controlSignal: ControlSignal, address:Int, value :Int) {
+        fun memoryAccessLog(controlSignal: ControlSignal, address: Int, value: Int) {
             if (!LoggingSignal.memoryAccessLogging) return
 
             printStep("MA")
-            if(controlSignal.memRead || controlSignal.memWrite) {
+            if (controlSignal.memRead || controlSignal.memWrite) {
                 println("M[0x${address.toHexString()}] = $value [0x${value.toHexString()}]")
             } else {
                 println()
@@ -85,8 +85,9 @@ class Logger {
         }
 
         fun cycleCount(cycleCount: Int) {
-            if(!LoggingSignal.cycleLogging) return
-            if(cycleCount%1000 ==0) {
+            if (!LoggingSignal.cycleLogging) return
+
+            if(cycleCount % 10000 ==0 ){
                 println("cycle : $cycleCount")
             }
         }
@@ -94,7 +95,7 @@ class Logger {
         fun sleep(sleepTime: Long = LoggingSignal.sleepTime) {
             try {
                 Thread.sleep(sleepTime)
-            }catch (e : InterruptedException) {
+            } catch (e: InterruptedException) {
 
             }
         }
