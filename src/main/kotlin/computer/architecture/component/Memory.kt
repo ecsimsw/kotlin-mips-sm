@@ -1,7 +1,5 @@
 package computer.architecture.component
 
-import computer.architecture.utils.Logger
-import computer.architecture.utils.LoggingSignal
 import computer.architecture.utils.toBinary
 import java.io.DataInputStream
 import java.io.FileInputStream
@@ -13,14 +11,15 @@ class Memory(
 
     fun loadFile(path: String, address: Int) {
         DataInputStream(FileInputStream(path)).use {
-            val bytes = ByteArray(1024)
-            if (it.read(bytes) > 0) {
-                saveInstructions(bytes, address)
+            val bytes = ByteArray(2048)
+            var fromAddress = address
+            while (it.read(bytes) > 0) {
+                fromAddress = saveInstructions(bytes, fromAddress)
             }
         }
     }
 
-    private fun saveInstructions(bytes: ByteArray, fromAddress: Int) {
+    private fun saveInstructions(bytes: ByteArray, fromAddress: Int): Int {
         var address = fromAddress
         for (i in bytes.indices step (4)) {
             val binaryInstruction = bytes[i].toBinary(8) +
@@ -29,26 +28,27 @@ class Memory(
                     bytes[i + 3].toBinary(8)
             memory[address++] = binaryInstruction.toLong(2).toInt()
         }
+        return address
     }
 
     fun read(memRead: Boolean, address: Int): Int {
         return if (memRead) {
-            memory[address/4]
+            memory[address / 4]
         } else
             0
     }
 
     fun write(memWrite: Boolean, address: Int, value: Int) {
         if (memWrite) {
-            memory[address/4] = value
+            memory[address / 4] = value
         }
     }
 
     operator fun get(address: Int): Int {
-        return memory[address/4]
+        return memory[address / 4]
     }
 
     operator fun set(address: Int, value: Int) {
-        memory[address/4] = value
+        memory[address / 4] = value
     }
 }

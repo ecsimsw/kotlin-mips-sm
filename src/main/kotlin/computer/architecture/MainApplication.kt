@@ -22,17 +22,23 @@ fun main() {
 
     val controlUnit = ControlUnit(instructionMemory)
     controlUnit.process()
+
+//    for( (i, value) in instructionMemory.memory.withIndex()) {
+//        if(i < 530) {
+//            println("0x${(i*4).toHexString()}" + " : 0x" + value.toHexString())
+//        }
+//    }
 }
 
 private fun initLoggingSignal() {
     LoggingSignal.init(
         cycleLogging = true,
-        fetchLogging = true,
+        fetchLogging = false,
         decodeLogging = false,
         executeLogging = false,
         memoryAccessLogging = false,
         writeBackLogging = false,
         finalValue = true,
-        sleepTime = 10
+        sleepTime = 0
     )
 }

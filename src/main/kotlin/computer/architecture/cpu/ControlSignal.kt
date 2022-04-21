@@ -15,8 +15,8 @@ data class ControlSignal(
             (opcode != Opcode.JR),
     val memRead: Boolean = opcode == Opcode.LW,
     val memWrite: Boolean = opcode == Opcode.SW,
-    val pcSrc1: Boolean = (opcode == Opcode.J) || (opcode == Opcode.JAL),
-    val pcSrc2: Boolean = (opcode == Opcode.BNE || opcode == Opcode.BEQ),
-    val pcSrc3 : Boolean = (opcode == Opcode.JR),
+    val jType: Boolean = (opcode == Opcode.J) || (opcode == Opcode.JAL),
+    val branch: Boolean = (opcode == Opcode.BNE || opcode == Opcode.BEQ),
+    val jr: Boolean = (opcode == Opcode.JR),
     val jal: Boolean = (opcode == Opcode.JAL)
 )

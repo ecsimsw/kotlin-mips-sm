@@ -5,16 +5,17 @@ class ALUnit(
 ) {
 
     init {
-        operations[Opcode.ADDIU] = { op1, op2 -> op1 + op2 }
+        operations[Opcode.ADDIU] = { op1, imm -> op1 + imm }
         operations[Opcode.ADDU] = { op1, op2 -> op1 + op2 }
-        operations[Opcode.ADDI] = { op1, op2 -> op1 + op2 }
+        operations[Opcode.ADDI] = { op1, imm -> op1 + imm }
         operations[Opcode.SUBU] = { op1, op2 -> op1 - op2 }
-        operations[Opcode.ORI] = { op1, op2 -> op1 or op2 }
+        operations[Opcode.ORI] = { op1, imm -> op1 or imm }
         operations[Opcode.SLL] = { op1, shiftAmt -> op1 shl shiftAmt }
         operations[Opcode.SLT] = { op1, op2 -> if (op1 < op2) 1 else 0 }
-        operations[Opcode.SLTI] = { op1, op2 -> if (op1 < op2) 1 else 0 }
+        operations[Opcode.SLTI] = { op1, imm -> if (op1 < imm) 1 else 0 }
         operations[Opcode.SW] = { op1, op2 -> (op1 + op2) }
         operations[Opcode.LW] = { op1, op2 -> (op1 + op2) }
+        operations[Opcode.LUI] = { _, imm -> imm shl 16 }
         operations[Opcode.JR] = { _, _ -> 0 }
         operations[Opcode.J] = { _, _ -> 0 }
         operations[Opcode.JAL] = { _, _ -> 0 }

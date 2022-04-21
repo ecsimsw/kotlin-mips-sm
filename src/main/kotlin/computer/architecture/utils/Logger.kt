@@ -3,15 +3,23 @@ package computer.architecture.utils
 import computer.architecture.cpu.*
 
 class Logger {
-
     companion object {
 
-        fun fetchLog(fetchResult: FetchResult) {
+        fun cycleCount(cycleCount: Int) {
+            if (!LoggingSignal.cycleLogging) return
+
+            if (cycleCount % 100000 == 0) {
+                println("cycle : $cycleCount")
+            }
+        }
+
+        fun fetchLog(cycleCount: Int, fetchResult: FetchResult) {
             if (!LoggingSignal.fetchLogging) return
 
             printStep("IF")
             println(
-                "pc: ${fetchResult.pc}, " + " origin : 0x${(fetchResult.pc).toHexString(2)}, " +
+                "cyl : $cycleCount" +
+                        " , pc : 0x${(fetchResult.pc).toHexString(2)}, " +
                         "instruction : 0x${fetchResult.instruction.toHexString(8)}"
             )
         }
@@ -80,24 +88,16 @@ class Logger {
             println("V0 : $vo [0x${vo.toHexString()}]")
         }
 
-        private fun printStep(stepName: String) {
-            print("[$stepName] :: ")
-        }
-
-        fun cycleCount(cycleCount: Int) {
-            if (!LoggingSignal.cycleLogging) return
-
-            if(cycleCount % 10000 ==0 ){
-                println("cycle : $cycleCount")
-            }
-        }
-
         fun sleep(sleepTime: Long = LoggingSignal.sleepTime) {
             try {
                 Thread.sleep(sleepTime)
             } catch (e: InterruptedException) {
 
             }
+        }
+
+        private fun printStep(stepName: String) {
+            print("[$stepName] :: ")
         }
     }
 }
