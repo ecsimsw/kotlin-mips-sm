@@ -9,8 +9,9 @@ class ControlUnit(
     private val memory: Memory,
 ) {
     private val registers = Registers(32)
+    private val logger = Logger(memory)
     private val decodeUnit = DecodeUnit()
-    private val pcControlUnit = PCControlUnit()
+    private val programCounterUnit = ProgramCounterUnit()
     private val alu = ALUnit()
     private var controlSignal = ControlSignal()
 
@@ -24,27 +25,29 @@ class ControlUnit(
             val writeBackResult = writeBack(memoryAccessResult)
             cycleCount++
 
-            Logger.cycleCount(cycleCount)
-            Logger.fetchLog(cycleCount, fetchResult)
-            Logger.decodeLog(decodeResult)
-            Logger.executeLog(executeResult, executeResult.nextPc)
-            Logger.memoryAccessLog(controlSignal, executeResult.aluResult, memory[executeResult.aluResult])
-            Logger.writeBackLog(writeBackResult)
-            Logger.sleep()
+            logger.cycleCount(cycleCount - 1)
+            logger.fetchLog(cycleCount - 1, fetchResult)
+            logger.decodeLog(decodeResult)
+            logger.executeLog(executeResult, executeResult.nextPc)
+            logger.memoryAccessLog(controlSignal, executeResult.aluResult)
+            logger.writeBackLog(writeBackResult)
+            logger.sleep()
         }
-        Logger.finalValue(registers[2])
+        logger.finalValue(registers[2])
     }
 
     private fun fetch(address: Int): FetchResult {
-        val fetchResult = FetchResult(registers.pc, memory[address])
+        val instruction = (memory[address].toInt() shl 24 and 0xFF000000.toInt()) +
+                (memory[address + 1].toInt() shl 16 and 0x00FF0000) +
+                (memory[address + 2].toInt() shl 8 and 0x0000FF00) +
+                (memory[address + 3].toInt() and 0x000000FF)
+        val fetchResult = FetchResult(registers.pc, instruction)
         registers.pc += 4
         return fetchResult
     }
 
     private fun decode(fetchResult: FetchResult): DecodeResult {
         val result = decodeUnit.decode(fetchResult.instruction)
-        Logger.instructionDecode(result)
-
         controlSignal = ControlSignal(result.opcode)
 
         var writeRegister = mux(controlSignal.regDest, result.rd, result.rt)
@@ -68,7 +71,7 @@ class ControlUnit(
             src2 = mux(controlSignal.aluSrc, decodeResult.immediate, decodeResult.readData2)
         )
 
-        val nextPc = pcControlUnit.next(
+        val nextPc = programCounterUnit.next(
             pc = registers.pc,
             jump = controlSignal.jType,
             branch = controlSignal.branch && !aluResult.isZero,
@@ -78,10 +81,15 @@ class ControlUnit(
             rsValue = decodeResult.readData1
         )
 
+        println(aluResult.resultValue)
+        println(decodeResult.readData1)
+        println(mux(controlSignal.aluSrc, decodeResult.immediate, decodeResult.readData2))
+        println()
+
         return ExecutionResult(
             isZero = aluResult.isZero,
             aluResult = aluResult.resultValue,
-            memoryWriteData = decodeResult.readData2,
+            memoryWriteData = decodeResult.readData2.toByte(),
             writeRegister = decodeResult.writeRegister,
             nextPc = nextPc
         )
@@ -100,7 +108,7 @@ class ControlUnit(
         )
 
         return MemoryAccessResult(
-            readData = readData,
+            readData = readData.toInt(),
             aluResult = executionResult.aluResult,
             writeRegister = executionResult.writeRegister,
             nextPc = executionResult.nextPc

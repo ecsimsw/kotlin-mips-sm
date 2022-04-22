@@ -18,7 +18,7 @@ data class DecodeResult(
 data class ExecutionResult(
     val isZero: Boolean,
     val aluResult: Int,
-    val memoryWriteData: Int,
+    val memoryWriteData: Byte,
     val writeRegister: Int,
     val nextPc: Int
 )

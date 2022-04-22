@@ -22,7 +22,3 @@ fun String.fillDigitsWith(digits: Int, num: Int): String {
     }
     return newBinary
 }
-
-fun Byte.toBinary(digits: Int): String {
-    return Integer.parseInt(String.format("%02X", this), 16).toBinaryString(digits)
-}

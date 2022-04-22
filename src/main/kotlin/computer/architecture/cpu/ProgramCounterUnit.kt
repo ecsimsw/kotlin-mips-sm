@@ -3,7 +3,7 @@ package computer.architecture.cpu
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.utils.toBinaryString
 
-class PCControlUnit {
+class ProgramCounterUnit {
 
     fun next(
         pc: Int,

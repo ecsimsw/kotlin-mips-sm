@@ -7,8 +7,10 @@ import computer.architecture.utils.LoggingSignal
 fun main() {
     initLoggingSignal()
 
-    val instructionMemory = Memory(40000000)
-    instructionMemory.loadFile("test_prog/input4.bin", 0)
+    val instructionMemory = Memory(320000000)
+    instructionMemory.loadFile("test_prog/simple3.bin", 0)
+
+//    instructionMemory.memory.forEach { println(it) }
 
     val controlUnit = ControlUnit(instructionMemory)
     controlUnit.process()

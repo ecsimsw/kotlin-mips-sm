@@ -1,13 +1,12 @@
 package computer.architecture.component
 
-import computer.architecture.utils.toBinary
 import java.io.DataInputStream
 import java.io.FileInputStream
 
 class Memory(
     val size: Int,
 ) {
-    private val memory: Array<Int> = Array(size) { 0 }
+    private val memory: Array<Byte> = Array(size) { 0 }
 
     fun loadFile(path: String, address: Int) {
         DataInputStream(FileInputStream(path)).use {
@@ -21,34 +20,30 @@ class Memory(
 
     private fun saveInstructions(bytes: ByteArray, fromAddress: Int): Int {
         var address = fromAddress
-        for (i in bytes.indices step (4)) {
-            val binaryInstruction = bytes[i].toBinary(8) +
-                    bytes[i + 1].toBinary(8) +
-                    bytes[i + 2].toBinary(8) +
-                    bytes[i + 3].toBinary(8)
-            memory[address++] = binaryInstruction.toLong(2).toInt()
+        for (i in bytes.indices) {
+            memory[address] = bytes[i]
+            address++
         }
         return address
     }
 
-    fun read(memRead: Boolean, address: Int): Int {
-        return if (memRead) {
-            memory[address / 4]
+    fun read(memRead: Boolean, address: Int): Byte =
+        if (memRead) {
+            memory[address]
         } else
             0
-    }
 
-    fun write(memWrite: Boolean, address: Int, value: Int) {
+    fun write(memWrite: Boolean, address: Int, value: Byte) {
         if (memWrite) {
-            memory[address / 4] = value
+            memory[address] = value
         }
     }
 
-    operator fun get(address: Int): Int {
-        return memory[address / 4]
+    operator fun get(address: Int): Byte {
+        return memory[address]
     }
 
-    operator fun set(address: Int, value: Int) {
-        memory[address / 4] = value
+    operator fun set(address: Int, value: Byte) {
+        memory[address] = value
     }
 }
