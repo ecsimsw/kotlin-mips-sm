@@ -12,7 +12,7 @@ class Registers(
 
     init {
         r[29] = 0x1000000
-        r[31] = 0xFFFFFFFF.toInt()
+        r[31] = -1
     }
 
     var pc: Int = 0

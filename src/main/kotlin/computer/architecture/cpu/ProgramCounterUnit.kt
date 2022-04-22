@@ -1,10 +1,8 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Mux.Companion.mux
-import computer.architecture.utils.toBinaryString
 
 class ProgramCounterUnit {
-
     fun next(
         pc: Int,
         jump: Boolean,
@@ -28,13 +26,22 @@ class ProgramCounterUnit {
     }
 
     private fun branchAddress(immediate: Int): Int {
-        val first = immediate.toBinaryString(16).first()
-        var binNum = ""
-        for (i: Int in 1..14) {
-            binNum += first
+        val binaryImmediate = immediate.toBinaryString(16)
+        return if (binaryImmediate.first() == '1') {
+            ("11111111111111" + binaryImmediate + "00").toLong(2).toInt()
+        } else {
+            ("00000000000000" + binaryImmediate + "00").toLong(2).toInt()
         }
-        binNum += immediate.toBinaryString(16)
-        binNum += "00"
-        return binNum.toLong(2).toInt()
     }
+}
+
+private fun Int.toBinaryString(digits: Int): String {
+    val originNumber = Integer.toBinaryString(this)
+    var newBinary = originNumber
+    if (newBinary.length < digits) {
+        for (i in 0 until digits - originNumber.length) {
+            newBinary = "0$newBinary"
+        }
+    }
+    return newBinary
 }

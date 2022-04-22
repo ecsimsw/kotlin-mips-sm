@@ -2,15 +2,16 @@ package computer.architecture
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.ControlUnit
+import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 
 fun main() {
     initLoggingSignal()
 
-    val instructionMemory = Memory(20000000)
-    instructionMemory.loadFile("test_prog/input4.bin")
+    val memory = Memory(20000000)
+    memory.loadFile("test_prog/input4.bin")
 
-    val controlUnit = ControlUnit(instructionMemory)
+    val controlUnit = ControlUnit(memory, Logger(memory))
     val processResult = controlUnit.process()
 
     println("V0 : $processResult")
@@ -18,7 +19,7 @@ fun main() {
 
 private fun initLoggingSignal() {
     LoggingSignal.init(
-        cycleLogging = true,
+        cycleLogging = false,
         fetchLogging = false,
         decodeLogging = false,
         executeLogging = false,

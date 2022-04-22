@@ -1,10 +1,5 @@
 package computer.architecture.utils
 
-fun Int.toBinaryString(digits: Int): String {
-    val binaryString = Integer.toBinaryString(this)
-    return binaryString.fillDigitsWith(digits, 0)
-}
-
 fun Int.toHexString(): String {
     return Integer.toHexString(this).uppercase()
 }

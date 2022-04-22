@@ -8,9 +8,7 @@ class Logger(
 ) {
     fun cycleCount(cycleCount: Int) {
         sleep()
-
         if (!LoggingSignal.cycleLogging) return
-
         if (cycleCount % 100000 == 0) {
             println("cycle : $cycleCount")
         }
@@ -49,17 +47,17 @@ class Logger(
         }
     }
 
-    fun instructionDecode(result: InstructionDecodeResult) {
+    fun instructionDecode(result: DecodedInstruction) {
         if (!LoggingSignal.decodeLogging) return
         println("[ID] :: rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
     }
 
-    fun executeLog(executionResult: ExecutionResult, nextPc: Int) {
+    fun executeLog(executionResult: ExecutionResult) {
         if (!LoggingSignal.executeLogging) return
         printStep("EX")
         println(
             "result : ${executionResult.aluResult} [0x${executionResult.aluResult.toHexString()}], " +
-                    "nextPc : 0x${nextPc.toHexString()}"
+                    "nextPc : 0x${executionResult.nextPc.toHexString()}"
         )
     }
 
@@ -86,7 +84,7 @@ class Logger(
         println()
     }
 
-    fun sleep(sleepTime: Long = LoggingSignal.sleepTime) {
+    private fun sleep(sleepTime: Long = LoggingSignal.sleepTime) {
         try {
             Thread.sleep(sleepTime)
         } catch (e: InterruptedException) {
@@ -100,7 +98,6 @@ class Logger(
 }
 
 class LoggingSignal {
-
     companion object {
         var cycleLogging = false
         var fetchLogging = false
