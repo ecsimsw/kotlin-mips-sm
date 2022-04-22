@@ -23,30 +23,28 @@ class ALUnit(
         operations[Opcode.BEQ] = { op1, op2 -> if (op1 == op2) 1 else 0 }
     }
 
-    fun operate(aluControl: ALUControl, src1: Int, src2: Int): ALUResult {
-        val arguments = arguments(aluControl, src1, src2)
-        val result = operations[aluControl.opcode]?.invoke(arguments.first, arguments.second)
-            ?: throw IllegalArgumentException("Opcodes that cannot be computed : " + aluControl.opcode)
+    fun operate(opcode: Opcode, shiftAmt: Int, src1: Int, src2: Int): ALUResult {
+        val arguments = arguments(opcode, shiftAmt, src1, src2)
+        val result = operations[opcode]?.invoke(arguments.first, arguments.second)
+            ?: throw IllegalArgumentException("Opcodes that cannot be computed : $opcode")
         return ALUResult(result)
     }
 
-    private fun arguments(aluControl: ALUControl, src1: Int, src2: Int): Pair<Int, Int> {
-        if (aluControl.opcode == Opcode.SLL) {
-            return Pair(src1, aluControl.shiftAmt)
+    private fun arguments(opcode: Opcode, shiftAmt: Int, src1: Int, src2: Int): Pair<Int, Int> {
+        if (opcode == Opcode.SLL) {
+            return Pair(src1, shiftAmt)
         }
 
-        if (aluControl.opcode == Opcode.ADDI
-            || aluControl.opcode == Opcode.ADDIU
-            || aluControl.opcode == Opcode.ANDI
-            || aluControl.opcode == Opcode.SLTI
-            || aluControl.opcode == Opcode.SLTIU
-            || aluControl.opcode == Opcode.SW
-            || aluControl.opcode == Opcode.LW
-        ) {
-            return Pair(src1, signExtension32(src2))
-        }
+        if (opcode == Opcode.ADDI
+            || opcode == Opcode.ADDIU
+            || opcode == Opcode.ANDI
+            || opcode == Opcode.SLTI
+            || opcode == Opcode.SLTIU
+            || opcode == Opcode.SW
+            || opcode == Opcode.LW
+        ) return Pair(src1, signExtension32(src2))
 
-        if (aluControl.opcode == Opcode.ORI) {
+        if (opcode == Opcode.ORI) {
             return Pair(src1, zeroExtension32(src2))
         }
         return Pair(src1, src2)
@@ -60,11 +58,6 @@ class ALUnit(
         return num shl 16 ushr 16
     }
 }
-
-data class ALUControl(
-    val opcode: Opcode,
-    val shiftAmt: Int
-)
 
 data class ALUResult(
     val resultValue: Int,

@@ -7,23 +7,23 @@ import computer.architecture.utils.LoggingSignal
 fun main() {
     initLoggingSignal()
 
-    val instructionMemory = Memory(320000000)
-    instructionMemory.loadFile("test_prog/simple3.bin", 0)
-
-//    instructionMemory.memory.forEach { println(it) }
+    val instructionMemory = Memory(20000000)
+    instructionMemory.loadFile("test_prog/input4.bin")
 
     val controlUnit = ControlUnit(instructionMemory)
-    controlUnit.process()
+    val processResult = controlUnit.process()
+
+    println("V0 : $processResult")
 }
 
 private fun initLoggingSignal() {
     LoggingSignal.init(
         cycleLogging = true,
-        fetchLogging = true,
-        decodeLogging = true,
-        executeLogging = true,
-        memoryAccessLogging = true,
-        writeBackLogging = true,
+        fetchLogging = false,
+        decodeLogging = false,
+        executeLogging = false,
+        memoryAccessLogging = false,
+        writeBackLogging = false,
         finalValue = true,
         sleepTime = 0
     )

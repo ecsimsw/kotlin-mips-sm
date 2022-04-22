@@ -7,6 +7,8 @@ class Logger(
     private val memory: Memory
 ) {
     fun cycleCount(cycleCount: Int) {
+        sleep()
+
         if (!LoggingSignal.cycleLogging) return
 
         if (cycleCount % 100000 == 0) {
@@ -66,7 +68,7 @@ class Logger(
 
         printStep("MA")
         if (controlSignal.memRead || controlSignal.memWrite) {
-            println("M[0x${address.toHexString()}] = ${memory[address]} [0x${memory[address].toInt().toHexString()}]")
+            println("M[0x${address.toHexString()}] = ${memory.readInt(address)} [0x${memory.readInt(address).toHexString()}]")
         } else {
             println()
         }
@@ -82,11 +84,6 @@ class Logger(
             println()
         }
         println()
-    }
-
-    fun finalValue(vo: Int) {
-        printStep("RESULT")
-        println("V0 : $vo [0x${vo.toHexString()}]")
     }
 
     fun sleep(sleepTime: Long = LoggingSignal.sleepTime) {
@@ -122,7 +119,7 @@ class LoggingSignal {
             memoryAccessLogging: Boolean = false,
             writeBackLogging: Boolean = false,
             finalValue: Boolean = false,
-            sleepTime: Long = 1000L
+            sleepTime: Long = 0L
         ) {
             this.cycleLogging = cycleLogging
             this.fetchLogging = fetchLogging
