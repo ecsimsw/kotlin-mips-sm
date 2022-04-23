@@ -17,6 +17,7 @@ class ControlUnit(
 
     fun process(): Int {
         var cycleCount = 0
+
         while (registers.pc != -1) {
             cycleCount++
             val fetchResult = fetch(registers.pc)
@@ -25,8 +26,8 @@ class ControlUnit(
             val memoryAccessResult = memoryAccess(executeResult)
             val writeBackResult = writeBack(memoryAccessResult)
 
-            logger.cycleCount(cycleCount - 1)
-            logger.fetchLog(cycleCount - 1, fetchResult)
+            logger.cycleCount(cycleCount)
+            logger.fetchLog(cycleCount, fetchResult)
             logger.decodeLog(decodeResult)
             logger.executeLog(executeResult)
             logger.memoryAccessLog(controlSignal, executeResult.aluResult)
@@ -60,12 +61,13 @@ class ControlUnit(
     }
 
     private fun execute(decodeResult: DecodeResult): ExecutionResult {
+        val src1 = mux(controlSignal.shift, decodeResult.readData2, decodeResult.readData1)
         var src2 = mux(controlSignal.aluSrc, decodeResult.immediate, decodeResult.readData2)
         src2 = mux(controlSignal.shift, decodeResult.shiftAmt, src2)
 
         val aluResult = alu.operate(
             opcode = decodeResult.opcode,
-            src1 = decodeResult.readData1,
+            src1 = src1,
             src2 = src2
         )
 

@@ -66,7 +66,11 @@ class Logger(
 
         printStep("MA")
         if (controlSignal.memRead || controlSignal.memWrite) {
-            println("M[0x${address.toHexString()}] = ${memory.readInt(address)} [0x${memory.readInt(address).toHexString()}]")
+            println(
+                "M[0x${address.toHexString()}] = ${memory.readInt(address)} [0x${
+                    memory.readInt(address).toHexString()
+                }]"
+            )
         } else {
             println()
         }
@@ -94,6 +98,21 @@ class Logger(
 
     private fun printStep(stepName: String) {
         print("[$stepName] :: ")
+    }
+
+    private fun Int.toHexString(): String {
+        return Integer.toHexString(this).uppercase()
+    }
+
+    private fun Int.toHexString(digits: Int): String {
+        val hexString = Integer.toHexString(this)
+        var newBinary = hexString
+        if (newBinary.length < digits) {
+            for (i in 0 until digits - hexString.length) {
+                newBinary = "0$newBinary"
+            }
+        }
+        return newBinary.uppercase()
     }
 }
 

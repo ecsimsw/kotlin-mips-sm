@@ -13,7 +13,7 @@ data class DecodedInstruction(
     val rs: Int = instruction shr 21 and 0x1F,
     val rt: Int = instruction shr 16 and 0x1F,
     val rd: Int = instruction shr 11 and 0x1F,
-    val shiftAmt: Int = instruction shr 5 and 0x1F,
+    val shiftAmt: Int = instruction shr 6 and 0x1F,
     val immediate: Int = instruction and 0xFFFF,
     val address: Int = instruction and 0x3FFFFFF
 )
@@ -24,7 +24,7 @@ data class ControlSignal(
     val aluSrc: Boolean = (opcode.type != Opcode.Type.R)
             && (opcode != Opcode.BEQ)
             && (opcode != Opcode.BNE),
-    val shift : Boolean = opcode == Opcode.SLL,
+    val shift: Boolean = opcode == Opcode.SLL,
     val memToReg: Boolean = opcode == Opcode.LW,
     val regWrite: Boolean = (opcode != Opcode.SW) &&
             (opcode != Opcode.BEQ) &&

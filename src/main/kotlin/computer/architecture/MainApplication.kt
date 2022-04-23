@@ -19,7 +19,7 @@ fun main() {
 
 private fun initLoggingSignal() {
     LoggingSignal.init(
-        cycleLogging = false,
+        cycleLogging = true,
         fetchLogging = false,
         decodeLogging = false,
         executeLogging = false,
