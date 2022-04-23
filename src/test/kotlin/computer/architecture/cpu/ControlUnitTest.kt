@@ -21,7 +21,6 @@ internal class ControlUnitTest {
         val memory = Memory.load(20000000, path)
         val controlUnit = ControlUnit(memory)
         val processResult = controlUnit.process()
-
         assertThat(processResult).isEqualTo(expectedValue)
     }
 }

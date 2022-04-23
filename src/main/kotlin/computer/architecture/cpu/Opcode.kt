@@ -1,25 +1,26 @@
 package computer.architecture.cpu
 
 enum class Opcode(
+    val code: Int,
     val type: Type,
-    val code: Int
+    val aluOp: AluOp
 ) {
-    ADDI(Type.I, 0x08),
-    ADDIU(Type.I, 0x09),
-    ADDU(Type.R, 0x21),
-    BEQ(Type.I, 0x04),
-    BNE(Type.I, 0x05),
-    J(Type.J, 0x02),
-    JAL(Type.J, 0x03),
-    JR(Type.R, 0x08),
-    LUI(Type.I, 0x0F),
-    LW(Type.I, 0x23),
-    ORI(Type.I, 0x0D),
-    SLT(Type.R, 0x2A),
-    SLTI(Type.I, 0x0A),
-    SLL(Type.R, 0x00),
-    SW(Type.I, 0x2B),
-    SUBU(Type.R, 0x23);
+    ADDI(0x08, Type.I, AluOp.ADDITION),
+    ADDIU(0x09, Type.I, AluOp.ADDITION),
+    ADDU(0x21, Type.R, AluOp.ADDITION),
+    BEQ(0x04, Type.I, AluOp.EQUAL),
+    BNE(0x05, Type.I, AluOp.NOT_EQUAL),
+    J(0x02, Type.J, AluOp.NONE),
+    JAL(0x03, Type.J, AluOp.NONE),
+    JR(0x08, Type.R, AluOp.NONE),
+    LUI(0x0F, Type.I, AluOp.SHIFT_LEFT),
+    LW(0x23, Type.I, AluOp.ADDITION),
+    ORI(0x0D, Type.I, AluOp.OR),
+    SLT(0x2A, Type.R, AluOp.SET_LESS_THAN),
+    SLTI(0x0A, Type.I, AluOp.SET_LESS_THAN),
+    SLL(0x00, Type.R, AluOp.SHIFT_LEFT),
+    SW(0x2B, Type.I, AluOp.ADDITION),
+    SUBU(0x23, Type.R, AluOp.SUBTRACTION);
 
     enum class Type { R, I, J }
 

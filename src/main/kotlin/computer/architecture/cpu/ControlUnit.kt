@@ -60,12 +60,15 @@ class ControlUnit(
     }
 
     private fun execute(decodeResult: DecodeResult): ExecutionResult {
-        val src1 = mux(controlSignal.shift, decodeResult.readData2, decodeResult.readData1)
+        var src1 = mux(controlSignal.shift, decodeResult.readData2, decodeResult.readData1)
+        src1 = mux(controlSignal.upperImm, decodeResult.immediate, src1)
+
         var src2 = mux(controlSignal.aluSrc, decodeResult.immediate, decodeResult.readData2)
         src2 = mux(controlSignal.shift, decodeResult.shiftAmt, src2)
+        src2 = mux(controlSignal.upperImm, 16, src2)
 
         val aluResult = alu.operate(
-            opcode = decodeResult.opcode,
+            aluOp = controlSignal.aluOp,
             src1 = src1,
             src2 = src2
         )
@@ -75,7 +78,7 @@ class ControlUnit(
         nextPc = mux(controlSignal.jr, decodeResult.readData1, nextPc)
 
         return ExecutionResult(
-            aluResultValue = aluResult.resultValue,
+            aluResultValue = aluResult.value,
             branchCondition = aluResult.branchCondition,
             memoryWriteData = decodeResult.readData2,
             writeRegister = decodeResult.writeRegister,

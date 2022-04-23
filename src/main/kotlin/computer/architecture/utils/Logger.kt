@@ -93,11 +93,6 @@ class Logger(
         }
     }
 
-    fun instructionDecode(result: ParsedInstruction) {
-        if (!loggingSignal.decode) return
-        println("[ID] :: rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
-    }
-
     fun executeLog(executionResult: ExecutionResult) {
         if (executionResult.branchCondition) {
             numberOfTakenBranches++

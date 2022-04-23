@@ -2,13 +2,9 @@ package computer.architecture.cpu
 
 class DecodeUnit {
 
-    fun parse(pc: Int, instruction: Int): ParsedInstruction {
-        return ParsedInstruction(pc, instruction)
-    }
+    fun parse(pc: Int, instruction: Int) = ParsedInstruction(pc, instruction)
 
-    fun controlSignal(opcode: Opcode): ControlSignal {
-        return ControlSignal(opcode)
-    }
+    fun controlSignal(opcode: Opcode) = ControlSignal(opcode)
 }
 
 data class ParsedInstruction(
@@ -48,7 +44,7 @@ data class ParsedInstruction(
             }
         }
 
-        private fun signExtension32(num: Int): Int = num shl 16 shr 16
+        private fun signExtension32(num: Int) = num shl 16 shr 16
 
         private fun zeroExtension32(num: Int) = num shl 16 ushr 16
 
@@ -87,6 +83,7 @@ data class ControlSignal(
             && (opcode != Opcode.BEQ)
             && (opcode != Opcode.BNE),
     val shift: Boolean = opcode == Opcode.SLL,
+    val upperImm: Boolean = opcode == Opcode.LUI,
     val memToReg: Boolean = opcode == Opcode.LW,
     val regWrite: Boolean = (opcode != Opcode.SW) &&
             (opcode != Opcode.BEQ) &&
@@ -98,5 +95,6 @@ data class ControlSignal(
     val jump: Boolean = (opcode == Opcode.J) || (opcode == Opcode.JAL),
     val branch: Boolean = (opcode == Opcode.BNE || opcode == Opcode.BEQ),
     val jr: Boolean = (opcode == Opcode.JR),
-    val jal: Boolean = (opcode == Opcode.JAL)
+    val jal: Boolean = (opcode == Opcode.JAL),
+    val aluOp: AluOp = opcode.aluOp
 )
