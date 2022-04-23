@@ -178,7 +178,6 @@ class LoggingSignal {
         var execute = false
         var memoryAccess = false
         var writeBack = false
-        var finalValue = false
         var resultInformation = false
         var sleepTime = 0L
 
