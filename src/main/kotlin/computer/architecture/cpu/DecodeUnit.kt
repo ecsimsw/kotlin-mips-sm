@@ -2,12 +2,17 @@ package computer.architecture.cpu
 
 class DecodeUnit {
 
-    fun decodeInstruction(instruction: Int): DecodedInstruction {
-        return DecodedInstruction(instruction)
+    fun parse(instruction: Int): ParsedInstruction {
+        return ParsedInstruction(instruction)
+    }
+
+    fun controlSignal(instruction: Int): ControlSignal {
+        val opcode = Opcode.of(instruction shr 26 and 0x3F, instruction and 0x3F)
+        return ControlSignal(opcode)
     }
 }
 
-data class DecodedInstruction(
+data class ParsedInstruction(
     private val instruction: Int,
     val opcode: Opcode = Opcode.of(instruction shr 26 and 0x3F, instruction and 0x3F),
     val rs: Int = instruction shr 21 and 0x1F,

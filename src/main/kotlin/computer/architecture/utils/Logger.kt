@@ -3,7 +3,9 @@ package computer.architecture.utils
 import computer.architecture.component.Memory
 import computer.architecture.cpu.*
 
-class Logger {
+class Logger(
+    private val loggingSignal: LoggingSignal
+) {
     private var cycleCount = 0
     private var numberOfExecutedMA = 0
     private var numberOfWriteBack = 0
@@ -12,12 +14,37 @@ class Logger {
     private val executedOpcodeType = mutableMapOf<Opcode.Type, Int>()
     private val executedInstructionSet = mutableSetOf<Int>()
 
+    companion object {
+        fun init(
+            cycle: Boolean = false,
+            fetch: Boolean = false,
+            decode: Boolean = false,
+            execute: Boolean = false,
+            memoryAccess: Boolean = false,
+            writeBack: Boolean = false,
+            resultInformation: Boolean = false,
+            sleepTime: Long = 0L
+        ): Logger {
+            val signals = LoggingSignal(
+                cycle = cycle,
+                fetch = fetch,
+                decode = decode,
+                execute = execute,
+                memoryAccess = memoryAccess,
+                writeBack = writeBack,
+                resultInformation = resultInformation,
+                sleepTime = sleepTime
+            )
+            return Logger(signals)
+        }
+    }
+
     fun cycleCount(cycleCount: Int) {
         this.cycleCount = cycleCount
 
         try {
-            Thread.sleep(LoggingSignal.sleepTime)
-            if (!LoggingSignal.cycle) return
+            Thread.sleep(loggingSignal.sleepTime)
+            if (!loggingSignal.cycle) return
             if (this.cycleCount % 1000000 == 0) {
                 println("cycle : ${this.cycleCount}")
             }
@@ -28,7 +55,7 @@ class Logger {
     fun fetchLog(cycleCount: Int, fetchResult: FetchResult) {
         executedInstructionSet.add(fetchResult.instruction)
 
-        if (!LoggingSignal.fetch) return
+        if (!loggingSignal.fetch) return
 
         printStep("IF")
         println(
@@ -45,7 +72,7 @@ class Logger {
         val opCodeTypeCount = executedOpcodeType.getOrDefault(decodeResult.opcode.type, 0)
         executedOpcodeType[decodeResult.opcode.type] = opCodeTypeCount + 1
 
-        if (!LoggingSignal.decode) return
+        if (!loggingSignal.decode) return
 
         printStep("ID")
         print("opcode : ${decodeResult.opcode}, ")
@@ -66,8 +93,8 @@ class Logger {
         }
     }
 
-    fun instructionDecode(result: DecodedInstruction) {
-        if (!LoggingSignal.decode) return
+    fun instructionDecode(result: ParsedInstruction) {
+        if (!loggingSignal.decode) return
         println("[ID] :: rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
     }
 
@@ -76,7 +103,7 @@ class Logger {
             numberOfTakenBranches++
         }
 
-        if (!LoggingSignal.execute) return
+        if (!loggingSignal.execute) return
 
         printStep("EX")
         println(
@@ -85,18 +112,18 @@ class Logger {
         )
     }
 
-    fun memoryAccessLog(memRead: Boolean, memWrite: Boolean, memory: Memory, address: Int) {
-        if (memRead || memWrite) {
+    fun memoryAccessLog(controlSignal: ControlSignal, memory: Memory, address: Int) {
+        if (controlSignal.memRead || controlSignal.memWrite) {
             numberOfExecutedMA++
         }
 
-        if (!LoggingSignal.memoryAccess) return
+        if (!loggingSignal.memoryAccess) return
 
         printStep("MA")
-        if (memRead || memWrite) {
+        if (controlSignal.memRead || controlSignal.memWrite) {
             println(
                 "M[0x${address.toHexString()}] = " +
-                        "${memory.readInt(address)} [0x${memory.readInt(address).toHexString()}]"
+                        "${memory.read(address)} [0x${memory.read(address).toHexString()}]"
             )
         } else {
             println()
@@ -108,7 +135,7 @@ class Logger {
             numberOfWriteBack++
         }
 
-        if (!LoggingSignal.writeBack) return
+        if (!loggingSignal.writeBack) return
 
         printStep("WB")
         if (writeBackResult.regWrite) {
@@ -120,7 +147,7 @@ class Logger {
     }
 
     fun printProcessResult(resultValue: Int) {
-        if (!LoggingSignal.resultInformation) return
+        if (!loggingSignal.resultInformation) return
 
         println("=== Result === ")
         println("cycle count : $cycleCount")
@@ -170,35 +197,13 @@ class Logger {
     }
 }
 
-class LoggingSignal {
-    companion object {
-        var cycle = false
-        var fetch = false
-        var decode = false
-        var execute = false
-        var memoryAccess = false
-        var writeBack = false
-        var resultInformation = false
-        var sleepTime = 0L
-
-        fun init(
-            cycle: Boolean = false,
-            fetch: Boolean = false,
-            decode: Boolean = false,
-            execute: Boolean = false,
-            memoryAccess: Boolean = false,
-            writeBack: Boolean = false,
-            resultInformation: Boolean = false,
-            sleepTime: Long = 0L
-        ) {
-            this.cycle = cycle
-            this.fetch = fetch
-            this.decode = decode
-            this.execute = execute
-            this.memoryAccess = memoryAccess
-            this.writeBack = writeBack
-            this.resultInformation = resultInformation
-            this.sleepTime = sleepTime
-        }
-    }
-}
+data class LoggingSignal(
+    var cycle: Boolean = false,
+    var fetch: Boolean = false,
+    var decode: Boolean = false,
+    var execute: Boolean = false,
+    var memoryAccess: Boolean = false,
+    var writeBack: Boolean = false,
+    var resultInformation: Boolean = false,
+    var sleepTime: Long = 0L
+)

@@ -3,13 +3,11 @@ package computer.architecture
 import computer.architecture.component.Memory
 import computer.architecture.cpu.ControlUnit
 import computer.architecture.utils.Logger
-import computer.architecture.utils.LoggingSignal
 
 fun main() {
-    initLoggingSignal()
+    val logger = initLogger()
 
-    val logger = Logger()
-    val fileToLoad = "test_prog/input4.bin"
+    val fileToLoad = "sample/simple.bin"
     val memory = Memory.load(20000000, fileToLoad)
 
     val controlUnit = ControlUnit(memory, logger)
@@ -18,14 +16,14 @@ fun main() {
     logger.printProcessResult(processResult)
 }
 
-private fun initLoggingSignal() {
-    LoggingSignal.init(
+private fun initLogger(): Logger {
+    return Logger.init(
         cycle = true,
-        fetch = false,
-        decode = false,
-        execute = false,
-        memoryAccess = false,
-        writeBack = false,
+        fetch = true,
+        decode = true,
+        execute = true,
+        memoryAccess = true,
+        writeBack = true,
         resultInformation = true,
         sleepTime = 0
     )

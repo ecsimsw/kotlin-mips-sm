@@ -5,36 +5,26 @@ import java.io.FileInputStream
 
 class Memory(
     size: Int,
-) {
     private val memory: Array<Byte> = Array(size) { 0 }
+) {
 
     companion object {
         fun load(size: Int, path: String): Memory {
-            val memory = Memory(size)
-            memory.loadFile(path)
-            return memory
-        }
-    }
-
-    fun loadFile(path: String) {
-        DataInputStream(FileInputStream(path)).use {
-            val bytes = ByteArray(2048)
-            var address = 0
-            while (it.read(bytes) > 0) {
-                address = saveInstructions(bytes, address)
+            DataInputStream(FileInputStream(path)).use { it ->
+                val memory: Array<Byte> = Array(size) { 0 }
+                val bytes = ByteArray(2048)
+                var address = 0
+                while (it.read(bytes) > 0) {
+                    bytes.forEach {
+                        memory[address++] = it
+                    }
+                }
+                return Memory(size, memory)
             }
         }
     }
 
-    private fun saveInstructions(bytes: ByteArray, startAddress: Int): Int {
-        var endAddress = startAddress
-        bytes.forEach {
-            memory[endAddress++] = it
-        }
-        return endAddress
-    }
-
-    fun readInt(address: Int, memRead: Boolean = true): Int =
+    fun read(address: Int, memRead: Boolean = true): Int =
         if (memRead) {
             val i1 = memory[address].toInt() shl 24
             val i2 = memory[address + 1].toInt() shl 16 and 0x00FF0000
@@ -43,7 +33,7 @@ class Memory(
             i1 + i2 + i3 + i4
         } else 0
 
-    fun writeInt(address: Int, value: Int, memWrite: Boolean = true) {
+    fun write(address: Int, value: Int, memWrite: Boolean = true) {
         if (memWrite) {
             memory[address] = (value shr 24 and 0xFF).toByte()
             memory[address + 1] = (value shr 16 and 0xFF).toByte()

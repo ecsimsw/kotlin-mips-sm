@@ -7,7 +7,7 @@ import computer.architecture.utils.Logger
 
 class ControlUnit(
     private val memory: Memory,
-    private val logger: Logger,
+    private val logger: Logger = Logger.init(),
 ) {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
@@ -30,32 +30,34 @@ class ControlUnit(
             logger.fetchLog(cycleCount, fetchResult)
             logger.decodeLog(decodeResult)
             logger.executeLog(executeResult)
-            logger.memoryAccessLog(controlSignal.memRead, controlSignal.memWrite, memory, executeResult.aluResultValue)
+            logger.memoryAccessLog(controlSignal, memory, executeResult.aluResultValue)
             logger.writeBackLog(writeBackResult)
         }
         return registers[2]
     }
 
     private fun fetch(pc: Int): FetchResult {
-        val fetchResult = FetchResult(registers.pc, memory.readInt(pc))
+        val fetchResult = FetchResult(registers.pc, memory.read(pc))
         registers.pc += 4
         return fetchResult
     }
 
     private fun decode(fetchResult: FetchResult): DecodeResult {
-        val instruction = decodeUnit.decodeInstruction(fetchResult.instruction)
-        controlSignal = ControlSignal(instruction.opcode)
+        val parsedInst = decodeUnit.parse(fetchResult.instruction)
+        val controlSignal = decodeUnit.controlSignal(fetchResult.instruction)
 
-        var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
+        this.controlSignal = controlSignal
+
+        var writeRegister = mux(controlSignal.regDest, parsedInst.rd, parsedInst.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
 
         return DecodeResult(
-            opcode = instruction.opcode,
-            shiftAmt = instruction.shiftAmt,
-            immediate = instruction.immediate,
-            address = instruction.address,
-            readData1 = registers[instruction.rs],
-            readData2 = registers[instruction.rt],
+            opcode = parsedInst.opcode,
+            shiftAmt = parsedInst.shiftAmt,
+            immediate = parsedInst.immediate,
+            address = parsedInst.address,
+            readData1 = registers[parsedInst.rs],
+            readData2 = registers[parsedInst.rt],
             writeRegister = writeRegister
         )
     }
@@ -91,12 +93,12 @@ class ControlUnit(
     }
 
     private fun memoryAccess(executionResult: ExecutionResult): MemoryAccessResult {
-        val readData = memory.readInt(
+        val readData = memory.read(
             memRead = controlSignal.memRead,
             address = executionResult.aluResultValue,
         )
 
-        memory.writeInt(
+        memory.write(
             address = executionResult.aluResultValue,
             value = executionResult.memoryWriteData,
             memWrite = controlSignal.memWrite
