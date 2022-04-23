@@ -24,6 +24,7 @@ class ControlUnit(
             val exResult = execute(idResult)
             val maResult = memoryAccess(exResult)
             val wbResult = writeBack(maResult)
+            registers.pc = wbResult.nextPc
 
             logger.cycleCount(cycleCount)
             logger.fetchLog(cycleCount, ifResult)
@@ -43,7 +44,7 @@ class ControlUnit(
 
     private fun decode(fetchResult: FetchResult): DecodeResult {
         val parsedInst = decodeUnit.parse(registers.pc, fetchResult.instruction)
-        this.controlSignal = decodeUnit.controlSignal(parsedInst.opcode)
+        controlSignal = decodeUnit.controlSignal(parsedInst.opcode)
 
         var writeRegister = mux(controlSignal.regDest, parsedInst.rd, parsedInst.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
@@ -108,8 +109,6 @@ class ControlUnit(
         var writeData = mux(controlSignal.memToReg, memoryAccessResult.readData, memoryAccessResult.aluValue)
         writeData = mux(controlSignal.jal, registers.pc + 4, writeData)
 
-        registers.pc = memoryAccessResult.nextPc
-
         registers.write(
             regWrite = controlSignal.regWrite,
             writeRegister = memoryAccessResult.writeRegister,
@@ -119,7 +118,8 @@ class ControlUnit(
         return WriteBackResult(
             regWrite = controlSignal.regWrite,
             writeRegister = memoryAccessResult.writeRegister,
-            writeData = writeData
+            writeData = writeData,
+            nextPc = memoryAccessResult.nextPc
         )
     }
 }
