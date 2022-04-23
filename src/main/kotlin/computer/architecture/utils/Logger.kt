@@ -93,8 +93,8 @@ class Logger(
         }
     }
 
-    fun executeLog(executionResult: ExecutionResult) {
-        if (executionResult.branchCondition) {
+    fun executeLog(controlSignal: ControlSignal, executionResult: ExecutionResult) {
+        if (controlSignal.branch && executionResult.aluValue == 1) {
             numberOfTakenBranches++
         }
 
@@ -102,7 +102,7 @@ class Logger(
 
         printStep("EX")
         println(
-            "result : ${executionResult.aluResultValue} [0x${executionResult.aluResultValue.toHexString()}], " +
+            "result : ${executionResult.aluValue} [0x${executionResult.aluValue.toHexString()}], " +
                     "nextPc : 0x${executionResult.nextPc.toHexString()}"
         )
     }

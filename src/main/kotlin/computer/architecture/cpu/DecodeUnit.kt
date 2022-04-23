@@ -96,5 +96,5 @@ data class ControlSignal(
     val branch: Boolean = (opcode == Opcode.BNE || opcode == Opcode.BEQ),
     val jr: Boolean = (opcode == Opcode.JR),
     val jal: Boolean = (opcode == Opcode.JAL),
-    val aluOp: AluOp = opcode.aluOp
+    val aluOp: AluOp = opcode.operation
 )

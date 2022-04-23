@@ -16,11 +16,10 @@ data class DecodeResult(
 )
 
 data class ExecutionResult(
-    val aluResultValue: Int,
+    val aluValue: Int,
     val memoryWriteData: Int,
     val writeRegister: Int,
-    val nextPc: Int,
-    val branchCondition: Boolean
+    val nextPc: Int
 )
 
 data class MemoryAccessResult(

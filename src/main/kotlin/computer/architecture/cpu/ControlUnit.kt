@@ -28,8 +28,8 @@ class ControlUnit(
             logger.cycleCount(cycleCount)
             logger.fetchLog(cycleCount, fetchResult)
             logger.decodeLog(decodeResult)
-            logger.executeLog(executeResult)
-            logger.memoryAccessLog(controlSignal, memory, executeResult.aluResultValue)
+            logger.executeLog(controlSignal, executeResult)
+            logger.memoryAccessLog(controlSignal, memory, executeResult.aluValue)
             logger.writeBackLog(writeBackResult)
         }
         return registers[2]
@@ -78,8 +78,7 @@ class ControlUnit(
         nextPc = mux(controlSignal.jr, decodeResult.readData1, nextPc)
 
         return ExecutionResult(
-            aluResultValue = aluResult.value,
-            branchCondition = aluResult.branchCondition,
+            aluValue = aluResult.value,
             memoryWriteData = decodeResult.readData2,
             writeRegister = decodeResult.writeRegister,
             nextPc = nextPc
@@ -89,18 +88,18 @@ class ControlUnit(
     private fun memoryAccess(executionResult: ExecutionResult): MemoryAccessResult {
         val readData = memory.read(
             memRead = controlSignal.memRead,
-            address = executionResult.aluResultValue,
+            address = executionResult.aluValue,
         )
 
         memory.write(
-            address = executionResult.aluResultValue,
+            address = executionResult.aluValue,
             value = executionResult.memoryWriteData,
             memWrite = controlSignal.memWrite
         )
 
         return MemoryAccessResult(
             readData = readData,
-            aluResult = executionResult.aluResultValue,
+            aluResult = executionResult.aluValue,
             writeRegister = executionResult.writeRegister,
             nextPc = executionResult.nextPc
         )

@@ -3,7 +3,7 @@ package computer.architecture.cpu
 enum class Opcode(
     val code: Int,
     val type: Type,
-    val aluOp: AluOp
+    val operation: AluOp
 ) {
     ADDI(0x08, Type.I, AluOp.ADDITION),
     ADDIU(0x09, Type.I, AluOp.ADDITION),
