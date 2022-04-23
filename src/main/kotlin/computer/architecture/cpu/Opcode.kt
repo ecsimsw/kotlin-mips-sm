@@ -24,7 +24,12 @@ enum class Opcode(
     enum class Type { R, I, J }
 
     companion object {
-        fun of(op: Int, func: Int): Opcode {
+
+        fun of(instruction: Int): Opcode {
+            return of(instruction shr 26 and 0x3F, instruction and 0x3F)
+        }
+
+        private fun of(op: Int, func: Int): Opcode {
             return values().find {
                 if (op == 0)
                     it.type == Type.R && it.code == func

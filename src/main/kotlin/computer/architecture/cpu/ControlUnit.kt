@@ -11,7 +11,6 @@ class ControlUnit(
 ) {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
-    private val programCounterUnit = ProgramCounterUnit()
     private val alu = ALUnit()
     private var controlSignal = ControlSignal()
 
@@ -43,10 +42,8 @@ class ControlUnit(
     }
 
     private fun decode(fetchResult: FetchResult): DecodeResult {
-        val parsedInst = decodeUnit.parse(fetchResult.instruction)
-        val controlSignal = decodeUnit.controlSignal(fetchResult.instruction)
-
-        this.controlSignal = controlSignal
+        val parsedInst = decodeUnit.parse(registers.pc, fetchResult.instruction)
+        this.controlSignal = decodeUnit.controlSignal(parsedInst.opcode)
 
         var writeRegister = mux(controlSignal.regDest, parsedInst.rd, parsedInst.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
@@ -73,15 +70,9 @@ class ControlUnit(
             src2 = src2
         )
 
-        val nextPc = programCounterUnit.next(
-            pc = registers.pc,
-            jump = controlSignal.jump,
-            branch = aluResult.branchCondition,
-            jr = controlSignal.jr,
-            address = decodeResult.address,
-            immediate = decodeResult.immediate,
-            rsValue = decodeResult.readData1
-        )
+        var nextPc = mux(controlSignal.jump, decodeResult.address, registers.pc)
+        nextPc = mux(aluResult.branchCondition, decodeResult.immediate, nextPc)
+        nextPc = mux(controlSignal.jr, decodeResult.readData1, nextPc)
 
         return ExecutionResult(
             aluResultValue = aluResult.resultValue,
