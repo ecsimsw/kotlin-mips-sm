@@ -8,24 +8,25 @@ import computer.architecture.utils.LoggingSignal
 fun main() {
     initLoggingSignal()
 
-    val memory = Memory(20000000)
-    memory.loadFile("test_prog/input4.bin")
+    val logger = Logger()
+    val fileToLoad = "test_prog/input4.bin"
+    val memory = Memory.load(20000000, fileToLoad)
 
-    val controlUnit = ControlUnit(memory, Logger(memory))
+    val controlUnit = ControlUnit(memory, logger)
     val processResult = controlUnit.process()
 
-    println("V0 : $processResult")
+    logger.printProcessResult(processResult)
 }
 
 private fun initLoggingSignal() {
     LoggingSignal.init(
-        cycleLogging = true,
-        fetchLogging = false,
-        decodeLogging = false,
-        executeLogging = false,
-        memoryAccessLogging = false,
-        writeBackLogging = false,
-        finalValue = true,
+        cycle = true,
+        fetch = false,
+        decode = false,
+        execute = false,
+        memoryAccess = false,
+        writeBack = false,
+        resultInformation = true,
         sleepTime = 0
     )
 }

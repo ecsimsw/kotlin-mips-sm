@@ -8,6 +8,14 @@ class Memory(
 ) {
     private val memory: Array<Byte> = Array(size) { 0 }
 
+    companion object {
+        fun load(size: Int, path: String): Memory {
+            val memory = Memory(size)
+            memory.loadFile(path)
+            return memory
+        }
+    }
+
     fun loadFile(path: String) {
         DataInputStream(FileInputStream(path)).use {
             val bytes = ByteArray(2048)

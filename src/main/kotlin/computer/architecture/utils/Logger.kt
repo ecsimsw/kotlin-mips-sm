@@ -3,19 +3,32 @@ package computer.architecture.utils
 import computer.architecture.component.Memory
 import computer.architecture.cpu.*
 
-class Logger(
-    private val memory: Memory
-) {
+class Logger {
+    private var cycleCount = 0
+    private var numberOfExecutedMA = 0
+    private var numberOfWriteBack = 0
+    private var numberOfTakenBranches = 0
+    private val executedOpcodes = mutableMapOf<Opcode, Int>()
+    private val executedOpcodeType = mutableMapOf<Opcode.Type, Int>()
+    private val executedInstructionSet = mutableSetOf<Int>()
+
     fun cycleCount(cycleCount: Int) {
-        sleep()
-        if (!LoggingSignal.cycleLogging) return
-        if (cycleCount % 100000 == 0) {
-            println("cycle : $cycleCount")
+        this.cycleCount = cycleCount
+
+        try {
+            Thread.sleep(LoggingSignal.sleepTime)
+            if (!LoggingSignal.cycle) return
+            if (this.cycleCount % 1000000 == 0) {
+                println("cycle : ${this.cycleCount}")
+            }
+        } catch (e: InterruptedException) {
         }
     }
 
     fun fetchLog(cycleCount: Int, fetchResult: FetchResult) {
-        if (!LoggingSignal.fetchLogging) return
+        executedInstructionSet.add(fetchResult.instruction)
+
+        if (!LoggingSignal.fetch) return
 
         printStep("IF")
         println(
@@ -26,7 +39,13 @@ class Logger(
     }
 
     fun decodeLog(decodeResult: DecodeResult) {
-        if (!LoggingSignal.decodeLogging) return
+        val opCodeCount = executedOpcodes.getOrDefault(decodeResult.opcode, 0)
+        executedOpcodes[decodeResult.opcode] = opCodeCount + 1
+
+        val opCodeTypeCount = executedOpcodeType.getOrDefault(decodeResult.opcode.type, 0)
+        executedOpcodeType[decodeResult.opcode.type] = opCodeTypeCount + 1
+
+        if (!LoggingSignal.decode) return
 
         printStep("ID")
         print("opcode : ${decodeResult.opcode}, ")
@@ -48,28 +67,36 @@ class Logger(
     }
 
     fun instructionDecode(result: DecodedInstruction) {
-        if (!LoggingSignal.decodeLogging) return
+        if (!LoggingSignal.decode) return
         println("[ID] :: rs : ${result.rs}, rt : ${result.rt}, rd : ${result.rd}")
     }
 
     fun executeLog(executionResult: ExecutionResult) {
-        if (!LoggingSignal.executeLogging) return
+        if (executionResult.branchCondition) {
+            numberOfTakenBranches++
+        }
+
+        if (!LoggingSignal.execute) return
+
         printStep("EX")
         println(
-            "result : ${executionResult.aluResult} [0x${executionResult.aluResult.toHexString()}], " +
+            "result : ${executionResult.aluResultValue} [0x${executionResult.aluResultValue.toHexString()}], " +
                     "nextPc : 0x${executionResult.nextPc.toHexString()}"
         )
     }
 
-    fun memoryAccessLog(controlSignal: ControlSignal, address: Int) {
-        if (!LoggingSignal.memoryAccessLogging) return
+    fun memoryAccessLog(memRead: Boolean, memWrite: Boolean, memory: Memory, address: Int) {
+        if (memRead || memWrite) {
+            numberOfExecutedMA++
+        }
+
+        if (!LoggingSignal.memoryAccess) return
 
         printStep("MA")
-        if (controlSignal.memRead || controlSignal.memWrite) {
+        if (memRead || memWrite) {
             println(
-                "M[0x${address.toHexString()}] = ${memory.readInt(address)} [0x${
-                    memory.readInt(address).toHexString()
-                }]"
+                "M[0x${address.toHexString()}] = " +
+                        "${memory.readInt(address)} [0x${memory.readInt(address).toHexString()}]"
             )
         } else {
             println()
@@ -77,7 +104,11 @@ class Logger(
     }
 
     fun writeBackLog(writeBackResult: WriteBackResult) {
-        if (!LoggingSignal.writeBackLogging) return
+        if (writeBackResult.regWrite) {
+            numberOfWriteBack++
+        }
+
+        if (!LoggingSignal.writeBack) return
 
         printStep("WB")
         if (writeBackResult.regWrite) {
@@ -88,12 +119,35 @@ class Logger(
         println()
     }
 
-    private fun sleep(sleepTime: Long = LoggingSignal.sleepTime) {
-        try {
-            Thread.sleep(sleepTime)
-        } catch (e: InterruptedException) {
+    fun printProcessResult(resultValue: Int) {
+        if (!LoggingSignal.resultInformation) return
 
-        }
+        println("=== Result === ")
+        println("cycle count : $cycleCount")
+        println("result value : $resultValue")
+        println()
+
+        println("=== executed instructions ===")
+        println("executed memory access : $numberOfExecutedMA")
+        println("executed taken branches : $numberOfTakenBranches")
+        println("executed write back : $numberOfWriteBack")
+        println("kinds : ${executedInstructionSet.size}")
+        print("[] : ")
+        executedInstructionSet.forEach { print("0x${it.toHexString(8)} ") }
+        println()
+        println()
+
+        println("=== executed opcode type ===")
+        println("type R : ${executedOpcodeType.getOrDefault(Opcode.Type.R, 0)}")
+        println("type I : ${executedOpcodeType.getOrDefault(Opcode.Type.I, 0)}")
+        println("type J : ${executedOpcodeType.getOrDefault(Opcode.Type.J, 0)}")
+        println()
+
+        println("=== executed opcode === ")
+        println("kinds : ${executedOpcodes.size}")
+        print("[] : ")
+        executedOpcodes.forEach { print("$it ") }
+        println()
     }
 
     private fun printStep(stepName: String) {
@@ -118,32 +172,33 @@ class Logger(
 
 class LoggingSignal {
     companion object {
-        var cycleLogging = false
-        var fetchLogging = false
-        var decodeLogging = false
-        var executeLogging = false
-        var memoryAccessLogging = false
-        var writeBackLogging = false
+        var cycle = false
+        var fetch = false
+        var decode = false
+        var execute = false
+        var memoryAccess = false
+        var writeBack = false
         var finalValue = false
+        var resultInformation = false
         var sleepTime = 0L
 
         fun init(
-            cycleLogging: Boolean = false,
-            fetchLogging: Boolean = false,
-            decodeLogging: Boolean = false,
-            executeLogging: Boolean = false,
-            memoryAccessLogging: Boolean = false,
-            writeBackLogging: Boolean = false,
-            finalValue: Boolean = false,
+            cycle: Boolean = false,
+            fetch: Boolean = false,
+            decode: Boolean = false,
+            execute: Boolean = false,
+            memoryAccess: Boolean = false,
+            writeBack: Boolean = false,
+            resultInformation: Boolean = false,
             sleepTime: Long = 0L
         ) {
-            this.cycleLogging = cycleLogging
-            this.fetchLogging = fetchLogging
-            this.decodeLogging = decodeLogging
-            this.executeLogging = executeLogging
-            this.memoryAccessLogging = memoryAccessLogging
-            this.writeBackLogging = writeBackLogging
-            this.finalValue = finalValue
+            this.cycle = cycle
+            this.fetch = fetch
+            this.decode = decode
+            this.execute = execute
+            this.memoryAccess = memoryAccess
+            this.writeBack = writeBack
+            this.resultInformation = resultInformation
             this.sleepTime = sleepTime
         }
     }

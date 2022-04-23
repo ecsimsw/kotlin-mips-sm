@@ -7,7 +7,7 @@ import computer.architecture.utils.Logger
 
 class ControlUnit(
     private val memory: Memory,
-    private val logger: Logger = Logger(memory),
+    private val logger: Logger,
 ) {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
@@ -30,7 +30,7 @@ class ControlUnit(
             logger.fetchLog(cycleCount, fetchResult)
             logger.decodeLog(decodeResult)
             logger.executeLog(executeResult)
-            logger.memoryAccessLog(controlSignal, executeResult.aluResult)
+            logger.memoryAccessLog(controlSignal.memRead, controlSignal.memWrite, memory, executeResult.aluResultValue)
             logger.writeBackLog(writeBackResult)
         }
         return registers[2]
@@ -82,7 +82,8 @@ class ControlUnit(
         )
 
         return ExecutionResult(
-            aluResult = aluResult.resultValue,
+            aluResultValue = aluResult.resultValue,
+            branchCondition = aluResult.branchCondition,
             memoryWriteData = decodeResult.readData2,
             writeRegister = decodeResult.writeRegister,
             nextPc = nextPc
@@ -92,18 +93,18 @@ class ControlUnit(
     private fun memoryAccess(executionResult: ExecutionResult): MemoryAccessResult {
         val readData = memory.readInt(
             memRead = controlSignal.memRead,
-            address = executionResult.aluResult,
+            address = executionResult.aluResultValue,
         )
 
         memory.writeInt(
-            address = executionResult.aluResult,
+            address = executionResult.aluResultValue,
             value = executionResult.memoryWriteData,
             memWrite = controlSignal.memWrite
         )
 
         return MemoryAccessResult(
             readData = readData,
-            aluResult = executionResult.aluResult,
+            aluResult = executionResult.aluResultValue,
             writeRegister = executionResult.writeRegister,
             nextPc = executionResult.nextPc
         )
