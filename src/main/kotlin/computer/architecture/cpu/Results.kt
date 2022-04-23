@@ -6,7 +6,6 @@ data class FetchResult(
 )
 
 data class DecodeResult(
-    val opcode: Opcode,
     val shiftAmt: Int,
     val immediate: Int,
     val address: Int,
@@ -17,14 +16,14 @@ data class DecodeResult(
 
 data class ExecutionResult(
     val aluValue: Int,
-    val memoryWriteData: Int,
+    val memWriteData: Int,
     val writeRegister: Int,
     val nextPc: Int
 )
 
 data class MemoryAccessResult(
     val readData: Int,
-    val aluResult: Int,
+    val aluValue: Int,
     val writeRegister: Int,
     val nextPc: Int,
 )

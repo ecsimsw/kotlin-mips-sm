@@ -1,6 +1,5 @@
 package computer.architecture.utils
 
-import computer.architecture.component.Memory
 import computer.architecture.cpu.*
 
 class Logger(
@@ -58,56 +57,53 @@ class Logger(
         if (!loggingSignal.fetch) return
 
         printStep("IF")
-        println(
-            "cyl : $cycleCount" +
-                    " , pc : 0x${(fetchResult.pc).toHexString(2)}, " +
-                    "instruction : 0x${fetchResult.instruction.toHexString(8)}"
-        )
+        var msg = "cyl : $cycleCount, "
+        msg += "pc : 0x${(fetchResult.pc).toHexString(2)}, "
+        msg += "instruction : 0x${fetchResult.instruction.toHexString(8)}"
+        println(msg)
     }
 
-    fun decodeLog(decodeResult: DecodeResult) {
-        val opCodeCount = executedOpcodes.getOrDefault(decodeResult.opcode, 0)
-        executedOpcodes[decodeResult.opcode] = opCodeCount + 1
+    fun decodeLog(controlSignal: ControlSignal, result: DecodeResult) {
+        val opcode = controlSignal.opcode
+        val opCodeCount = executedOpcodes.getOrDefault(opcode, 0)
+        executedOpcodes[opcode] = opCodeCount + 1
 
-        val opCodeTypeCount = executedOpcodeType.getOrDefault(decodeResult.opcode.type, 0)
-        executedOpcodeType[decodeResult.opcode.type] = opCodeTypeCount + 1
+        val opCodeTypeCount = executedOpcodeType.getOrDefault(opcode.type, 0)
+        executedOpcodeType[opcode.type] = opCodeTypeCount + 1
 
         if (!loggingSignal.decode) return
 
         printStep("ID")
-        print("opcode : ${decodeResult.opcode}, ")
-
-        if (decodeResult.opcode.type == Opcode.Type.R) {
-            println("readData1 : ${decodeResult.readData1}, readData2 : ${decodeResult.readData2}")
+        var msg = "opcode : ${opcode}, "
+        if (opcode.type == Opcode.Type.R) {
+            msg += "readData1 : ${result.readData1}, readData2 : ${result.readData2}"
         }
 
-        if (decodeResult.opcode.type == Opcode.Type.I) {
-            println(
-                "readData1 : ${decodeResult.readData1} [0x${decodeResult.readData1.toHexString()}], " +
-                        "immediate : ${decodeResult.immediate} [0x${decodeResult.immediate.toHexString()}]"
-            )
+        if (opcode.type == Opcode.Type.I) {
+            msg += "readData1 : ${result.readData1} [0x${result.readData1.toHexString()}], " +
+                    "immediate : ${result.immediate} [0x${result.immediate.toHexString()}]"
         }
 
-        if (decodeResult.opcode.type == Opcode.Type.J) {
-            println("address : 0x${decodeResult.address.toHexString()}")
+        if (opcode.type == Opcode.Type.J) {
+            msg += "address : 0x${result.address.toHexString()}"
         }
+        println(msg)
     }
 
-    fun executeLog(controlSignal: ControlSignal, executionResult: ExecutionResult) {
-        if (controlSignal.branch && executionResult.aluValue == 1) {
+    fun executeLog(controlSignal: ControlSignal, result: ExecutionResult) {
+        if (controlSignal.branch && result.aluValue == 1) {
             numberOfTakenBranches++
         }
 
         if (!loggingSignal.execute) return
 
         printStep("EX")
-        println(
-            "result : ${executionResult.aluValue} [0x${executionResult.aluValue.toHexString()}], " +
-                    "nextPc : 0x${executionResult.nextPc.toHexString()}"
-        )
+        val msg = "result : ${result.aluValue} [0x${result.aluValue.toHexString()}], " +
+                "nextPc : 0x${result.nextPc.toHexString()}"
+        println(msg)
     }
 
-    fun memoryAccessLog(controlSignal: ControlSignal, memory: Memory, address: Int) {
+    fun memoryAccessLog(controlSignal: ControlSignal, address: Int, readValue: Int, writeValue: Int) {
         if (controlSignal.memRead || controlSignal.memWrite) {
             numberOfExecutedMA++
         }
@@ -115,30 +111,29 @@ class Logger(
         if (!loggingSignal.memoryAccess) return
 
         printStep("MA")
-        if (controlSignal.memRead || controlSignal.memWrite) {
-            println(
-                "M[0x${address.toHexString()}] = " +
-                        "${memory.read(address)} [0x${memory.read(address).toHexString()}]"
-            )
-        } else {
-            println()
+        var msg = ""
+        if (controlSignal.memRead) {
+            msg = "M[0x${address.toHexString()}] = $readValue [0x${readValue.toHexString()}]"
         }
+        if (controlSignal.memWrite) {
+            msg = "M[0x${address.toHexString()}] = $writeValue [0x${writeValue.toHexString()}]"
+        }
+        println(msg)
     }
 
-    fun writeBackLog(writeBackResult: WriteBackResult) {
-        if (writeBackResult.regWrite) {
+    fun writeBackLog(controlSignal: ControlSignal, result: WriteBackResult) {
+        if (controlSignal.regWrite) {
             numberOfWriteBack++
         }
 
         if (!loggingSignal.writeBack) return
 
         printStep("WB")
-        if (writeBackResult.regWrite) {
-            println("R[${writeBackResult.writeRegister}] = ${writeBackResult.writeData} [0x${writeBackResult.writeData.toHexString()}]")
-        } else {
-            println()
+        var msg = ""
+        if (result.regWrite) {
+            msg = "R[${result.writeRegister}] = ${result.writeData} [0x${result.writeData.toHexString()}]"
         }
-        println()
+        println(msg+"\n")
     }
 
     fun printProcessResult(resultValue: Int) {
