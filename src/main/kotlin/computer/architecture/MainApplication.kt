@@ -7,7 +7,7 @@ import computer.architecture.utils.Logger
 fun main() {
     val logger = initLogger()
 
-    val fileToLoad = "sample/simple3.bin"
+    val fileToLoad = "sample/simple.bin"
     val memory = Memory.load(20000000, fileToLoad)
 
     val controlUnit = ControlUnit(memory, logger)

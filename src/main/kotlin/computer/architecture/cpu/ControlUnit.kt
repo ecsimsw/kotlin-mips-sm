@@ -1,5 +1,6 @@
 package computer.architecture.cpu
 
+import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Registers
@@ -25,13 +26,6 @@ class ControlUnit(
             val maResult = memoryAccess(exResult)
             val wbResult = writeBack(maResult)
             registers.pc = wbResult.nextPc
-
-            logger.cycleCount(cycleCount)
-            logger.fetchLog(cycleCount, ifResult)
-            logger.decodeLog(controlSignal, idResult)
-            logger.executeLog(controlSignal, exResult)
-            logger.memoryAccessLog(controlSignal, exResult.aluValue, maResult.readData, exResult.memWriteData)
-            logger.writeBackLog(controlSignal, wbResult)
         }
         return registers[2]
     }
@@ -73,8 +67,11 @@ class ControlUnit(
             src2 = src2
         )
 
-        var nextPc = mux(controlSignal.jump, decodeResult.address, registers.pc)
-        nextPc = mux(aluResult.branchCondition, decodeResult.immediate, nextPc)
+        var nextPc = registers.pc
+
+        val branchCondition = and(aluResult.isTrue, controlSignal.branch)
+        nextPc = mux(branchCondition, decodeResult.immediate, nextPc)
+        nextPc = mux(controlSignal.jump, decodeResult.address, nextPc)
         nextPc = mux(controlSignal.jr, decodeResult.readData1, nextPc)
 
         return ExecutionResult(

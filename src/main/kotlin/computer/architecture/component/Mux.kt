@@ -7,11 +7,5 @@ class Mux {
                 trueResult
             else
                 falseResult
-
-        fun mux(signal: Boolean, trueResult: Boolean, falseResult: Boolean) =
-            if (signal)
-                trueResult
-            else
-                falseResult
     }
 }

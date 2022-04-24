@@ -16,16 +16,14 @@ class ALUnit(
     }
 
     fun operate(aluOp: AluOp, src1: Int, src2: Int): AluResult {
-        val value = (operations[aluOp]?.invoke(src1, src2)
+        return AluResult(operations[aluOp]?.invoke(src1, src2)
             ?: throw IllegalArgumentException("Opcodes that cannot be computed : $aluOp"))
-        val branchCondition = (aluOp == AluOp.EQUAL || aluOp == AluOp.NOT_EQUAL) && value == 1
-        return AluResult(value, branchCondition)
     }
 }
 
 data class AluResult(
     val value: Int,
-    val branchCondition: Boolean
+    val isTrue: Boolean = value == 1
 )
 
 enum class AluOp {
