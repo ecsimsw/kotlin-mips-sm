@@ -26,6 +26,13 @@ class ControlUnit(
             val maResult = memoryAccess(exResult)
             val wbResult = writeBack(maResult)
             registers.pc = wbResult.nextPc
+
+            logger.cycleCount(cycleCount)
+            logger.fetchLog(cycleCount, ifResult)
+            logger.decodeLog(controlSignal, idResult)
+            logger.executeLog(controlSignal, exResult)
+            logger.memoryAccessLog(controlSignal, exResult.aluValue, maResult.readData, exResult.memWriteData)
+            logger.writeBackLog(controlSignal, wbResult)
         }
         return registers[2]
     }

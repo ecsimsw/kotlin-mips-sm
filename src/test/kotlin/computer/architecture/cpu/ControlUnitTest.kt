@@ -17,10 +17,10 @@ internal class ControlUnitTest {
         "sample/fib.bin,55",
         "sample/input4.bin,85"
     )
-    fun process(path: String, expectedValue: Int) {
+    fun process(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
         val controlUnit = ControlUnit(memory)
         val processResult = controlUnit.process()
-        assertThat(processResult).isEqualTo(expectedValue)
+        assertThat(processResult).isEqualTo(expected)
     }
 }

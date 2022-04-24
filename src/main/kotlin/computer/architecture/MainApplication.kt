@@ -4,16 +4,24 @@ import computer.architecture.component.Memory
 import computer.architecture.cpu.ControlUnit
 import computer.architecture.utils.Logger
 
-fun main() {
+fun main(args: Array<String>) {
     val logger = initLogger()
+    println(args.size)
 
-    val fileToLoad = "sample/simple.bin"
-    val memory = Memory.load(20000000, fileToLoad)
+    val executionFiles = mutableListOf(*args)
+    if (executionFiles.isEmpty()) {
+        executionFiles.add("simple")
+    }
 
-    val controlUnit = ControlUnit(memory, logger)
-    val processResult = controlUnit.process()
+    for (path in executionFiles) {
+        val fileToLoad = "sample/$path.bin"
+        val memory = Memory.load(20000000, fileToLoad)
 
-    logger.printProcessResult(processResult)
+        val controlUnit = ControlUnit(memory, logger)
+        val processResult = controlUnit.process()
+
+        logger.printProcessResult(processResult)
+    }
 }
 
 private fun initLogger(): Logger {

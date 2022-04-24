@@ -1,6 +1,7 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.5.31'
     id 'java'
+    id 'application'
 }
 
 group 'org.example'
@@ -19,12 +20,8 @@ dependencies {
     testImplementation("io.mockk:mockk:1.9.1")
 }
 
-task process(type: JavaExec) {
-    if (project.hasProperty("inputFile")) {
-        args(inputFile.split(","))
-    }
-    mainClass = 'computer.architecture.MainApplicationKt'
-    classpath = sourceSets.main.runtimeClasspath
+application {
+    mainClassName = 'computer.architecture.MainApplicationKt'
 }
 
 test {
