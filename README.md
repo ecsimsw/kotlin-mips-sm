@@ -2,6 +2,8 @@
 
 Designed a single-cycle architecture that can run the MIPS program
 
+</br>
+
 ## How to run 
 
 run sample code : "sample/simple.bin"
@@ -13,6 +15,8 @@ test : run 7 sample files and check result values are all correct
 ```
 ./gradlew cleanTest test  
 ```
+
+</br>
 
 ## Features
 
@@ -55,6 +59,7 @@ EQUAL : src1 == scr2 ? 1 : 0
 NOT_EQUAL : src1 != src2 ? 1 : 0
 ```
 
+</br>
 
 ## Sample MIPS program
 
@@ -161,6 +166,8 @@ Mips assembly file example (gcd.mips.asm)
   f8:   00000000        nop
   fc:   00000000        nop
 ```
+
+</br>
 
 ## Logs (gcd.bin)
 
