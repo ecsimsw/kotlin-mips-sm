@@ -8,8 +8,6 @@ Define instruction set and implement a simple calculator that can execute instru
 
 Quick start (sample code)
 ```
-git clone https://github.com/ecsimsw/simple-computer-architecture ecsimsw-ca
-cd ecsimsw-ca
 ./gradlew process
 ```
 
