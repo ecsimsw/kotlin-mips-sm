@@ -24,6 +24,6 @@ private fun initLogger(): Logger {
         memoryAccess = true,
         writeBack = true,
         resultInformation = true,
-        sleepTime = 0
+        sleepTime = 1000
     )
 }
