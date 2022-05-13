@@ -21,17 +21,17 @@ data class ParsedInstruction(
     companion object {
 
         fun immediate(pc: Int, instruction: Int): Int {
-            val originImm = instruction and 0xFFFF
+            val imm = instruction and 0xFFFF
             return when (Opcode.of(instruction)) {
                 Opcode.ADDIU,
                 Opcode.ADDI,
                 Opcode.SLTI,
                 Opcode.SW,
-                Opcode.LW -> signExtension32(originImm)
-                Opcode.ORI -> zeroExtension32(originImm)
+                Opcode.LW -> signExtension32(imm)
+                Opcode.ORI -> zeroExtension32(imm)
                 Opcode.BNE,
-                Opcode.BEQ -> pc + branchAddress(originImm)
-                else -> originImm
+                Opcode.BEQ -> pc + branchAddress(imm)
+                else -> imm
             }
         }
 
@@ -75,26 +75,3 @@ data class ParsedInstruction(
         }
     }
 }
-
-data class ControlSignal(
-    val opcode: Opcode = Opcode.SLL,
-    val regDest: Boolean = opcode.type == Opcode.Type.R,
-    val aluSrc: Boolean = (opcode.type != Opcode.Type.R)
-            && (opcode != Opcode.BEQ)
-            && (opcode != Opcode.BNE),
-    val shift: Boolean = opcode == Opcode.SLL,
-    val upperImm: Boolean = opcode == Opcode.LUI,
-    val memToReg: Boolean = opcode == Opcode.LW,
-    val regWrite: Boolean = (opcode != Opcode.SW) &&
-            (opcode != Opcode.BEQ) &&
-            (opcode != Opcode.BNE) &&
-            (opcode != Opcode.J) &&
-            (opcode != Opcode.JR),
-    val memRead: Boolean = opcode == Opcode.LW,
-    val memWrite: Boolean = opcode == Opcode.SW,
-    val jump: Boolean = (opcode == Opcode.J) || (opcode == Opcode.JAL),
-    val branch: Boolean = (opcode == Opcode.BNE || opcode == Opcode.BEQ),
-    val jr: Boolean = (opcode == Opcode.JR),
-    val jal: Boolean = (opcode == Opcode.JAL),
-    val aluOp: AluOp = opcode.operation
-)

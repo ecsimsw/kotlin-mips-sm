@@ -13,7 +13,7 @@ class Logger(
     private val executedOpcodeType = mutableMapOf<Opcode.Type, Int>()
     private val executedInstructionSet = mutableSetOf<Int>()
 
-    private val cycleLogs = Array(5) { CycleLog(0) }
+    private val cycleLogs = Array(5) { CycleLog() }
 
     companion object {
         fun init(
@@ -40,30 +40,27 @@ class Logger(
         }
     }
 
-    fun save(
+    fun saveAndFlush(
+        cycleCount: Int,
         fetchResult: FetchResult,
         decodeResult: DecodeResult,
         executionResult: ExecutionResult,
         memoryAccessResult: MemoryAccessResult,
         writeBackResult: WriteBackResult
     ) {
+        cycleLogs[0].cycle = cycleCount
         cycleLogs[0].fetchResult = fetchResult
         cycleLogs[1].decodeResult = decodeResult
         cycleLogs[2].executionResult = executionResult
         cycleLogs[3].memoryAccessResult = memoryAccessResult
         cycleLogs[4].writeBackResult = writeBackResult
-    }
 
-    fun flushCycleLog() {
         printCycleLog(cycleLogs[4])
-        cycleLogs[4] = cycleLogs[3]
-        cycleLogs[3] = cycleLogs[2]
-        cycleLogs[2] = cycleLogs[1]
-        cycleLogs[1] = cycleLogs[0]
+        flushCycleLog()
     }
 
     private fun printCycleLog(cycleLog: CycleLog) {
-        cycleCount(cycleLog.fetchResult.cycle)
+        cycleCount(cycleLog.cycle)
         fetchLog(cycleLog.fetchResult)
         decodeLog(cycleLog.decodeResult)
         executeLog(cycleLog.executionResult)
@@ -71,9 +68,15 @@ class Logger(
         writeBackLog(cycleLog.writeBackResult)
     }
 
+    private fun flushCycleLog() {
+        cycleLogs[4] = cycleLogs[3]
+        cycleLogs[3] = cycleLogs[2]
+        cycleLogs[2] = cycleLogs[1]
+        cycleLogs[1] = cycleLogs[0]
+    }
+
     private fun cycleCount(cycleCount: Int) {
         this.cycleCount = cycleCount
-
         try {
             Thread.sleep(loggingSignal.sleepTime)
             if (!loggingSignal.cycle) return
@@ -87,9 +90,12 @@ class Logger(
     private fun fetchLog(result: FetchResult) {
         executedInstructionSet.add(result.instruction)
         if (!loggingSignal.fetch) return
+        if (!result.valid) {
+            printStep("NOP");
+            return
+        }
 
         printStep("IF")
-        print("cyl : ${result.cycle}, ")
         print("pc : 0x${(result.pc).toHexString(2)}, ")
         print("instruction : 0x${result.instruction.toHexString(8)}")
         println()
@@ -97,15 +103,19 @@ class Logger(
 
     private fun decodeLog(result: DecodeResult) {
         val opcode = result.controlSignal.opcode
-        val opCodeCount = executedOpcodes.getOrDefault(opcode, 0)
-        executedOpcodes[opcode] = opCodeCount + 1
-
-        val opCodeTypeCount = executedOpcodeType.getOrDefault(opcode.type, 0)
-        executedOpcodeType[opcode.type] = opCodeTypeCount + 1
+        if (result.valid) {
+            executedOpcodes[opcode] = executedOpcodes.getOrDefault(opcode, 0) + 1
+            executedOpcodeType[opcode.type] = executedOpcodeType.getOrDefault(opcode.type, 0) + 1
+        }
 
         if (!loggingSignal.decode) return
+        if (!result.valid) {
+            println();
+            return
+        }
 
         printStep("ID")
+
         var msg = "opcode : ${opcode}, "
         if (opcode.type == Opcode.Type.R) {
             msg += "readData1 : ${result.readData1}, readData2 : ${result.readData2}"
@@ -123,8 +133,17 @@ class Logger(
     }
 
     private fun executeLog(result: ExecutionResult) {
-        if (result.controlSignal.branch && result.aluValue == 1) numberOfTakenBranches++
+        if (result.valid) {
+            if (result.controlSignal.branch && result.aluValue == 1) {
+                numberOfTakenBranches++
+            }
+        }
+
         if (!loggingSignal.execute) return
+        if (!result.valid) {
+            println();
+            return
+        }
 
         printStep("EX")
         val msg = "result : ${result.aluValue} [0x${result.aluValue.toHexString()}], " +
@@ -134,28 +153,48 @@ class Logger(
 
     private fun memoryAccessLog(result: MemoryAccessResult) {
         val controlSignal = result.controlSignal
-        if (controlSignal.memRead || controlSignal.memWrite) numberOfExecutedMA++
+        if (result.valid) {
+            if (controlSignal.memRead || controlSignal.memWrite) {
+                numberOfExecutedMA++
+            }
+        }
+
         if (!loggingSignal.memoryAccess) return
+        if (!result.valid) {
+            println();
+            return
+        }
 
         printStep("MA")
         var msg = ""
         if (controlSignal.memRead) {
-            msg = "M[0x${result.aluValue.toHexString()}] = ${result.readData} [0x${result.readData.toHexString()}]"
+            msg =
+                "M[0x${result.aluValue.toHexString()}] = ${result.memReadValue} [0x${result.memReadValue.toHexString()}]"
         }
         if (controlSignal.memWrite) {
-            msg = "M[0x${result.aluValue.toHexString()}] = ${result.writeData} [0x${result.writeData.toHexString()}]"
+            msg =
+                "M[0x${result.aluValue.toHexString()}] = ${result.memWriteValue} [0x${result.memWriteValue.toHexString()}]"
         }
         println(msg)
     }
 
     private fun writeBackLog(result: WriteBackResult) {
-        if (result.controlSignal.regWrite) numberOfWriteBack++
+        if (result.valid) {
+            if (result.controlSignal.regWrite) {
+                numberOfWriteBack++
+            }
+        }
+
         if (!loggingSignal.writeBack) return
+        if (!result.valid) {
+            println();
+            return
+        }
 
         printStep("WB")
         var msg = ""
-        if (result.regWrite) {
-            msg = "R[${result.writeRegister}] = ${result.writeData} [0x${result.writeData.toHexString()}]"
+        if (result.controlSignal.regWrite) {
+            msg = "R[${result.writeRegister}] = ${result.regWriteValue} [0x${result.regWriteValue.toHexString()}]"
         }
         println(msg + "\n")
     }
@@ -222,10 +261,9 @@ data class LoggingSignal(
     var sleepTime: Long = 0L
 )
 
-class CycleLog(
-    private val cycle: Int
-) {
-    var fetchResult = FetchResult(cycle)
+class CycleLog {
+    var cycle = 0
+    var fetchResult = FetchResult()
     var decodeResult = DecodeResult()
     var executionResult = ExecutionResult()
     var memoryAccessResult = MemoryAccessResult()

@@ -1,7 +1,7 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.And.Companion.and
-import computer.architecture.component.Latch
+import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Registers
@@ -14,42 +14,42 @@ class ControlUnit(
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
-    private val latch = Latch()
+    private val stallingUnit = StallingUnit()
+
+    private val latches = Latches()
 
     fun process(): Int {
-        var cycle = 1
+        var cycle = 0
 
         while (registers.pc != -1) {
             cycle++
-            val ifResult = fetch(cycle, registers.pc)
-            val idResult = decode(latch.popFetchResult())
-            val exResult = execute(latch.popDecodeResult())
-            val maResult = memoryAccess(latch.popExecutionResult())
-            val wbResult = writeBack(latch.popMemoryAccessResult())
+            val ifResult = fetch()
+            latches.ifid(ifResult)
 
-            latch.pushFetchResult(ifResult)
-            latch.pushDecodeResult(idResult)
-            latch.pushExecutionResult(exResult)
-            latch.pushMemoryAccessResult(maResult)
-            latch.pushWriteBackResult(wbResult)
-            latch.flush()
+            val idResult = decode(latches.ifid())
+            latches.idex(idResult)
 
-            logger.save(
-                fetchResult = ifResult,
-                decodeResult = idResult,
-                executionResult = exResult,
-                memoryAccessResult = maResult,
-                writeBackResult = wbResult
-            )
-            logger.flushCycleLog()
+            val exResult = execute(latches.idex())
+            latches.exma(exResult)
+
+            val maResult = memoryAccess(latches.exma())
+            latches.mawb(maResult)
+
+            val wbResult = writeBack(latches.mawb())
+
+            latches.flushAll()
+            logger.saveAndFlush(cycle, ifResult, idResult, exResult, maResult, wbResult)
         }
         return registers[2]
     }
 
-    private fun fetch(cycle: Int, pc: Int): FetchResult {
-        val fetchResult = FetchResult(cycle, registers.pc, memory.read(pc))
-        registers.pc += 4
-        return fetchResult
+    private fun fetch(): FetchResult {
+        val valid = stallingUnit.valid
+        val pc = mux(stallingUnit.isNextPc, stallingUnit.freezePc, registers.pc)
+        if(valid) {
+            registers.pc += 4
+        }
+        return FetchResult(valid, pc, memory.read(pc))
     }
 
     private fun decode(fetchResult: FetchResult): DecodeResult {
@@ -94,7 +94,7 @@ class ControlUnit(
 
         return ExecutionResult(
             aluValue = aluResult.value,
-            memWriteData = decodeResult.readData2,
+            memWriteValue = decodeResult.readData2,
             writeRegister = decodeResult.writeRegister,
             nextPc = nextPc,
             controlSignal = controlSignal
@@ -103,7 +103,7 @@ class ControlUnit(
 
     private fun memoryAccess(executionResult: ExecutionResult): MemoryAccessResult {
         val controlSignal = executionResult.controlSignal
-        val readData = memory.read(
+        val memReadValue = memory.read(
             memRead = controlSignal.memRead,
             address = executionResult.aluValue,
         )
@@ -111,12 +111,12 @@ class ControlUnit(
         memory.write(
             memWrite = controlSignal.memWrite,
             address = executionResult.aluValue,
-            value = executionResult.memWriteData
+            value = executionResult.memWriteValue
         )
 
         return MemoryAccessResult(
-            readData = readData,
-            writeData = executionResult.memWriteData,
+            memReadValue = memReadValue,
+            memWriteValue = executionResult.memWriteValue,
             aluValue = executionResult.aluValue,
             writeRegister = executionResult.writeRegister,
             nextPc = executionResult.nextPc,
@@ -126,21 +126,20 @@ class ControlUnit(
 
     private fun writeBack(memoryAccessResult: MemoryAccessResult): WriteBackResult {
         val controlSignal = memoryAccessResult.controlSignal
-        var writeData = mux(controlSignal.memToReg, memoryAccessResult.readData, memoryAccessResult.aluValue)
-        writeData = mux(controlSignal.jal, registers.pc + 4, writeData)
+        var regWriteValue = mux(controlSignal.memToReg, memoryAccessResult.memReadValue, memoryAccessResult.aluValue)
+        regWriteValue = mux(controlSignal.jal, registers.pc + 4, regWriteValue)
 
         registers.write(
             regWrite = controlSignal.regWrite,
             writeRegister = memoryAccessResult.writeRegister,
-            writeData = writeData
+            writeData = regWriteValue
         )
 
         registers.pc = memoryAccessResult.nextPc
 
         return WriteBackResult(
-            regWrite = controlSignal.regWrite,
             writeRegister = memoryAccessResult.writeRegister,
-            writeData = writeData,
+            regWriteValue = regWriteValue,
             nextPc = memoryAccessResult.nextPc,
             controlSignal = controlSignal
         )
