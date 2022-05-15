@@ -193,6 +193,7 @@ class Logger(
         if (!result.valid) {
             printStep("WB", result.pc)
             printNop()
+            println()
             return
         }
 

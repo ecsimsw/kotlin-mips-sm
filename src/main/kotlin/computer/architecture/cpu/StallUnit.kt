@@ -1,18 +1,18 @@
 package computer.architecture.cpu
 
-class StallingUnit(
+class StallUnit(
     var stallingCount: Int = 0
 ) {
     var freezePc: Int = 0
-    var isNextPc: Boolean = false
+    var isMelt: Boolean = false
     var valid: Boolean = true
 
     fun next() {
         when (stallingCount) {
-            0 -> isNextPc = false
+            0 -> isMelt = false
             1 -> {
                 stallingCount = 0
-                isNextPc = true
+                isMelt = true
                 valid = true
             }
             else -> stallingCount--

@@ -20,11 +20,12 @@ data class DecodeResult(
 
 data class ExecutionResult(
     val valid : Boolean = false,
-    val pc: Int =0 , // TODO :: for logging
+    val pc: Int =0, // TODO :: for logging
     val aluValue: Int = 0,
     val memWriteValue: Int = 0,
     val writeRegister: Int = 0,
     val nextPc: Int = 0,
+    val jump: Boolean = false,
     val controlSignal: ControlSignal = ControlSignal.NONE
 )
 
@@ -35,7 +36,6 @@ data class MemoryAccessResult(
     val memWriteValue: Int =0,
     val aluValue: Int = 0,
     val writeRegister: Int = 0,
-    val nextPc: Int = 0,
     val controlSignal: ControlSignal = ControlSignal.NONE
 )
 
@@ -44,6 +44,10 @@ data class WriteBackResult(
     val pc: Int = 0, // TODO :: for logging
     val writeRegister: Int = 0,
     val regWriteValue: Int = 0,
-    val nextPc: Int = 0,
     val controlSignal: ControlSignal = ControlSignal.NONE
+)
+
+data class CycleResult(
+    val nextPc: Int = 0,
+    val value : Int = 0
 )
