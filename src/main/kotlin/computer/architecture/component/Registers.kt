@@ -16,8 +16,6 @@ class Registers(
         r[31] = -1
     }
 
-    var pc: Int = 0
-
     operator fun get(register: Int) = r[register]
 
     fun book(regWrite: Boolean, writeRegister: Int) {
