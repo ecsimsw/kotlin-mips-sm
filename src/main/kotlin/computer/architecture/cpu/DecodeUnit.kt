@@ -2,7 +2,12 @@ package computer.architecture.cpu
 
 class DecodeUnit {
 
-    fun parse(pc: Int, instruction: Int) = ParsedInstruction(pc, instruction)
+    fun parse(pc: Int, instruction: Int): ParsedInstruction {
+        if(instruction == 0) {
+            return ParsedInstruction.NOP
+        }
+        return ParsedInstruction(pc, instruction)
+    }
 
     fun controlSignal(opcode: Opcode) = controlSignal(true, opcode)
 
@@ -26,6 +31,8 @@ data class ParsedInstruction(
     val address: Int = address(pc, instruction)
 ) {
     companion object {
+
+        val NOP = ParsedInstruction(0, 0, )
 
         fun immediate(pc: Int, instruction: Int): Int {
             val imm = instruction and 0xFFFF

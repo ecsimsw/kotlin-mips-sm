@@ -23,6 +23,6 @@ data class ControlSignal(
     val aluOp: AluOp = opcode.operation
 ) {
     companion object {
-        val NONE = ControlSignal()
+        val NONE = ControlSignal(regWrite = false, memWrite = false)
     }
 }

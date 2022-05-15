@@ -1,7 +1,7 @@
 package computer.architecture.cpu
 
 class StallingUnit(
-    private var stallingCount: Int = 0
+    var stallingCount: Int = 0
 ) {
     var freezePc: Int = 0
     var isNextPc: Boolean = false
@@ -19,15 +19,11 @@ class StallingUnit(
         }
     }
 
-    fun takeDependency(dataDependencyResult: DataDependencyResult) {
-        if (!dataDependencyResult.valid) {
-            sleep(stallingCount, dataDependencyResult.freezePc)
+    fun sleep(stallingCount: Int, pc : Int) {
+        if (this.valid) {
+            this.freezePc = pc
+            this.valid = false
+            this.stallingCount = stallingCount
         }
-    }
-
-    private fun sleep(stallingCount: Int, pc: Int) {
-        this.freezePc = pc
-        this.valid = false
-        this.stallingCount = stallingCount
     }
 }

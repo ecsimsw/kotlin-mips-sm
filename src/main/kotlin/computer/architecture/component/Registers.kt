@@ -21,7 +21,7 @@ class Registers(
     operator fun get(register: Int) = r[register]
 
     fun book(regWrite: Boolean, writeRegister: Int) {
-        if(regWrite) {
+        if(regWrite && writeRegister != 0) {
             valid[writeRegister] = false
         }
     }
