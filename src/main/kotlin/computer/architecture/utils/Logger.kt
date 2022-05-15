@@ -75,33 +75,34 @@ class Logger(
         cycleLogs[1] = cycleLogs[0]
     }
 
-    private fun cycleCount(cycleCount: Int) {
+    fun cycleCount(cycleCount: Int) {
         this.cycleCount = cycleCount
         try {
             Thread.sleep(loggingSignal.sleepTime)
             if (!loggingSignal.cycle) return
-            if (this.cycleCount % 1000000 == 0) {
+            if (this.cycleCount != 0 && this.cycleCount % 1000000 == 0) {
                 println("cycle : ${this.cycleCount}")
             }
         } catch (e: InterruptedException) {
         }
     }
 
-    private fun fetchLog(result: FetchResult) {
+    fun fetchLog(result: FetchResult) {
         executedInstructionSet.add(result.instruction)
         if (!loggingSignal.fetch) return
         if (!result.valid) {
-            printStep("NOP");
+            printStep("IF", result.pc)
+            printNop()
             return
         }
 
-        printStep("IF")
+        printStep("IF", result.pc)
         print("pc : 0x${(result.pc).toHexString(2)}, ")
         print("instruction : 0x${result.instruction.toHexString(8)}")
         println()
     }
 
-    private fun decodeLog(result: DecodeResult) {
+    fun decodeLog(result: DecodeResult) {
         val opcode = result.controlSignal.opcode
         if (result.valid) {
             executedOpcodes[opcode] = executedOpcodes.getOrDefault(opcode, 0) + 1
@@ -110,11 +111,12 @@ class Logger(
 
         if (!loggingSignal.decode) return
         if (!result.valid) {
-            println();
+            printStep("ID", result.pc)
+            printNop()
             return
         }
 
-        printStep("ID")
+        printStep("ID", result.pc)
 
         var msg = "opcode : ${opcode}, "
         if (opcode.type == Opcode.Type.R) {
@@ -132,7 +134,7 @@ class Logger(
         println(msg)
     }
 
-    private fun executeLog(result: ExecutionResult) {
+    fun executeLog(result: ExecutionResult) {
         if (result.valid) {
             if (result.controlSignal.branch && result.aluValue == 1) {
                 numberOfTakenBranches++
@@ -141,17 +143,18 @@ class Logger(
 
         if (!loggingSignal.execute) return
         if (!result.valid) {
-            println();
+            printStep("EX", result.pc)
+            printNop()
             return
         }
 
-        printStep("EX")
+        printStep("EX", result.pc)
         val msg = "result : ${result.aluValue} [0x${result.aluValue.toHexString()}], " +
                 "nextPc : 0x${result.nextPc.toHexString()}"
         println(msg)
     }
 
-    private fun memoryAccessLog(result: MemoryAccessResult) {
+    fun memoryAccessLog(result: MemoryAccessResult) {
         val controlSignal = result.controlSignal
         if (result.valid) {
             if (controlSignal.memRead || controlSignal.memWrite) {
@@ -161,11 +164,12 @@ class Logger(
 
         if (!loggingSignal.memoryAccess) return
         if (!result.valid) {
-            println();
+            printStep("MA", result.pc)
+            printNop()
             return
         }
 
-        printStep("MA")
+        printStep("MA", result.pc)
         var msg = ""
         if (controlSignal.memRead) {
             msg =
@@ -178,7 +182,7 @@ class Logger(
         println(msg)
     }
 
-    private fun writeBackLog(result: WriteBackResult) {
+    fun writeBackLog(result: WriteBackResult) {
         if (result.valid) {
             if (result.controlSignal.regWrite) {
                 numberOfWriteBack++
@@ -187,11 +191,12 @@ class Logger(
 
         if (!loggingSignal.writeBack) return
         if (!result.valid) {
-            println();
+            printStep("WB", result.pc)
+            printNop()
             return
         }
 
-        printStep("WB")
+        printStep("WB", result.pc)
         var msg = ""
         if (result.controlSignal.regWrite) {
             msg = "R[${result.writeRegister}] = ${result.regWriteValue} [0x${result.regWriteValue.toHexString()}]"
@@ -232,6 +237,14 @@ class Logger(
 
     private fun printStep(stepName: String) {
         print("[$stepName] :: ")
+    }
+
+    private fun printStep(stepName: String, pc :Int) {
+        print("[$stepName] [$pc] :: ")
+    }
+
+    private fun printNop() {
+        println("[NOP]")
     }
 
     private fun Int.toHexString(): String {

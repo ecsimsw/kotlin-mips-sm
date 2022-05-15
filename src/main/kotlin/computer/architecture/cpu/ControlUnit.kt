@@ -15,6 +15,7 @@ class ControlUnit(
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
     private val stallingUnit = StallingUnit()
+    private val dataDependencyUnit = DataDependencyUnit(registers)
 
     private val latches = Latches()
 
@@ -23,7 +24,12 @@ class ControlUnit(
 
         while (registers.pc != -1) {
             cycle++
+            println(registers.pc)
+            println(stallingUnit.valid)
+
             val ifResult = fetch()
+            println(ifResult.valid)
+
             latches.ifid(ifResult)
 
             val idResult = decode(latches.ifid())
@@ -36,9 +42,18 @@ class ControlUnit(
             latches.mawb(maResult)
 
             val wbResult = writeBack(latches.mawb())
+//            registers.pc = wbResult.nextPc
 
             latches.flushAll()
-            logger.saveAndFlush(cycle, ifResult, idResult, exResult, maResult, wbResult)
+
+            logger.cycleCount(cycle)
+            logger.fetchLog(ifResult)
+            logger.decodeLog(idResult)
+            logger.executeLog(exResult)
+            logger.memoryAccessLog(maResult)
+            logger.writeBackLog(wbResult)
+
+//            logger.saveAndFlush(cycle, ifResult, idResult, exResult, maResult, wbResult)
         }
         return registers[2]
     }
@@ -46,20 +61,25 @@ class ControlUnit(
     private fun fetch(): FetchResult {
         val valid = stallingUnit.valid
         val pc = mux(stallingUnit.isNextPc, stallingUnit.freezePc, registers.pc)
-        if(valid) {
-            registers.pc += 4
-        }
+        registers.pc = pc + 4
         return FetchResult(valid, pc, memory.read(pc))
     }
 
-    private fun decode(fetchResult: FetchResult): DecodeResult {
-        val instruction = decodeUnit.parse(registers.pc, fetchResult.instruction)
-        val controlSignal = decodeUnit.controlSignal(instruction.opcode)
+    private fun decode(ifResult: FetchResult): DecodeResult {
+        val instruction = decodeUnit.parse(registers.pc, ifResult.instruction)
+        val dependencyResult = dataDependencyUnit.check(ifResult.pc, instruction.rs, instruction.rt)
+        stallingUnit.takeDependency(dependencyResult)
+
+        val valid = and(ifResult.valid, dependencyResult.valid)
+        val controlSignal = decodeUnit.controlSignal(valid, instruction.opcode)
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
+        registers.book(controlSignal.regWrite, writeRegister)
 
         return DecodeResult(
+            valid = valid,
+            pc = ifResult.pc,
             shiftAmt = instruction.shiftAmt,
             immediate = instruction.immediate,
             address = instruction.address,
@@ -70,13 +90,13 @@ class ControlUnit(
         )
     }
 
-    private fun execute(decodeResult: DecodeResult): ExecutionResult {
-        val controlSignal = decodeResult.controlSignal
-        var src1 = mux(controlSignal.shift, decodeResult.readData2, decodeResult.readData1)
-        src1 = mux(controlSignal.upperImm, decodeResult.immediate, src1)
+    private fun execute(idResult: DecodeResult): ExecutionResult {
+        val controlSignal = idResult.controlSignal
+        var src1 = mux(controlSignal.shift, idResult.readData2, idResult.readData1)
+        src1 = mux(controlSignal.upperImm, idResult.immediate, src1)
 
-        var src2 = mux(controlSignal.aluSrc, decodeResult.immediate, decodeResult.readData2)
-        src2 = mux(controlSignal.shift, decodeResult.shiftAmt, src2)
+        var src2 = mux(controlSignal.aluSrc, idResult.immediate, idResult.readData2)
+        src2 = mux(controlSignal.shift, idResult.shiftAmt, src2)
         src2 = mux(controlSignal.upperImm, 16, src2)
 
         val aluResult = alu.operate(
@@ -88,59 +108,63 @@ class ControlUnit(
         var nextPc = registers.pc
 
         val branchCondition = and(aluResult.isTrue, controlSignal.branch)
-        nextPc = mux(branchCondition, decodeResult.immediate, nextPc)
-        nextPc = mux(controlSignal.jump, decodeResult.address, nextPc)
-        nextPc = mux(controlSignal.jr, decodeResult.readData1, nextPc)
+        nextPc = mux(branchCondition, idResult.immediate, nextPc)
+        nextPc = mux(controlSignal.jump, idResult.address, nextPc)
+        nextPc = mux(controlSignal.jr, idResult.readData1, nextPc)
 
         return ExecutionResult(
+            valid = idResult.valid,
+            pc = idResult.pc,
             aluValue = aluResult.value,
-            memWriteValue = decodeResult.readData2,
-            writeRegister = decodeResult.writeRegister,
+            memWriteValue = idResult.readData2,
+            writeRegister = idResult.writeRegister,
             nextPc = nextPc,
             controlSignal = controlSignal
         )
     }
 
-    private fun memoryAccess(executionResult: ExecutionResult): MemoryAccessResult {
-        val controlSignal = executionResult.controlSignal
+    private fun memoryAccess(exResult: ExecutionResult): MemoryAccessResult {
+        val controlSignal = exResult.controlSignal
         val memReadValue = memory.read(
             memRead = controlSignal.memRead,
-            address = executionResult.aluValue,
+            address = exResult.aluValue,
         )
 
         memory.write(
             memWrite = controlSignal.memWrite,
-            address = executionResult.aluValue,
-            value = executionResult.memWriteValue
+            address = exResult.aluValue,
+            value = exResult.memWriteValue
         )
 
         return MemoryAccessResult(
+            valid = exResult.valid,
+            pc = exResult.pc,
             memReadValue = memReadValue,
-            memWriteValue = executionResult.memWriteValue,
-            aluValue = executionResult.aluValue,
-            writeRegister = executionResult.writeRegister,
-            nextPc = executionResult.nextPc,
+            memWriteValue = exResult.memWriteValue,
+            aluValue = exResult.aluValue,
+            writeRegister = exResult.writeRegister,
+            nextPc = exResult.nextPc,
             controlSignal = controlSignal
         )
     }
 
-    private fun writeBack(memoryAccessResult: MemoryAccessResult): WriteBackResult {
-        val controlSignal = memoryAccessResult.controlSignal
-        var regWriteValue = mux(controlSignal.memToReg, memoryAccessResult.memReadValue, memoryAccessResult.aluValue)
+    private fun writeBack(maResult: MemoryAccessResult): WriteBackResult {
+        val controlSignal = maResult.controlSignal
+        var regWriteValue = mux(controlSignal.memToReg, maResult.memReadValue, maResult.aluValue)
         regWriteValue = mux(controlSignal.jal, registers.pc + 4, regWriteValue)
 
         registers.write(
             regWrite = controlSignal.regWrite,
-            writeRegister = memoryAccessResult.writeRegister,
+            writeRegister = maResult.writeRegister,
             writeData = regWriteValue
         )
 
-        registers.pc = memoryAccessResult.nextPc
-
         return WriteBackResult(
-            writeRegister = memoryAccessResult.writeRegister,
+            valid = maResult.valid,
+            pc = maResult.pc,
+            writeRegister = maResult.writeRegister,
             regWriteValue = regWriteValue,
-            nextPc = memoryAccessResult.nextPc,
+            nextPc = maResult.nextPc,
             controlSignal = controlSignal
         )
     }

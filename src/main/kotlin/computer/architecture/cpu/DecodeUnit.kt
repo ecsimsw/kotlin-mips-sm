@@ -4,7 +4,14 @@ class DecodeUnit {
 
     fun parse(pc: Int, instruction: Int) = ParsedInstruction(pc, instruction)
 
-    fun controlSignal(opcode: Opcode) = ControlSignal(opcode)
+    fun controlSignal(opcode: Opcode) = controlSignal(true, opcode)
+
+    fun controlSignal(valid: Boolean, opcode: Opcode): ControlSignal {
+        if(valid) {
+            return ControlSignal(opcode)
+        }
+        return ControlSignal.NONE
+    }
 }
 
 data class ParsedInstruction(
