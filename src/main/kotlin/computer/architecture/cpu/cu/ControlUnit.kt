@@ -1,16 +1,17 @@
-package computer.architecture.cpu
+package computer.architecture.cpu.cu
 
 import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Registers
+import computer.architecture.cpu.*
 import computer.architecture.utils.Logger
 
 class ControlUnit(
     private val memory: Memory,
     private val logger: Logger = Logger.init(),
-) {
+) : ControlUnitInterface {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
@@ -20,11 +21,10 @@ class ControlUnit(
 
     private var cycle = 0
 
-    fun process(): Int {
+    override fun process(): Int {
         var cycleResult = CycleResult()
 
         while (true) {
-            cycle++
             logger.cycleCount(cycle)
 
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
@@ -35,6 +35,7 @@ class ControlUnit(
             cycleResult = cycleExecution(stallUnit.valid, pc)
             latches.flushAll()
             stallUnit.next()
+            cycle++
         }
     }
 
