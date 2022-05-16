@@ -23,24 +23,27 @@ class ControlUnit(
 
     override fun process(): Int {
         var cycleResult = CycleResult()
+        val endFlag = EndFlag()
 
         while (true) {
             logger.cycleCount(cycle)
 
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
-            if (pc == -1) {
+            val isEnd = endFlag.check(pc)
+            cycleResult = cycleExecution(stallUnit.valid, isEnd, pc)
+
+            if (cycleResult.isEnd) {
                 return cycleResult.value
             }
 
-            cycleResult = cycleExecution(stallUnit.valid, pc)
             latches.flushAll()
             stallUnit.next()
             cycle++
         }
     }
 
-    private fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
-        val ifResult = fetch(valid, pc)
+    private fun cycleExecution(valid: Boolean, isEnd: Boolean, pc: Int): CycleResult {
+        val ifResult = fetch(valid, isEnd, pc)
         latches.ifid(ifResult)
         logger.fetchLog(ifResult)
 
@@ -60,19 +63,20 @@ class ControlUnit(
         logger.writeBackLog(wbResult)
 
         val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
-        return CycleResult(nextPc, registers[2])
+        return CycleResult(nextPc, registers[2], wbResult.controlSignal.isEnd)
     }
 
-    private fun fetch(valid: Boolean, pc: Int): FetchResult {
-        val instruction = memory.read(pc)
-        return FetchResult(valid && (instruction != 0), pc, instruction)
+    private fun fetch(valid: Boolean, isEnd: Boolean, pc: Int): FetchResult {
+        val instruction: Int = if (isEnd) 0 else memory.read(pc)
+        return FetchResult(
+            valid = valid && (instruction != 0),
+            isEnd = isEnd,
+            pc = pc,
+            instruction = instruction
+        )
     }
 
     private fun decode(ifResult: FetchResult): DecodeResult {
-        if (!ifResult.valid) {
-            return DecodeResult()
-        }
-
         val instruction = decodeUnit.parse(ifResult.pc, ifResult.instruction)
         val dataValid = dataDependencyUnit.isValid(instruction.rs, instruction.rt)
         if (!dataValid) {
@@ -80,11 +84,14 @@ class ControlUnit(
         }
 
         val valid = and(ifResult.valid, dataValid)
-        val controlSignal = decodeUnit.controlSignal(valid, instruction.opcode)
+        val controlSignal = decodeUnit.controlSignal(valid, ifResult.isEnd, instruction.opcode)
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
         registers.book(controlSignal.regWrite, writeRegister)
+
+        println(valid)
+        println(controlSignal.isEnd)
 
         return DecodeResult(
             valid = valid,
@@ -101,7 +108,7 @@ class ControlUnit(
 
     private fun execute(idResult: DecodeResult): ExecutionResult {
         if (!idResult.valid) {
-            return ExecutionResult()
+            return ExecutionResult(controlSignal = idResult.controlSignal)
         }
 
         val controlSignal = idResult.controlSignal
@@ -139,7 +146,7 @@ class ControlUnit(
 
     private fun memoryAccess(exResult: ExecutionResult): MemoryAccessResult {
         if (!exResult.valid) {
-            return MemoryAccessResult()
+            return MemoryAccessResult(controlSignal = exResult.controlSignal)
         }
 
         val controlSignal = exResult.controlSignal
@@ -167,7 +174,7 @@ class ControlUnit(
 
     private fun writeBack(maResult: MemoryAccessResult): WriteBackResult {
         if (!maResult.valid) {
-            return WriteBackResult()
+            return WriteBackResult(controlSignal = maResult.controlSignal)
         }
 
         val controlSignal = maResult.controlSignal
@@ -184,7 +191,7 @@ class ControlUnit(
             pc = maResult.pc, // TODO :: only for logging
             writeRegister = maResult.writeRegister,
             regWriteValue = regWriteValue,
-            controlSignal = controlSignal
+            controlSignal = controlSignal,
         )
     }
 }

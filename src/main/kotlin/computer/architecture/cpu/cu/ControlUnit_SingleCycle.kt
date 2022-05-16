@@ -1,7 +1,6 @@
 package computer.architecture.cpu.cu
 
 import computer.architecture.component.And.Companion.and
-import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Registers
@@ -65,7 +64,7 @@ class ControlUnit_SingleCycle(
         val instruction = decodeUnit.parse(ifResult.pc, ifResult.instruction)
 
         val valid = ifResult.valid
-        val controlSignal = decodeUnit.controlSignal(valid, instruction.opcode)
+        val controlSignal = decodeUnit.controlSignal(isValid = valid, opcode = instruction.opcode)
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)

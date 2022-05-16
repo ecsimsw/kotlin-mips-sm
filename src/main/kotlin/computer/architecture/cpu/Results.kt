@@ -3,7 +3,8 @@ package computer.architecture.cpu
 data class FetchResult(
     val valid : Boolean = false,
     val pc: Int = 0,
-    val instruction: Int =0
+    val instruction: Int =0,
+    val isEnd: Boolean = false
 )
 
 data class DecodeResult(
@@ -49,5 +50,6 @@ data class WriteBackResult(
 
 data class CycleResult(
     val nextPc: Int = 0,
-    val value : Int = 0
+    val value : Int = 0,
+    val isEnd: Boolean = false
 )
