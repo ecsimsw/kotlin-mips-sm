@@ -21,10 +21,9 @@ data class ControlSignal(
     val jr: Boolean = (opcode == Opcode.JR),
     val jal: Boolean = (opcode == Opcode.JAL),
     val aluOp: AluOp = opcode.operation,
-    val isEnd: Boolean = false
+    var isEnd: Boolean = false
 ) {
     companion object {
-        val END = ControlSignal(regWrite = false, memWrite = false, isEnd = true)
         val NONE = ControlSignal(regWrite = false, memWrite = false, isEnd = false)
     }
 }

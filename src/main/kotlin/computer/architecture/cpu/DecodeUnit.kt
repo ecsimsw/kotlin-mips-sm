@@ -9,14 +9,11 @@ class DecodeUnit {
         return ParsedInstruction(pc, instruction)
     }
 
-    fun controlSignal(isValid: Boolean = true, isEnd: Boolean = false, opcode: Opcode): ControlSignal {
-        if(isEnd) {
-            return ControlSignal.END
-        }
+    fun controlSignal(isValid: Boolean = true, opcode: Opcode): ControlSignal {
         if(!isValid) {
             return ControlSignal.NONE
         }
-        return ControlSignal(opcode = opcode, isEnd = isEnd)
+        return ControlSignal(opcode)
     }
 }
 

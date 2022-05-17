@@ -18,6 +18,7 @@ class Logger(
     companion object {
         fun init(
             cycle: Boolean = false,
+            cyclePrintPeriod: Int = 1,
             fetch: Boolean = false,
             decode: Boolean = false,
             execute: Boolean = false,
@@ -28,6 +29,7 @@ class Logger(
         ): Logger {
             val signals = LoggingSignal(
                 cycle = cycle,
+                cyclePrintPeriod = cyclePrintPeriod,
                 fetch = fetch,
                 decode = decode,
                 execute = execute,
@@ -80,7 +82,7 @@ class Logger(
         try {
             Thread.sleep(loggingSignal.sleepTime)
             if (!loggingSignal.cycle) return
-            if (this.cycleCount != 0 && this.cycleCount % 1000000 == 0) {
+            if (this.cycleCount != 0 && this.cycleCount % loggingSignal.cyclePrintPeriod == 0) {
                 println("cycle : ${this.cycleCount}")
             }
         } catch (e: InterruptedException) {
@@ -248,24 +250,12 @@ class Logger(
         println("[NOP]")
     }
 
-    private fun Int.toHexString(): String {
-        return Integer.toHexString(this).uppercase()
-    }
 
-    private fun Int.toHexString(digits: Int): String {
-        val hexString = Integer.toHexString(this)
-        var newBinary = hexString
-        if (newBinary.length < digits) {
-            for (i in 0 until digits - hexString.length) {
-                newBinary = "0$newBinary"
-            }
-        }
-        return newBinary.uppercase()
-    }
 }
 
 data class LoggingSignal(
     var cycle: Boolean = false,
+    var cyclePrintPeriod: Int =1,
     var fetch: Boolean = false,
     var decode: Boolean = false,
     var execute: Boolean = false,

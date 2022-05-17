@@ -4,13 +4,9 @@ class EndFlag {
 
     var isEnd = false
 
-    fun check(pc: Int): Boolean {
-        if(isEnd) {
-            isEnd = true
-            return isEnd
-        } else {
-            isEnd = pc == -1
-            return isEnd
+    fun update(lastInstruction: Boolean) {
+        if(!isEnd) {
+            this.isEnd = lastInstruction
         }
     }
 }

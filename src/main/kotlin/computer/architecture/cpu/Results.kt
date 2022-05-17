@@ -1,15 +1,14 @@
 package computer.architecture.cpu
 
 data class FetchResult(
-    val valid : Boolean = false,
+    var valid : Boolean = false,
     val pc: Int = 0,
-    val instruction: Int =0,
-    val isEnd: Boolean = false
+    val instruction: Int =0
 )
 
 data class DecodeResult(
-    val valid : Boolean = false,
-    val pc: Int =0 ,
+    var valid : Boolean = false,
+    val pc: Int =0,
     val shiftAmt: Int = 0,
     val immediate: Int = 0,
     val address: Int = 0,
@@ -51,5 +50,6 @@ data class WriteBackResult(
 data class CycleResult(
     val nextPc: Int = 0,
     val value : Int = 0,
-    val isEnd: Boolean = false
+    val lastInstruction: Boolean = false,
+    val lastCycle : Boolean = false
 )

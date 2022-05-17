@@ -8,7 +8,7 @@ import computer.architecture.utils.Logger
 
 fun main() {
     val logger = initLogger()
-    val fileToLoad = "sample/simple.bin"
+    val fileToLoad = "sample/simple4.bin"
     val memory = Memory.load(20000000, fileToLoad)
 
     val controlUnit: ControlUnitInterface = ControlUnit(memory, logger)
@@ -20,6 +20,7 @@ fun main() {
 private fun initLogger(): Logger {
     return Logger.init(
         cycle = true,
+        cyclePrintPeriod = 1,
         fetch = true,
         decode = true,
         execute = true,

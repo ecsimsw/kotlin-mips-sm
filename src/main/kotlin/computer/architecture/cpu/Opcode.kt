@@ -1,5 +1,7 @@
 package computer.architecture.cpu
 
+import computer.architecture.utils.toHexString
+
 enum class Opcode(
     val code: Int,
     val type: Type,
@@ -27,7 +29,14 @@ enum class Opcode(
     companion object {
 
         fun of(instruction: Int): Opcode {
-            return of(instruction shr 26 and 0x3F, instruction and 0x3F)
+            try {
+                return of(instruction shr 26 and 0x3F, instruction and 0x3F)
+            } catch (e: IllegalArgumentException) {
+                throw IllegalArgumentException(
+                    "Invalid opcode!! : instruction : 0x${instruction.toHexString(8)}\n"
+                            + e.message
+                )
+            }
         }
 
         private fun of(op: Int, func: Int): Opcode {
@@ -37,7 +46,7 @@ enum class Opcode(
                 else
                     it.type != Type.R && it.code == op
             } ?: throw IllegalArgumentException(
-                "Invalid opcode!! opcode : ${Integer.toBinaryString(op)}, function : ${Integer.toBinaryString(func)}"
+                "opcode : ${Integer.toBinaryString(op)}, function : ${Integer.toBinaryString(func)}"
             )
         }
     }
