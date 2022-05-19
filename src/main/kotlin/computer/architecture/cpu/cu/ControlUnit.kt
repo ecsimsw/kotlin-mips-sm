@@ -43,40 +43,6 @@ class ControlUnit(
         }
     }
 
-    private fun cycleExecution(cycle: Int, valid: Boolean, pc: Int): CycleResult {
-        val ifResult = fetch(valid, pc)
-        latches.ifid(ifResult)
-        logger.fetchLog(ifResult)
-
-        val idResult = decode(latches.ifid())
-        latches.idex(idResult)
-        logger.decodeLog(idResult)
-
-        val exResult = execute(latches.idex())
-        latches.exma(exResult)
-        logger.executeLog(exResult)
-
-        val maResult = memoryAccess(latches.exma())
-        latches.mawb(maResult)
-        logger.memoryAccessLog(maResult)
-
-        val wbResult = writeBack(latches.mawb())
-        logger.writeBackLog(wbResult)
-
-        if (exResult.jump) {
-            ifResult.valid = false
-            idResult.valid = false
-            if (exResult.nextPc == -1) {
-                exResult.controlSignal.isEnd = true
-            }
-        }
-
-        logger.saveAndFlush(cycle, ifResult, idResult, exResult, maResult, wbResult)
-
-        val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
-        return CycleResult(nextPc, registers[2], exResult.controlSignal.isEnd, wbResult.controlSignal.isEnd)
-    }
-
     private fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
         val ifResult = fetch(valid, pc)
         latches.ifid(ifResult)
@@ -96,6 +62,12 @@ class ControlUnit(
 
         val wbResult = writeBack(latches.mawb())
         logger.writeBackLog(wbResult)
+
+        if(idResult.dataHazard) {
+            ifResult.valid = false
+            idResult.valid = false
+            stallUnit.sleep(2, pc)
+        }
 
         if (exResult.jump) {
             ifResult.valid = false
@@ -123,12 +95,9 @@ class ControlUnit(
 
     private fun decode(ifResult: FetchResult): DecodeResult {
         val instruction = decodeUnit.parse(ifResult.pc, ifResult.instruction)
-        val dataValid = dataDependencyUnit.isValid(instruction.rs, instruction.rt)
-        if (!dataValid) {
-            stallUnit.sleep(2, ifResult.pc)
-        }
+        val dataHazard = dataDependencyUnit.hasHazard(instruction.rs, instruction.rt)
 
-        val valid = and(ifResult.valid, dataValid)
+        val valid = and(ifResult.valid, !dataHazard)
         val controlSignal = decodeUnit.controlSignal(valid, instruction.opcode)
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
@@ -138,6 +107,7 @@ class ControlUnit(
         return DecodeResult(
             valid = valid,
             pc = ifResult.pc,
+            dataHazard = dataHazard,
             shiftAmt = instruction.shiftAmt,
             immediate = instruction.immediate,
             address = instruction.address,
