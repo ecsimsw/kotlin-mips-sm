@@ -11,7 +11,7 @@ fun main() {
     val fileToLoad = "sample/simple4.bin"
     val memory = Memory.load(20000000, fileToLoad)
 
-    val controlUnit: ControlUnitInterface = ControlUnit(memory, logger)
+    val controlUnit: ControlUnitInterface = ControlUnit_SingleCycle(memory, logger)
     val processResult = controlUnit.process()
 
     logger.printProcessResult(processResult)

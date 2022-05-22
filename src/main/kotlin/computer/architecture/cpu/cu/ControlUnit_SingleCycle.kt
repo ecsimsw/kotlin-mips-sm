@@ -14,10 +14,13 @@ class ControlUnit_SingleCycle(
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
-    private var cycle = 0
+
 
     override fun process(): Int {
-        var cycleResult = CycleResult(valid = wbResult.valid)
+        var cycle = 0
+        var validCycle = 0
+
+        var cycleResult = CycleResult()
 
         while (true) {
             logger.cycleCount(cycle)
@@ -26,6 +29,11 @@ class ControlUnit_SingleCycle(
             if (pc == -1) {
                 return cycleResult.value
             }
+
+            if (cycleResult.valid) {
+                validCycle++
+            }
+
             cycleResult = cycleExecution(pc)
             cycle++
         }
@@ -48,7 +56,11 @@ class ControlUnit_SingleCycle(
         logger.writeBackLog(wbResult)
 
         val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
-        return CycleResult(nextPc, registers[2], valid = wbResult.valid)
+        return CycleResult(
+            nextPc = nextPc,
+            valid = wbResult.valid,
+            value = registers[2]
+        )
     }
 
     private fun fetch(valid: Boolean, pc: Int): FetchResult {
