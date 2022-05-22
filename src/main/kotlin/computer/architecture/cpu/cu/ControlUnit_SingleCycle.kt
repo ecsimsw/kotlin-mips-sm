@@ -6,22 +6,22 @@ import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.cpu.register.Registers
 import computer.architecture.cpu.*
 import computer.architecture.utils.Logger
+import computer.architecture.utils.LoggingSignal
 
 class ControlUnit_SingleCycle(
     private val memory: Memory,
-    private val logger: Logger = Logger.init(),
+    private val logger: Logger
 ) : ControlUnitInterface {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
-
 
     override fun process(): Int {
         var cycle = 0
         var cycleResult = CycleResult()
 
         while (true) {
-            logger.cycleCount(cycle)
+            logger.printCycle(cycle)
 
             val pc = cycleResult.nextPc
             if (pc == -1) {
@@ -35,19 +35,12 @@ class ControlUnit_SingleCycle(
 
     private fun cycleExecution(pc: Int): CycleResult {
         val ifResult = fetch(true, pc)
-        logger.fetchLog(ifResult)
-
         val idResult = decode(ifResult)
-        logger.decodeLog(idResult)
-
         val exResult = execute(idResult)
-        logger.executeLog(exResult)
-
         val maResult = memoryAccess(exResult)
-        logger.memoryAccessLog(maResult)
-
         val wbResult = writeBack(maResult)
-        logger.writeBackLog(wbResult)
+
+        logger.log(ifResult, idResult, exResult, maResult, wbResult)
 
         val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
         return CycleResult(

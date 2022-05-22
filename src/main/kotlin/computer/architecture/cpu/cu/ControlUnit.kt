@@ -4,13 +4,15 @@ import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
-import computer.architecture.cpu.register.ScoreBoardingRegisters
 import computer.architecture.cpu.*
+import computer.architecture.cpu.register.ScoreBoardingRegisters
 import computer.architecture.utils.Logger
+import computer.architecture.utils.LoggingSignal
+import computer.architecture.utils.PipeLineLogger
 
 class ControlUnit(
     private val memory: Memory,
-    private val logger: Logger = Logger.init(),
+    private val logger: Logger
 ) : ControlUnitInterface {
     private val scoreBoardingRegisters = ScoreBoardingRegisters(32)
     private val decodeUnit = DecodeUnit()
@@ -27,7 +29,7 @@ class ControlUnit(
         val endFlag = EndFlag()
 
         while (true) {
-            logger.cycleCount(validCycle)
+            logger.printCycle(cycleResult.valid, validCycle)
 
             endFlag.update(cycleResult.lastInstruction)
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
@@ -52,22 +54,17 @@ class ControlUnit(
     private fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
         val ifResult = fetch(valid, pc)
         latches.ifid(ifResult)
-        logger.fetchLog(ifResult)
 
         val idResult = decode(latches.ifid())
         latches.idex(idResult)
-        logger.decodeLog(idResult)
 
         val exResult = execute(latches.idex())
         latches.exma(exResult)
-        logger.executeLog(exResult)
 
         val maResult = memoryAccess(latches.exma())
         latches.mawb(maResult)
-        logger.memoryAccessLog(maResult)
 
         val wbResult = writeBack(latches.mawb())
-        logger.writeBackLog(wbResult)
 
         if (idResult.dataHazard) {
             ifResult.valid = false
@@ -82,6 +79,8 @@ class ControlUnit(
                 exResult.controlSignal.isEnd = true
             }
         }
+
+        logger.log(ifResult, idResult, exResult, maResult, wbResult)
 
         val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
         return CycleResult(
@@ -106,7 +105,7 @@ class ControlUnit(
     }
 
     private fun decode(ifResult: FetchResult): DecodeResult {
-        if(!ifResult.valid) {
+        if (!ifResult.valid) {
             return DecodeResult(ifResult.valid, 0, false)
         }
         val instruction = decodeUnit.parse(ifResult.pc, ifResult.instruction)

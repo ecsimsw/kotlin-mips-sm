@@ -14,7 +14,3 @@ fun Int.toHexString(digits: Int): String {
     }
     return newBinary.uppercase()
 }
-
-class NumberFormatUtils {
-
-}
