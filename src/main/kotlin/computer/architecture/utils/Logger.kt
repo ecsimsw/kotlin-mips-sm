@@ -81,7 +81,7 @@ open class Logger(
         if(!printOrNot) {
             return
         }
-
+        checkPrintRange(cycleCount)
         this.cycleCount = cycleCount
         try {
             Thread.sleep(loggingSignal.sleepTime)
@@ -93,11 +93,29 @@ open class Logger(
         }
     }
 
+    private fun checkPrintRange(cycleCount: Int) {
+        if (cycleCount < loggingSignal.from && cycleCount < loggingSignal.to) {
+            loggingSignal.cycle = true
+            loggingSignal.fetch = true
+            loggingSignal.decode = true
+            loggingSignal.execute = true
+            loggingSignal.memoryAccess = true
+            loggingSignal.writeBack = true
+        } else {
+            loggingSignal.cycle = false
+            loggingSignal.fetch = false
+            loggingSignal.decode = false
+            loggingSignal.execute = false
+            loggingSignal.memoryAccess = false
+            loggingSignal.writeBack = false
+        }
+    }
+
     fun printCycle(cycleCount: Int) {
        printCycle(true, cycleCount)
     }
 
-    fun printFetchResult(result: FetchResult) {
+    private fun printFetchResult(result: FetchResult) {
         if (!loggingSignal.fetch) return
         if (!result.valid) {
             printStep("IF", result.pc)
@@ -111,7 +129,7 @@ open class Logger(
         println()
     }
 
-    fun printDecodeResult(result: DecodeResult) {
+    private fun printDecodeResult(result: DecodeResult) {
         val opcode = result.controlSignal.opcode
         if (!loggingSignal.decode) return
         if (!result.valid) {
@@ -138,7 +156,7 @@ open class Logger(
         println(msg)
     }
 
-    fun printExecutionResult(result: ExecutionResult) {
+    private fun printExecutionResult(result: ExecutionResult) {
         if (!loggingSignal.execute) return
         if (!result.valid) {
             printStep("EX", result.pc)
@@ -152,7 +170,7 @@ open class Logger(
         println(msg)
     }
 
-    fun printMemoryAccessResult(result: MemoryAccessResult) {
+    private fun printMemoryAccessResult(result: MemoryAccessResult) {
         if (!loggingSignal.memoryAccess) return
         if (!result.valid) {
             printStep("MA", result.pc)
@@ -170,7 +188,7 @@ open class Logger(
         println(msg)
     }
 
-    fun printWriteBackResult(result: WriteBackResult) {
+    private fun printWriteBackResult(result: WriteBackResult) {
         if (!loggingSignal.writeBack) return
         if (!result.valid) {
             printStep("WB", result.pc)
