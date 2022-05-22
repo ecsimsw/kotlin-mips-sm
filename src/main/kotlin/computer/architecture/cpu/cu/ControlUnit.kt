@@ -4,20 +4,19 @@ import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
-import computer.architecture.component.Registers
+import computer.architecture.cpu.register.ScoreBoardingRegisters
 import computer.architecture.cpu.*
 import computer.architecture.utils.Logger
-import computer.architecture.utils.toHexString
 
 class ControlUnit(
     private val memory: Memory,
     private val logger: Logger = Logger.init(),
 ) : ControlUnitInterface {
-    private val registers = Registers(32)
+    private val scoreBoardingRegisters = ScoreBoardingRegisters(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
     private val stallUnit = StallUnit()
-    private val dataDependencyUnit = DataDependencyUnit(registers)
+    private val dataDependencyUnit = DataDependencyUnit(scoreBoardingRegisters)
     private val latches = Latches()
 
     override fun process(): Int {
@@ -87,7 +86,7 @@ class ControlUnit(
         val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
         return CycleResult(
             nextPc = nextPc,
-            value = registers[2],
+            value = scoreBoardingRegisters[2],
             valid = wbResult.valid,
             lastInstruction = exResult.controlSignal.isEnd,
             lastCycle = wbResult.controlSignal.isEnd
@@ -118,7 +117,7 @@ class ControlUnit(
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
-        registers.book(controlSignal.regWrite, writeRegister)
+        scoreBoardingRegisters.book(controlSignal.regWrite, writeRegister, ifResult.pc)
 
         return DecodeResult(
             valid = valid,
@@ -127,8 +126,8 @@ class ControlUnit(
             shiftAmt = instruction.shiftAmt,
             immediate = instruction.immediate,
             address = instruction.address,
-            readData1 = registers[instruction.rs],
-            readData2 = registers[instruction.rt],
+            readData1 = scoreBoardingRegisters[instruction.rs],
+            readData2 = scoreBoardingRegisters[instruction.rt],
             writeRegister = writeRegister,
             controlSignal = controlSignal
         )
@@ -208,10 +207,11 @@ class ControlUnit(
         val controlSignal = maResult.controlSignal
         val regWriteValue = mux(controlSignal.memToReg, maResult.memReadValue, maResult.aluValue)
 
-        registers.write(
+        scoreBoardingRegisters.write(
             regWrite = controlSignal.regWrite,
             writeRegister = maResult.writeRegister,
-            writeData = regWriteValue
+            writeData = regWriteValue,
+            tag = maResult.pc
         )
 
         return WriteBackResult(

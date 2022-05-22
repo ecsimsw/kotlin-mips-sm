@@ -3,7 +3,7 @@ package computer.architecture.cpu.cu
 import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
-import computer.architecture.component.Registers
+import computer.architecture.cpu.register.Registers
 import computer.architecture.cpu.*
 import computer.architecture.utils.Logger
 
@@ -74,7 +74,6 @@ class ControlUnit_SingleCycle(
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
-        registers.book(controlSignal.regWrite, writeRegister)
 
         return DecodeResult(
             valid = valid,
@@ -163,11 +162,12 @@ class ControlUnit_SingleCycle(
         val controlSignal = maResult.controlSignal
         val regWriteValue = mux(controlSignal.memToReg, maResult.memReadValue, maResult.aluValue)
 
-        registers.write(
-            regWrite = controlSignal.regWrite,
-            writeRegister = maResult.writeRegister,
-            writeData = regWriteValue
-        )
+        if(controlSignal.regWrite) {
+            registers.write(
+                writeRegister = maResult.writeRegister,
+                writeData = regWriteValue
+            )
+        }
 
         return WriteBackResult(
             valid = maResult.valid,
