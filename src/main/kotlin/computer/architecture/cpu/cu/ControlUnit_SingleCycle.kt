@@ -17,7 +17,7 @@ class ControlUnit_SingleCycle(
     private var cycle = 0
 
     override fun process(): Int {
-        var cycleResult = CycleResult()
+        var cycleResult = CycleResult(valid = wbResult.valid)
 
         while (true) {
             logger.cycleCount(cycle)
@@ -48,7 +48,7 @@ class ControlUnit_SingleCycle(
         logger.writeBackLog(wbResult)
 
         val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
-        return CycleResult(nextPc, registers[2])
+        return CycleResult(nextPc, registers[2], valid = wbResult.valid)
     }
 
     private fun fetch(valid: Boolean, pc: Int): FetchResult {

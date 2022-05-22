@@ -50,6 +50,7 @@ data class WriteBackResult(
 
 data class CycleResult(
     val nextPc: Int = 0,
+    val valid: Boolean = false,
     val value: Int = 0,
     val lastInstruction: Boolean = false,
     val lastCycle: Boolean = false

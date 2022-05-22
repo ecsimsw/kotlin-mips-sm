@@ -20,12 +20,13 @@ class ControlUnit(
     private val latches = Latches()
 
     override fun process(): Int {
+        var validCycle = 0
         var cycleResult = CycleResult()
         val endFlag = EndFlag()
         var cycle = 0
 
         while (true) {
-            logger.cycleCount(cycle)
+            logger.cycleCount(validCycle)
 
             endFlag.update(cycleResult.lastInstruction)
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
@@ -35,6 +36,10 @@ class ControlUnit(
 
             if (cycleResult.lastCycle) {
                 return cycleResult.value
+            }
+
+            if (cycleResult.valid) {
+                validCycle++
             }
 
             latches.flushAll()
@@ -63,10 +68,10 @@ class ControlUnit(
         val wbResult = writeBack(latches.mawb())
         logger.writeBackLog(wbResult)
 
-        if(idResult.dataHazard) {
+        if (idResult.dataHazard) {
             ifResult.valid = false
             idResult.valid = false
-            stallUnit.sleep(2, pc)
+            stallUnit.sleep(2, idResult.pc)
         }
 
         if (exResult.jump) {
@@ -78,7 +83,13 @@ class ControlUnit(
         }
 
         val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
-        return CycleResult(nextPc, registers[2], exResult.controlSignal.isEnd, wbResult.controlSignal.isEnd)
+        return CycleResult(
+            nextPc = nextPc,
+            value = registers[2],
+            valid = wbResult.valid,
+            lastInstruction = exResult.controlSignal.isEnd,
+            lastCycle = wbResult.controlSignal.isEnd
+        )
     }
 
     private fun fetch(valid: Boolean, pc: Int): FetchResult {
