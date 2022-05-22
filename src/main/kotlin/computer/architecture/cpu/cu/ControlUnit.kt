@@ -7,6 +7,7 @@ import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Registers
 import computer.architecture.cpu.*
 import computer.architecture.utils.Logger
+import computer.architecture.utils.toHexString
 
 class ControlUnit(
     private val memory: Memory,
@@ -20,10 +21,11 @@ class ControlUnit(
     private val latches = Latches()
 
     override fun process(): Int {
+        var cycle = 0
         var validCycle = 0
+
         var cycleResult = CycleResult()
         val endFlag = EndFlag()
-        var cycle = 0
 
         while (true) {
             logger.cycleCount(validCycle)
@@ -105,6 +107,9 @@ class ControlUnit(
     }
 
     private fun decode(ifResult: FetchResult): DecodeResult {
+        if(!ifResult.valid) {
+            return DecodeResult(ifResult.valid, 0, false)
+        }
         val instruction = decodeUnit.parse(ifResult.pc, ifResult.instruction)
         val dataHazard = dataDependencyUnit.hasHazard(instruction.rs, instruction.rt)
 

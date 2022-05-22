@@ -18,8 +18,6 @@ class ControlUnit_SingleCycle(
 
     override fun process(): Int {
         var cycle = 0
-        var validCycle = 0
-
         var cycleResult = CycleResult()
 
         while (true) {
@@ -28,10 +26,6 @@ class ControlUnit_SingleCycle(
             val pc = cycleResult.nextPc
             if (pc == -1) {
                 return cycleResult.value
-            }
-
-            if (cycleResult.valid) {
-                validCycle++
             }
 
             cycleResult = cycleExecution(pc)
