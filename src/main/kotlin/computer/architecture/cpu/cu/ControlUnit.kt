@@ -7,8 +7,6 @@ import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.cpu.*
 import computer.architecture.cpu.register.ScoreBoardingRegisters
 import computer.architecture.utils.Logger
-import computer.architecture.utils.LoggingSignal
-import computer.architecture.utils.PipeLineLogger
 
 class ControlUnit(
     private val memory: Memory,
@@ -108,7 +106,7 @@ class ControlUnit(
         if (!ifResult.valid) {
             return DecodeResult(ifResult.valid, 0, false)
         }
-        val instruction = decodeUnit.parse(ifResult.pc, ifResult.instruction)
+        val instruction = decodeUnit.parse(ifResult.pc + 4, ifResult.instruction)
         val dataHazard = dataDependencyUnit.hasHazard(instruction.rs, instruction.rt)
 
         val valid = and(ifResult.valid, !dataHazard)

@@ -42,34 +42,28 @@ class ControlUnit_SingleCycle(
 
         logger.log(ifResult, idResult, exResult, maResult, wbResult)
 
-        val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
+        val nextPc = mux(exResult.jump, exResult.nextPc, pc+4)
         return CycleResult(
             nextPc = nextPc,
-            valid = wbResult.valid,
+            valid = true,
             value = registers[2]
         )
     }
 
     private fun fetch(valid: Boolean, pc: Int): FetchResult {
         val instruction = memory.read(pc)
-        return FetchResult(valid && (instruction != 0), pc, instruction)
+        return FetchResult(true, pc, instruction)
     }
 
     private fun decode(ifResult: FetchResult): DecodeResult {
-        if (!ifResult.valid) {
-            return DecodeResult()
-        }
-
-        val instruction = decodeUnit.parse(ifResult.pc, ifResult.instruction)
-
-        val valid = ifResult.valid
-        val controlSignal = decodeUnit.controlSignal(isValid = valid, opcode = instruction.opcode)
+        val instruction = decodeUnit.parse(ifResult.pc + 4, ifResult.instruction)
+        val controlSignal = decodeUnit.controlSignal(opcode = instruction.opcode)
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
 
         return DecodeResult(
-            valid = valid,
+            valid = true,
             pc = ifResult.pc,
             shiftAmt = instruction.shiftAmt,
             immediate = instruction.immediate,
@@ -82,10 +76,6 @@ class ControlUnit_SingleCycle(
     }
 
     private fun execute(idResult: DecodeResult): ExecutionResult {
-        if (!idResult.valid) {
-            return ExecutionResult()
-        }
-
         val controlSignal = idResult.controlSignal
         var src1 = mux(controlSignal.shift, idResult.readData2, idResult.readData1)
         src1 = mux(controlSignal.upperImm, idResult.immediate, src1)
@@ -108,7 +98,7 @@ class ControlUnit_SingleCycle(
         nextPc = mux(controlSignal.jr, idResult.readData1, nextPc)
 
         return ExecutionResult(
-            valid = idResult.valid,
+            valid = true,
             pc = idResult.pc, // TODO :: only for logging
             aluValue = aluValue,
             memWriteValue = idResult.readData2,
@@ -120,10 +110,6 @@ class ControlUnit_SingleCycle(
     }
 
     private fun memoryAccess(exResult: ExecutionResult): MemoryAccessResult {
-        if (!exResult.valid) {
-            return MemoryAccessResult()
-        }
-
         val controlSignal = exResult.controlSignal
         val memReadValue = memory.read(
             memRead = controlSignal.memRead,
@@ -137,7 +123,7 @@ class ControlUnit_SingleCycle(
         )
 
         return MemoryAccessResult(
-            valid = exResult.valid,
+            valid = true,
             pc = exResult.pc, // TODO :: only for logging
             memReadValue = memReadValue,
             memWriteValue = exResult.memWriteValue,
