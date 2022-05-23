@@ -10,7 +10,7 @@ class Memory(
 
     companion object {
         fun load(size: Int, path: String): Memory {
-            DataInputStream(FileInputStream(path)).use { it ->
+            DataInputStream(FileInputStream(path)).use {
                 val memory: Array<Byte> = Array(size) { 0 }
                 val bytes = ByteArray(2048)
                 var address = 0

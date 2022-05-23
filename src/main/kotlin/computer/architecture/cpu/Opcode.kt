@@ -32,10 +32,7 @@ enum class Opcode(
             try {
                 return of(instruction shr 26 and 0x3F, instruction and 0x3F)
             } catch (e: IllegalArgumentException) {
-                throw IllegalArgumentException(
-                    "Invalid opcode!! : instruction : 0x${instruction.toHexString(8)}\n"
-                            + e.message
-                )
+                throw IllegalArgumentException("Invalid opcode!! : instruction : 0x${instruction.toHexString(8)}\n ${e.message}")
             }
         }
 

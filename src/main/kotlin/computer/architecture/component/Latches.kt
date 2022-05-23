@@ -9,37 +9,15 @@ class Latches {
     private val exMa = Latch(ExecutionResult())
     private val maWb = Latch(MemoryAccessResult())
 
-    fun store(ifResult: FetchResult) {
-        ifId.store(ifResult)
-    }
+    fun store(ifResult: FetchResult) = ifId.store(ifResult)
+    fun store(idResult: DecodeResult) = idEx.store(idResult)
+    fun store(exResult: ExecutionResult) = exMa.store(exResult)
+    fun store(maResult: MemoryAccessResult) = maWb.store(maResult)
 
-    fun store(idResult: DecodeResult) {
-        idEx.store(idResult)
-    }
-
-    fun store(exResult: ExecutionResult) {
-        exMa.store(exResult)
-    }
-
-    fun store(maResult: MemoryAccessResult) {
-        maWb.store(maResult)
-    }
-
-    fun ifId(): FetchResult {
-        return ifId.fetch()
-    }
-
-    fun idEx(): DecodeResult {
-        return idEx.fetch()
-    }
-
-    fun exMa(): ExecutionResult {
-        return exMa.fetch()
-    }
-
-    fun maWb(): MemoryAccessResult {
-        return maWb.fetch()
-    }
+    fun ifId() = ifId.fetch()
+    fun idEx() = idEx.fetch()
+    fun exMa() = exMa.fetch()
+    fun maWb() = maWb.fetch()
 
     fun flushAll() {
         ifId.flush()

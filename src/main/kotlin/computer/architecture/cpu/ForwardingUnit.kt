@@ -9,7 +9,7 @@ class ForwardingUnit {
         if ((mawbRd != 0) && (readReg == mawbRd)) {
             return ForwardingResult(true, mawbValue)
         }
-        return ForwardingResult.doNothing
+        return ForwardingResult.DO_NOTHING
     }
 }
 
@@ -18,6 +18,6 @@ data class ForwardingResult(
     val value: Int = 0
 ) {
     companion object {
-        val doNothing = ForwardingResult()
+        val DO_NOTHING = ForwardingResult()
     }
 }

@@ -6,9 +6,7 @@ class Latch<T>(
     private var input = initialValue
     private var output = initialValue
 
-    fun fetch(): T {
-        return output
-    }
+    fun fetch(): T = output
 
     fun store(input: T) {
         this.input = input

@@ -55,7 +55,7 @@ class ControlUnit(
         val prevExMa = latches.exMa()
         val prevMaWb = latches.maWb()
 
-        val forwardingReadData1 = forwardingUnit.execute(
+        val fwResult1 = forwardingUnit.execute(
             prevIdEx.readData1,
             prevExMa.regWrite,
             prevExMa.aluValue,
@@ -63,7 +63,7 @@ class ControlUnit(
             prevMaWb.regWrite
         )
 
-        val forwardingReadData2 = forwardingUnit.execute(
+        val fwResult2 = forwardingUnit.execute(
             prevIdEx.readData2,
             prevExMa.regWrite,
             prevExMa.aluValue,
