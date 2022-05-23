@@ -3,6 +3,7 @@ package computer.architecture.cpu
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ControlUnit
 import computer.architecture.cpu.cu.ControlUnit_SingleCycle
+import computer.architecture.cpu.cu.ControlUnit_Stall
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 import computer.architecture.utils.PipeLineLogger
@@ -24,7 +25,7 @@ internal class ControlUnitTest {
     )
     fun process(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit(memory, Logger.NONE)
+        val controlUnit = ControlUnit_SingleCycle(memory, Logger.NONE)
         val processResult = controlUnit.process()
         assertThat(processResult).isEqualTo(expected)
     }

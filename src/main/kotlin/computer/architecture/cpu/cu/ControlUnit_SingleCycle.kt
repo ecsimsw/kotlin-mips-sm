@@ -6,7 +6,6 @@ import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.cpu.register.Registers
 import computer.architecture.cpu.*
 import computer.architecture.utils.Logger
-import computer.architecture.utils.LoggingSignal
 
 class ControlUnit_SingleCycle(
     private val memory: Memory,
@@ -70,7 +69,7 @@ class ControlUnit_SingleCycle(
             address = instruction.address,
             readData1 = registers[instruction.rs],
             readData2 = registers[instruction.rt],
-            writeRegister = writeRegister,
+            regWrite = writeRegister,
             controlSignal = controlSignal
         )
     }
@@ -102,7 +101,7 @@ class ControlUnit_SingleCycle(
             pc = idResult.pc, // TODO :: only for logging
             aluValue = aluValue,
             memWriteValue = idResult.readData2,
-            writeRegister = idResult.writeRegister,
+            regWrite = idResult.regWrite,
             nextPc = nextPc,
             jump = (branchCondition || controlSignal.jump || controlSignal.jr),
             controlSignal = controlSignal
@@ -122,13 +121,13 @@ class ControlUnit_SingleCycle(
             value = exResult.memWriteValue
         )
 
+        val regWriteValue = mux(controlSignal.memToReg, memReadValue, exResult.aluValue)
+
         return MemoryAccessResult(
             valid = true,
             pc = exResult.pc, // TODO :: only for logging
-            memReadValue = memReadValue,
-            memWriteValue = exResult.memWriteValue,
-            aluValue = exResult.aluValue,
-            writeRegister = exResult.writeRegister,
+            regWriteValue = regWriteValue,
+            regWrite = exResult.regWrite,
             controlSignal = controlSignal
         )
     }
@@ -138,22 +137,19 @@ class ControlUnit_SingleCycle(
             return WriteBackResult()
         }
 
-        val controlSignal = maResult.controlSignal
-        val regWriteValue = mux(controlSignal.memToReg, maResult.memReadValue, maResult.aluValue)
-
-        if(controlSignal.regWrite) {
+        if(maResult.controlSignal.regWrite) {
             registers.write(
-                writeRegister = maResult.writeRegister,
-                writeData = regWriteValue
+                writeRegister = maResult.regWrite,
+                writeData = maResult.regWriteValue
             )
         }
 
         return WriteBackResult(
             valid = maResult.valid,
             pc = maResult.pc, // TODO :: only for logging
-            writeRegister = maResult.writeRegister,
-            regWriteValue = regWriteValue,
-            controlSignal = controlSignal
+            regWrite = maResult.regWrite,
+            regWriteValue = maResult.regWriteValue,
+            controlSignal = maResult.controlSignal
         )
     }
 }

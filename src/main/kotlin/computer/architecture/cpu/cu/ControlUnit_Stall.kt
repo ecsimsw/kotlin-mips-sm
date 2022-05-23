@@ -8,7 +8,7 @@ import computer.architecture.cpu.*
 import computer.architecture.cpu.register.ScoreBoardingRegisters
 import computer.architecture.utils.Logger
 
-class ControlUnit(
+class ControlUnit_Stall(
     private val memory: Memory,
     private val logger: Logger
 ) : ControlUnitInterface {
@@ -16,7 +16,7 @@ class ControlUnit(
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
     private val stallUnit = StallUnit()
-    private val forwardingUnit = ForwardingUnit()
+    private val dataDependencyUnit = DataDependencyUnit(scoreBoardingRegisters)
     private val latches = Latches()
 
     override fun process(): Int {
@@ -50,32 +50,17 @@ class ControlUnit(
     }
 
     private fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
-        val prevIfId = latches.ifId()
-        val prevIdEx = latches.idEx()
-        val prevExMa = latches.exMa()
-        val prevMaWb = latches.maWb()
-
-        val forwardingReadData1 = forwardingUnit.execute(
-            prevIdEx.readData1,
-            prevExMa.regWrite,
-            prevExMa.aluValue,
-            prevMaWb.regWrite,
-            prevMaWb.regWrite
-        )
-
-        val forwardingReadData2 = forwardingUnit.execute(
-            prevIdEx.readData2,
-            prevExMa.regWrite,
-            prevExMa.aluValue,
-            prevMaWb.regWrite,
-            prevMaWb.regWrite
-        )
-
         val nextIfId = fetch(valid, pc)
-        val nextIdEx = decode(prevIfId)
-        val nextExMa = execute(prevIdEx)
-        val nextMaWb = memoryAccess(prevExMa)
-        val wbResult = writeBack(prevMaWb)
+        val nextIdEx = decode(latches.ifId())
+        val nextExMa = execute(latches.idEx())
+        val nextMaWb = memoryAccess(latches.exMa())
+        val wbResult = writeBack(latches.maWb())
+
+        if (nextIdEx.dataHazard) {
+            nextIfId.valid = false
+            nextIdEx.valid = false
+            stallUnit.sleep(2, nextIdEx.pc)
+        }
 
         if (nextExMa.jump) {
             nextIfId.valid = false
@@ -85,6 +70,8 @@ class ControlUnit(
             }
         }
 
+        val nextPc = mux(nextExMa.jump, nextExMa.nextPc, pc + 4)
+
         latches.store(nextIfId)
         latches.store(nextIdEx)
         latches.store(nextExMa)
@@ -92,7 +79,6 @@ class ControlUnit(
 
         logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
-        val nextPc = mux(nextExMa.jump, nextExMa.nextPc, pc + 4)
         return CycleResult(
             nextPc = nextPc,
             value = scoreBoardingRegisters[2],
@@ -119,15 +105,19 @@ class ControlUnit(
             return DecodeResult(ifResult.valid, 0, false)
         }
         val instruction = decodeUnit.parse(ifResult.pc + 4, ifResult.instruction)
-        val controlSignal = decodeUnit.controlSignal(ifResult.valid, instruction.opcode)
+        val dataHazard = dataDependencyUnit.hasHazard(instruction.rs, instruction.rt)
+
+        val valid = and(ifResult.valid, !dataHazard)
+        val controlSignal = decodeUnit.controlSignal(valid, instruction.opcode)
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
         scoreBoardingRegisters.book(controlSignal.regWrite, writeRegister, ifResult.pc)
 
         return DecodeResult(
-            valid = ifResult.valid,
+            valid = valid,
             pc = ifResult.pc,
+            dataHazard = dataHazard,
             shiftAmt = instruction.shiftAmt,
             immediate = instruction.immediate,
             address = instruction.address,
@@ -200,6 +190,8 @@ class ControlUnit(
             pc = exResult.pc, // TODO :: only for logging
             regWriteValue = regWriteValue,
             regWrite = exResult.regWrite,
+            memReadValue = memReadValue,
+            memWriteValue = exResult.aluValue,
             controlSignal = controlSignal
         )
     }
@@ -222,7 +214,7 @@ class ControlUnit(
             pc = maResult.pc, // TODO :: only for logging
             regWrite = maResult.regWrite,
             regWriteValue = maResult.regWriteValue,
-            controlSignal = maResult.controlSignal
+            controlSignal = maResult.controlSignal,
         )
     }
 }

@@ -4,47 +4,47 @@ import computer.architecture.cpu.*
 
 class Latches {
 
-    private val IF_ID = Latch(FetchResult())
-    private val ID_EX = Latch(DecodeResult())
-    private val EX_MA = Latch(ExecutionResult())
-    private val MA_WB = Latch(MemoryAccessResult())
+    private val ifId = Latch(FetchResult())
+    private val idEx = Latch(DecodeResult())
+    private val exMa = Latch(ExecutionResult())
+    private val maWb = Latch(MemoryAccessResult())
 
-    fun ifid(ifResult: FetchResult) {
-        IF_ID.store(ifResult)
+    fun store(ifResult: FetchResult) {
+        ifId.store(ifResult)
     }
 
-    fun idex(idResult: DecodeResult) {
-        ID_EX.store(idResult)
+    fun store(idResult: DecodeResult) {
+        idEx.store(idResult)
     }
 
-    fun exma(exResult: ExecutionResult) {
-        EX_MA.store(exResult)
+    fun store(exResult: ExecutionResult) {
+        exMa.store(exResult)
     }
 
-    fun mawb(maResult: MemoryAccessResult) {
-        MA_WB.store(maResult)
+    fun store(maResult: MemoryAccessResult) {
+        maWb.store(maResult)
     }
 
-    fun ifid(): FetchResult {
-        return IF_ID.fetch()
+    fun ifId(): FetchResult {
+        return ifId.fetch()
     }
 
-    fun idex(): DecodeResult {
-        return ID_EX.fetch()
+    fun idEx(): DecodeResult {
+        return idEx.fetch()
     }
 
-    fun exma(): ExecutionResult {
-        return EX_MA.fetch()
+    fun exMa(): ExecutionResult {
+        return exMa.fetch()
     }
 
-    fun mawb(): MemoryAccessResult {
-        return MA_WB.fetch()
+    fun maWb(): MemoryAccessResult {
+        return maWb.fetch()
     }
 
     fun flushAll() {
-        IF_ID.flush()
-        ID_EX.flush()
-        EX_MA.flush()
-        MA_WB.flush()
+        ifId.flush()
+        idEx.flush()
+        exMa.flush()
+        maWb.flush()
     }
 }

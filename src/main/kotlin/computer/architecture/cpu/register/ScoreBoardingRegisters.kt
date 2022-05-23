@@ -16,12 +16,9 @@ open class ScoreBoardingRegisters(
         }
     }
 
-    open fun write(regWrite: Boolean, writeRegister: Int, writeData: Int, tag: Int) {
-        if (regWrite) {
-            this.registers.write(writeRegister, writeData)
-        }
-
-        if (regWrite && this.tag[writeRegister] == tag) {
+    open fun write(writeRegister: Int, writeData: Int, tag: Int) {
+        this.registers.write(writeRegister, writeData)
+        if (this.tag[writeRegister] == tag) {
             this.valid[writeRegister] = true
         }
     }
