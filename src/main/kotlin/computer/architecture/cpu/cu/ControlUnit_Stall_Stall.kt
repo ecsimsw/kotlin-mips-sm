@@ -8,7 +8,7 @@ import computer.architecture.cpu.*
 import computer.architecture.cpu.register.ScoreBoardingRegisters
 import computer.architecture.utils.Logger
 
-class ControlUnit_Stall(
+class ControlUnit_Stall_Stall(
     private val memory: Memory,
     private val logger: Logger
 ) : ControlUnitInterface {
@@ -102,13 +102,23 @@ class ControlUnit_Stall(
 
     private fun decode(ifResult: FetchResult): DecodeResult {
         if (!ifResult.valid) {
-            return DecodeResult(ifResult.valid, 0, false)
+            return DecodeResult(ifResult.valid, 0)
         }
         val instruction = decodeUnit.parse(ifResult.pc + 4, ifResult.instruction)
         val dataHazard = dataDependencyUnit.hasHazard(instruction.rs, instruction.rt)
 
         val valid = and(ifResult.valid, !dataHazard)
         val controlSignal = decodeUnit.controlSignal(valid, instruction.opcode)
+
+        val readData1 = scoreBoardingRegisters[instruction.rs]
+        val readData2 = scoreBoardingRegisters[instruction.rt]
+
+        var src1 = mux(controlSignal.shift, readData2, readData1)
+        src1 = mux(controlSignal.upperImm, instruction.immediate, src1)
+
+        var src2 = mux(controlSignal.aluSrc, instruction.immediate, readData2)
+        src2 = mux(controlSignal.shift, instruction.shiftAmt, src2)
+        src2 = mux(controlSignal.upperImm, 16, src2)
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
@@ -118,11 +128,12 @@ class ControlUnit_Stall(
             valid = valid,
             pc = ifResult.pc,
             dataHazard = dataHazard,
-            shiftAmt = instruction.shiftAmt,
             immediate = instruction.immediate,
             address = instruction.address,
-            readData1 = scoreBoardingRegisters[instruction.rs],
-            readData2 = scoreBoardingRegisters[instruction.rt],
+            readData1 = readData1,
+            readData2 = readData2,
+            src1 = src1,
+            src2 = src2,
             regWrite = writeRegister,
             controlSignal = controlSignal
         )
@@ -134,22 +145,15 @@ class ControlUnit_Stall(
         }
 
         val controlSignal = idResult.controlSignal
-        var src1 = mux(controlSignal.shift, idResult.readData2, idResult.readData1)
-        src1 = mux(controlSignal.upperImm, idResult.immediate, src1)
-
-        var src2 = mux(controlSignal.aluSrc, idResult.immediate, idResult.readData2)
-        src2 = mux(controlSignal.shift, idResult.shiftAmt, src2)
-        src2 = mux(controlSignal.upperImm, 16, src2)
-
         val aluResult = alu.operate(
             aluOp = controlSignal.aluOp,
-            src1 = src1,
-            src2 = src2
+            src1 = idResult.src1,
+            src2 = idResult.src2
         )
 
         val aluValue = mux(controlSignal.jal, idResult.pc + 8, aluResult.value)
-
         val branchCondition = and(aluResult.isTrue, controlSignal.branch)
+
         var nextPc = mux(branchCondition, idResult.immediate, idResult.pc)
         nextPc = mux(controlSignal.jump, idResult.address, nextPc)
         nextPc = mux(controlSignal.jr, idResult.readData1, nextPc)
@@ -161,7 +165,7 @@ class ControlUnit_Stall(
             memWriteValue = idResult.readData2,
             regWrite = idResult.regWrite,
             nextPc = nextPc,
-            jump = branchCondition || controlSignal.jump || controlSignal.jr,
+            jump = (branchCondition || controlSignal.jump || controlSignal.jr),
             controlSignal = controlSignal
         )
     }
@@ -177,13 +181,13 @@ class ControlUnit_Stall(
             address = exResult.aluValue,
         )
 
+        val regWriteValue = mux(controlSignal.memToReg, memReadValue, exResult.aluValue)
+
         memory.write(
             memWrite = controlSignal.memWrite,
             address = exResult.aluValue,
             value = exResult.memWriteValue
         )
-
-        val regWriteValue = mux(controlSignal.memToReg, memReadValue, exResult.aluValue)
 
         return MemoryAccessResult(
             valid = exResult.valid,

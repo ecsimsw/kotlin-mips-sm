@@ -13,7 +13,7 @@ open class Registers(
 
     operator fun get(register: Int) = r[register]
 
-    fun write(writeRegister: Int, writeData: Int) {
-        this.r[writeRegister] = writeData
+    fun write(register: Int, data: Int) {
+        this.r[register] = data
     }
 }

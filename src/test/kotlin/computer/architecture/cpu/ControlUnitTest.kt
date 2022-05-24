@@ -2,11 +2,8 @@ package computer.architecture.cpu
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ControlUnit
-import computer.architecture.cpu.cu.ControlUnit_SingleCycle
-import computer.architecture.cpu.cu.ControlUnit_Stall
+import computer.architecture.cpu.cu.ControlUnit_Stall_Stall
 import computer.architecture.utils.Logger
-import computer.architecture.utils.LoggingSignal
-import computer.architecture.utils.PipeLineLogger
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -25,7 +22,7 @@ internal class ControlUnitTest {
     )
     fun process(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit_SingleCycle(memory, Logger.NONE)
+        val controlUnit = ControlUnit(memory, Logger.NONE)
         val processResult = controlUnit.process()
         assertThat(processResult).isEqualTo(expected)
     }

@@ -5,14 +5,14 @@ import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.cpu.*
-import computer.architecture.cpu.register.ScoreBoardingRegisters
+import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
 class ControlUnit(
     private val memory: Memory,
     private val logger: Logger
 ) : ControlUnitInterface {
-    private val scoreBoardingRegisters = ScoreBoardingRegisters(32)
+    private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
     private val stallUnit = StallUnit()
@@ -56,20 +56,30 @@ class ControlUnit(
         val prevMaWb = latches.maWb()
 
         val fwResult1 = forwardingUnit.execute(
-            prevIdEx.readData1,
-            prevExMa.regWrite,
-            prevExMa.aluValue,
-            prevMaWb.regWrite,
-            prevMaWb.regWrite
+            readReg = prevIdEx.readReg1,
+            exmaRd = prevExMa.regWrite,
+            exmaValue = prevExMa.aluValue,
+            mawbRd = prevMaWb.regWrite,
+            mawbValue = prevMaWb.regWriteValue
         )
 
         val fwResult2 = forwardingUnit.execute(
-            prevIdEx.readData2,
-            prevExMa.regWrite,
-            prevExMa.aluValue,
-            prevMaWb.regWrite,
-            prevMaWb.regWrite
+            readReg = prevIdEx.readReg2,
+            exmaRd = prevExMa.regWrite,
+            exmaValue = prevExMa.aluValue,
+            mawbRd = prevMaWb.regWrite,
+            mawbValue = prevMaWb.regWriteValue
         )
+
+        if (fwResult1.isTarget) {
+            println(fwResult1)
+            prevIdEx.readData1 = fwResult1.value
+        }
+
+        if (fwResult2.isTarget) {
+            println(fwResult2)
+            prevIdEx.readData2 = fwResult2.value
+        }
 
         val nextIfId = fetch(valid, pc)
         val nextIdEx = decode(prevIfId)
@@ -95,7 +105,7 @@ class ControlUnit(
         val nextPc = mux(nextExMa.jump, nextExMa.nextPc, pc + 4)
         return CycleResult(
             nextPc = nextPc,
-            value = scoreBoardingRegisters[2],
+            value = registers[2],
             valid = wbResult.valid,
             lastInstruction = nextExMa.controlSignal.isEnd,
             lastCycle = wbResult.controlSignal.isEnd
@@ -116,23 +126,35 @@ class ControlUnit(
 
     private fun decode(ifResult: FetchResult): DecodeResult {
         if (!ifResult.valid) {
-            return DecodeResult(ifResult.valid, 0, false)
+            return DecodeResult(ifResult.valid, 0)
         }
         val instruction = decodeUnit.parse(ifResult.pc + 4, ifResult.instruction)
         val controlSignal = decodeUnit.controlSignal(ifResult.valid, instruction.opcode)
 
+        val readData1 = registers[instruction.rs]
+        val readData2 = registers[instruction.rt]
+
+        var src1 = mux(controlSignal.shift, readData2, readData1)
+        src1 = mux(controlSignal.upperImm, instruction.immediate, src1)
+
+        var src2 = mux(controlSignal.aluSrc, instruction.immediate, readData2)
+        src2 = mux(controlSignal.shift, instruction.shiftAmt, src2)
+        src2 = mux(controlSignal.upperImm, 16, src2)
+
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
-        scoreBoardingRegisters.book(controlSignal.regWrite, writeRegister, ifResult.pc)
 
         return DecodeResult(
             valid = ifResult.valid,
             pc = ifResult.pc,
-            shiftAmt = instruction.shiftAmt,
             immediate = instruction.immediate,
             address = instruction.address,
-            readData1 = scoreBoardingRegisters[instruction.rs],
-            readData2 = scoreBoardingRegisters[instruction.rt],
+            readReg1 = instruction.rs,
+            readReg2 = instruction.rt,
+            readData1 = readData1,
+            readData2 = readData2,
+            src1 = src1,
+            src2 = src2,
             regWrite = writeRegister,
             controlSignal = controlSignal
         )
@@ -144,17 +166,10 @@ class ControlUnit(
         }
 
         val controlSignal = idResult.controlSignal
-        var src1 = mux(controlSignal.shift, idResult.readData2, idResult.readData1)
-        src1 = mux(controlSignal.upperImm, idResult.immediate, src1)
-
-        var src2 = mux(controlSignal.aluSrc, idResult.immediate, idResult.readData2)
-        src2 = mux(controlSignal.shift, idResult.shiftAmt, src2)
-        src2 = mux(controlSignal.upperImm, 16, src2)
-
         val aluResult = alu.operate(
             aluOp = controlSignal.aluOp,
-            src1 = src1,
-            src2 = src2
+            src1 = idResult.src1,
+            src2 = idResult.src2
         )
 
         val aluValue = mux(controlSignal.jal, idResult.pc + 8, aluResult.value)
@@ -209,11 +224,10 @@ class ControlUnit(
             return WriteBackResult(controlSignal = maResult.controlSignal)
         }
 
-        if(maResult.controlSignal.regWrite) {
-            scoreBoardingRegisters.write(
-                writeRegister = maResult.regWrite,
-                writeData = maResult.regWriteValue,
-                tag = maResult.pc
+        if (maResult.controlSignal.regWrite) {
+            registers.write(
+                register = maResult.regWrite,
+                data = maResult.regWriteValue,
             )
         }
 

@@ -11,5 +11,5 @@ data class LoggingSignal(
     var resultInformation: Boolean = false,
     var sleepTime: Long = 0L,
     var from: Int = 0,
-    var to: Int = Int.MAX_VALUE
+    var to: Int = 0
 )

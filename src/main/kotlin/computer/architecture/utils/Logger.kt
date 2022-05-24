@@ -94,7 +94,7 @@ open class Logger(
     }
 
     private fun checkPrintRange(cycleCount: Int) {
-        if (cycleCount < loggingSignal.from && cycleCount < loggingSignal.to) {
+        if (cycleCount > loggingSignal.from && cycleCount < loggingSignal.to) {
             loggingSignal.cycle = true
             loggingSignal.fetch = true
             loggingSignal.decode = true
@@ -141,12 +141,13 @@ open class Logger(
         printStep("ID", result.pc)
 
         var msg = "opcode : ${opcode}, "
+        msg += "rs : ${result.readReg1}, rt : ${result.readReg2} "
         if (opcode.type == Opcode.Type.R) {
-            msg += "readData1 : ${result.readData1}, readData2 : ${result.readData2}"
+            msg += "readData1 : ${result.src1}, readData2 : ${result.src2}"
         }
 
         if (opcode.type == Opcode.Type.I) {
-            msg += "readData1 : ${result.readData1} [0x${result.readData1.toHexString()}], " +
+            msg += "readData1 : ${result.src1} [0x${result.src1.toHexString()}], " +
                     "immediate : ${result.immediate} [0x${result.immediate.toHexString()}]"
         }
 
