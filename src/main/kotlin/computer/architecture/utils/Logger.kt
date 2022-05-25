@@ -201,7 +201,7 @@ open class Logger(
         printStep("WB", result.pc)
         var msg = ""
         if (result.controlSignal.regWrite) {
-            msg = "R[${result.regWrite}] = ${result.regWriteValue} [0x${result.regWriteValue.toHexString()}]"
+            msg = "R[${result.writeReg}] = ${result.regWriteValue} [0x${result.regWriteValue.toHexString()}]"
         }
         println(msg + "\n")
     }

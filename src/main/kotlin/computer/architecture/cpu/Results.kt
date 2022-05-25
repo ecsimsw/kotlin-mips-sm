@@ -17,7 +17,7 @@ data class DecodeResult(
     val readReg2: Int = 0,
     var readData1: Int = 0,
     var readData2: Int = 0,
-    val regWrite: Int = 0,
+    val writeReg: Int = 0,
     val controlSignal: ControlSignal = ControlSignal.NONE
 )
 
@@ -25,8 +25,8 @@ data class ExecutionResult(
     val valid: Boolean = false,
     val pc: Int = 0, // TODO :: for logging
     val aluValue: Int = 0,
-    val memWriteValue: Int = 0,
-    val regWrite: Int = 0,
+    val readData2: Int = 0,
+    val writeReg: Int = 0,
     val nextPc: Int = 0,
     val jump: Boolean = false,
     val controlSignal: ControlSignal = ControlSignal.NONE
@@ -36,7 +36,7 @@ data class MemoryAccessResult(
     val valid: Boolean = false,
     val pc: Int = 0, // TODO :: for logging
     val regWriteValue: Int = 0,
-    val regWrite: Int = 0,
+    val writeReg: Int = 0,
     val memReadValue: Int = 0,
     val memWriteValue: Int = 0,
     val controlSignal: ControlSignal = ControlSignal.NONE
@@ -46,7 +46,7 @@ data class WriteBackResult(
     val valid: Boolean = false,
     val pc: Int = 0, // TODO :: for logging
     val regWriteValue: Int = 0,
-    val regWrite: Int = 0,
+    val writeReg: Int = 0,
     val controlSignal: ControlSignal = ControlSignal.NONE
 )
 

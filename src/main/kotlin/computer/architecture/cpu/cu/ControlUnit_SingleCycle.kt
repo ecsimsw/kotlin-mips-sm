@@ -3,8 +3,8 @@ package computer.architecture.cpu.cu
 import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
-import computer.architecture.cpu.register.Registers
 import computer.architecture.cpu.*
+import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
 class ControlUnit_SingleCycle(
@@ -41,7 +41,7 @@ class ControlUnit_SingleCycle(
 
         logger.log(ifResult, idResult, exResult, maResult, wbResult)
 
-        val nextPc = mux(exResult.jump, exResult.nextPc, pc+4)
+        val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
         return CycleResult(
             nextPc = nextPc,
             valid = true,
@@ -69,7 +69,7 @@ class ControlUnit_SingleCycle(
             address = instruction.address,
             readData1 = registers[instruction.rs],
             readData2 = registers[instruction.rt],
-            regWrite = writeRegister,
+            writeReg = writeRegister,
             controlSignal = controlSignal
         )
     }
@@ -101,8 +101,8 @@ class ControlUnit_SingleCycle(
             valid = true,
             pc = idResult.pc, // TODO :: only for logging
             aluValue = aluValue,
-            memWriteValue = idResult.readData2,
-            regWrite = idResult.regWrite,
+            readData2 = idResult.readData2,
+            writeReg = idResult.writeReg,
             nextPc = nextPc,
             jump = (branchCondition || controlSignal.jump || controlSignal.jr),
             controlSignal = controlSignal
@@ -121,14 +121,14 @@ class ControlUnit_SingleCycle(
         memory.write(
             memWrite = controlSignal.memWrite,
             address = exResult.aluValue,
-            value = exResult.memWriteValue
+            value = exResult.readData2
         )
 
         return MemoryAccessResult(
             valid = true,
             pc = exResult.pc, // TODO :: only for logging
             regWriteValue = regWriteValue,
-            regWrite = exResult.regWrite,
+            writeReg = exResult.writeReg,
             controlSignal = controlSignal
         )
     }
@@ -138,9 +138,9 @@ class ControlUnit_SingleCycle(
             return WriteBackResult()
         }
 
-        if(maResult.controlSignal.regWrite) {
+        if (maResult.controlSignal.regWrite) {
             registers.write(
-                register = maResult.regWrite,
+                register = maResult.writeReg,
                 data = maResult.regWriteValue
             )
         }
@@ -148,7 +148,7 @@ class ControlUnit_SingleCycle(
         return WriteBackResult(
             valid = maResult.valid,
             pc = maResult.pc, // TODO :: only for logging
-            regWrite = maResult.regWrite,
+            writeReg = maResult.writeReg,
             regWriteValue = maResult.regWriteValue,
             controlSignal = maResult.controlSignal
         )

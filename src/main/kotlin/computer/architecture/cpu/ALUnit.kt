@@ -16,8 +16,10 @@ class ALUnit(
     }
 
     fun operate(aluOp: AluOp, src1: Int, src2: Int): AluResult {
-        return AluResult(operations[aluOp]?.invoke(src1, src2)
-            ?: throw IllegalArgumentException("Opcodes that cannot be computed : $aluOp"))
+        return AluResult(
+            operations[aluOp]?.invoke(src1, src2)
+                ?: throw IllegalArgumentException("Opcodes that cannot be computed : $aluOp")
+        )
     }
 }
 

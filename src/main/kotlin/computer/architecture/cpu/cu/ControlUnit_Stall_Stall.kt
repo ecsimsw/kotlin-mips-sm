@@ -123,7 +123,7 @@ class ControlUnit_Stall_Stall(
             address = instruction.address,
             readData1 = scoreBoardingRegisters[instruction.rs],
             readData2 = scoreBoardingRegisters[instruction.rt],
-            regWrite = writeRegister,
+            writeReg = writeRegister,
             controlSignal = controlSignal
         )
     }
@@ -159,8 +159,8 @@ class ControlUnit_Stall_Stall(
             valid = idResult.valid,
             pc = idResult.pc, // TODO :: only for logging
             aluValue = aluValue,
-            memWriteValue = idResult.readData2,
-            regWrite = idResult.regWrite,
+            readData2 = idResult.readData2,
+            writeReg = idResult.writeReg,
             nextPc = nextPc,
             jump = (branchCondition || controlSignal.jump || controlSignal.jr),
             controlSignal = controlSignal
@@ -183,14 +183,14 @@ class ControlUnit_Stall_Stall(
         memory.write(
             memWrite = controlSignal.memWrite,
             address = exResult.aluValue,
-            value = exResult.memWriteValue
+            value = exResult.readData2
         )
 
         return MemoryAccessResult(
             valid = exResult.valid,
             pc = exResult.pc, // TODO :: only for logging
             regWriteValue = regWriteValue,
-            regWrite = exResult.regWrite,
+            writeReg = exResult.writeReg,
             memReadValue = memReadValue,
             memWriteValue = exResult.aluValue,
             controlSignal = controlSignal
@@ -202,9 +202,9 @@ class ControlUnit_Stall_Stall(
             return WriteBackResult(controlSignal = maResult.controlSignal)
         }
 
-        if(maResult.controlSignal.regWrite) {
+        if (maResult.controlSignal.regWrite) {
             scoreBoardingRegisters.write(
-                writeRegister = maResult.regWrite,
+                writeRegister = maResult.writeReg,
                 writeData = maResult.regWriteValue,
                 tag = maResult.pc
             )
@@ -213,7 +213,7 @@ class ControlUnit_Stall_Stall(
         return WriteBackResult(
             valid = maResult.valid,
             pc = maResult.pc, // TODO :: only for logging
-            regWrite = maResult.regWrite,
+            writeReg = maResult.writeReg,
             regWriteValue = maResult.regWriteValue,
             controlSignal = maResult.controlSignal,
         )

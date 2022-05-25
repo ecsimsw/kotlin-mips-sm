@@ -12,17 +12,17 @@ class ForwardingUnit {
         val fwSignal1 = ForwardingSignal.of(
             readReg = prevIdEx.readReg1,
             exmaRegWrite = prevExMa.controlSignal.regWrite,
-            exmaRd = prevExMa.regWrite,
+            exmaRd = prevExMa.writeReg,
             mawbRegWrite = prevMaWb.controlSignal.regWrite,
-            mawbRd = prevMaWb.regWrite,
+            mawbRd = prevMaWb.writeReg,
         )
 
         val fwSignal2 = ForwardingSignal.of(
             readReg = prevIdEx.readReg2,
             exmaRegWrite = prevExMa.controlSignal.regWrite,
-            exmaRd = prevExMa.regWrite,
+            exmaRd = prevExMa.writeReg,
             mawbRegWrite = prevMaWb.controlSignal.regWrite,
-            mawbRd = prevMaWb.regWrite,
+            mawbRd = prevMaWb.writeReg,
         )
 
         prevIdEx.readData1 = mux(fwSignal1 == ForwardingSignal.SRC_EX_MA, prevExMa.aluValue, prevIdEx.readData1)
@@ -33,7 +33,7 @@ class ForwardingUnit {
     }
 }
 
-enum class ForwardingSignal{
+enum class ForwardingSignal {
     SRC_ID_EX, SRC_EX_MA, SRC_MA_WB;
 
     companion object {

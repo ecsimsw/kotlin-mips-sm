@@ -125,7 +125,7 @@ class ControlUnit_Forwarding_Stall(
             readReg2 = instruction.rt,
             readData1 = readData1,
             readData2 = readData2,
-            regWrite = writeRegister,
+            writeReg = writeRegister,
             controlSignal = controlSignal
         )
     }
@@ -161,8 +161,8 @@ class ControlUnit_Forwarding_Stall(
             valid = idResult.valid,
             pc = idResult.pc, // TODO :: only for logging
             aluValue = aluValue,
-            memWriteValue = idResult.readData2,
-            regWrite = idResult.regWrite,
+            readData2 = idResult.readData2,
+            writeReg = idResult.writeReg,
             nextPc = nextPc,
             jump = branchCondition || controlSignal.jump || controlSignal.jr,
             controlSignal = controlSignal
@@ -183,7 +183,7 @@ class ControlUnit_Forwarding_Stall(
         memory.write(
             memWrite = controlSignal.memWrite,
             address = exResult.aluValue,
-            value = exResult.memWriteValue
+            value = exResult.readData2
         )
 
         val regWriteValue = mux(controlSignal.memToReg, memReadValue, exResult.aluValue)
@@ -192,7 +192,7 @@ class ControlUnit_Forwarding_Stall(
             valid = exResult.valid,
             pc = exResult.pc, // TODO :: only for logging
             regWriteValue = regWriteValue,
-            regWrite = exResult.regWrite,
+            writeReg = exResult.writeReg,
             controlSignal = controlSignal
         )
     }
@@ -204,7 +204,7 @@ class ControlUnit_Forwarding_Stall(
 
         if (maResult.controlSignal.regWrite) {
             registers.write(
-                register = maResult.regWrite,
+                register = maResult.writeReg,
                 data = maResult.regWriteValue,
             )
         }
@@ -212,8 +212,8 @@ class ControlUnit_Forwarding_Stall(
         return WriteBackResult(
             valid = maResult.valid,
             pc = maResult.pc, // TODO :: only for logging
-            regWrite = maResult.regWrite,
             regWriteValue = maResult.regWriteValue,
+            writeReg = maResult.writeReg,
             controlSignal = maResult.controlSignal
         )
     }

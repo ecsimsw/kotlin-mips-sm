@@ -3,14 +3,14 @@ package computer.architecture.cpu
 class DecodeUnit {
 
     fun parse(pc: Int, instruction: Int): ParsedInstruction {
-        if(instruction == 0) {
+        if (instruction == 0) {
             return ParsedInstruction.NOP
         }
         return ParsedInstruction(pc, instruction)
     }
 
     fun controlSignal(isValid: Boolean = true, opcode: Opcode): ControlSignal {
-        if(!isValid) {
+        if (!isValid) {
             return ControlSignal.NONE
         }
         return ControlSignal(opcode)
@@ -30,7 +30,7 @@ data class ParsedInstruction(
 ) {
     companion object {
 
-        val NOP = ParsedInstruction(0, 0, )
+        val NOP = ParsedInstruction(0, 0)
 
         fun immediate(pc: Int, instruction: Int): Int {
             val imm = instruction and 0xFFFF

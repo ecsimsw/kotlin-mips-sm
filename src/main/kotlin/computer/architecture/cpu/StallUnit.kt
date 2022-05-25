@@ -19,7 +19,7 @@ class StallUnit(
         }
     }
 
-    fun sleep(stallingCount: Int, pc : Int) {
+    fun sleep(stallingCount: Int, pc: Int) {
         if (this.valid) {
             this.freezePc = pc
             this.valid = false
