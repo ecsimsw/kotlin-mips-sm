@@ -120,14 +120,11 @@ class ControlUnit_SingleCycle(
     }
 
     private fun writeBack(maResult: MemoryAccessResult): WriteBackResult {
-        if (!maResult.valid) {
-            return WriteBackResult()
-        }
 
         if (maResult.controlSignal.regWrite) {
             registers.write(
                 register = maResult.writeReg,
-                data = maResult.regWriteValue
+                data = maResult.regWriteValue,
             )
         }
 

@@ -104,8 +104,9 @@ class ControlUnit_Forwarding_Stall(
 
     private fun decode(ifResult: FetchResult): DecodeResult {
         if (!ifResult.valid) {
-            return DecodeResult(ifResult.valid, 0)
+            return DecodeResult()
         }
+
         val instruction = decodeUnit.parse(ifResult.pc + 4, ifResult.instruction)
         val controlSignal = decodeUnit.controlSignal(ifResult.valid, instruction.opcode)
 
@@ -132,7 +133,7 @@ class ControlUnit_Forwarding_Stall(
 
     private fun execute(idResult: DecodeResult): ExecutionResult {
         if (!idResult.valid) {
-            return ExecutionResult(controlSignal = idResult.controlSignal)
+            return ExecutionResult()
         }
 
         val controlSignal = idResult.controlSignal
@@ -157,7 +158,7 @@ class ControlUnit_Forwarding_Stall(
 
     private fun memoryAccess(exResult: ExecutionResult): MemoryAccessResult {
         if (!exResult.valid) {
-            return MemoryAccessResult(controlSignal = exResult.controlSignal)
+            return MemoryAccessResult()
         }
 
         val controlSignal = exResult.controlSignal
@@ -185,7 +186,7 @@ class ControlUnit_Forwarding_Stall(
 
     private fun writeBack(maResult: MemoryAccessResult): WriteBackResult {
         if (!maResult.valid) {
-            return WriteBackResult(controlSignal = maResult.controlSignal)
+            return WriteBackResult()
         }
 
         if (maResult.controlSignal.regWrite) {
