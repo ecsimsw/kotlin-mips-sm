@@ -1,7 +1,6 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.cu.ControlUnit
 import computer.architecture.cpu.cu.ControlUnit_Forwarding_Stall
 import computer.architecture.cpu.cu.ControlUnit_SingleCycle
 import computer.architecture.cpu.cu.ControlUnit_Stall_Stall

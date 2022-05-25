@@ -1,7 +1,7 @@
 package computer.architecture
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.cu.ControlUnit
+import computer.architecture.cpu.cu.ControlUnit_Forwarding_Stall
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 
@@ -10,7 +10,7 @@ fun main() {
     val memory = Memory.load(20000000, fileToLoad)
 
     val logger = initLogger()
-    val controlUnit = ControlUnit(memory, logger)
+    val controlUnit = ControlUnit_Forwarding_Stall(memory, logger)
     val processResult = controlUnit.process()
 
     logger.printProcessResult(processResult)

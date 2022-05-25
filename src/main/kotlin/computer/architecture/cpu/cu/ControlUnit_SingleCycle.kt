@@ -76,23 +76,9 @@ class ControlUnit_SingleCycle(
 
     private fun execute(idResult: DecodeResult): ExecutionResult {
         val controlSignal = idResult.controlSignal
+        val aluValue = alu.execute(idResult)
 
-        var src1 = mux(controlSignal.shift, idResult.readData2, idResult.readData1)
-        src1 = mux(controlSignal.upperImm, idResult.immediate, src1)
-
-        var src2 = mux(controlSignal.aluSrc, idResult.immediate, idResult.readData2)
-        src2 = mux(controlSignal.shift, idResult.shiftAmt, src2)
-        src2 = mux(controlSignal.upperImm, 16, src2)
-
-        val aluResult = alu.operate(
-            aluOp = controlSignal.aluOp,
-            src1 = src1,
-            src2 = src2
-        )
-
-        val aluValue = mux(controlSignal.jal, idResult.pc + 8, aluResult.value)
-        val branchCondition = and(aluResult.isTrue, controlSignal.branch)
-
+        val branchCondition = and(aluValue == 1, controlSignal.branch)
         var nextPc = mux(branchCondition, idResult.immediate, idResult.pc)
         nextPc = mux(controlSignal.jump, idResult.address, nextPc)
         nextPc = mux(controlSignal.jr, idResult.readData1, nextPc)
@@ -100,9 +86,9 @@ class ControlUnit_SingleCycle(
         return ExecutionResult(
             valid = true,
             pc = idResult.pc, // TODO :: only for logging
-            aluValue = aluValue,
             readData2 = idResult.readData2,
             writeReg = idResult.writeReg,
+            aluValue = aluValue,
             nextPc = nextPc,
             jump = (branchCondition || controlSignal.jump || controlSignal.jr),
             controlSignal = controlSignal
