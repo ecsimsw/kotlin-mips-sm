@@ -5,14 +5,14 @@ class ALUnit(
 ) {
 
     init {
-        operations[AluOp.ADDITION] = { src1, scr2 -> src1 + scr2 }
-        operations[AluOp.SUBTRACTION] = { src1, scr2 -> src1 - scr2 }
-        operations[AluOp.OR] = { src1, scr2 -> src1 or scr2 }
-        operations[AluOp.SHIFT_LEFT] = { src1, scr2 -> src1 shl scr2 }
-        operations[AluOp.SET_LESS_THAN] = { src1, scr2 -> if (src1 < scr2) 1 else 0 }
+        operations[AluOp.ADDITION] = { src1, src2 -> src1 + src2 }
+        operations[AluOp.SUBTRACTION] = { src1, src2 -> src1 - src2 }
+        operations[AluOp.OR] = { src1, src2 -> src1 or src2 }
+        operations[AluOp.SHIFT_LEFT] = { src1, src2 -> src1 shl src2 }
+        operations[AluOp.SET_LESS_THAN] = { src1, src2 -> if (src1 < src2) 1 else 0 }
         operations[AluOp.NONE] = { _, _ -> 0 }
-        operations[AluOp.EQUAL] = { src1, scr2 -> if (src1 == scr2) 1 else 0 }
-        operations[AluOp.NOT_EQUAL] = { src1, scr2 -> if (src1 != scr2) 1 else 0 }
+        operations[AluOp.EQUAL] = { src1, src2 -> if (src1 == src2) 1 else 0 }
+        operations[AluOp.NOT_EQUAL] = { src1, src2 -> if (src1 != src2) 1 else 0 }
     }
 
     fun operate(aluOp: AluOp, src1: Int, src2: Int): AluResult {

@@ -143,11 +143,11 @@ open class Logger(
         var msg = "opcode : ${opcode}, "
         msg += "rs : ${result.readReg1}, rt : ${result.readReg2} "
         if (opcode.type == Opcode.Type.R) {
-            msg += "readData1 : ${result.src1}, readData2 : ${result.src2}"
+            msg += "readData1 : ${result.readData1}, readData2 : ${result.readData2}"
         }
 
         if (opcode.type == Opcode.Type.I) {
-            msg += "readData1 : ${result.src1} [0x${result.src1.toHexString()}], " +
+            msg += "readData1 : ${result.readData1} [0x${result.readData2.toHexString()}], " +
                     "immediate : ${result.immediate} [0x${result.immediate.toHexString()}]"
         }
 

@@ -2,7 +2,6 @@ package computer.architecture.cpu
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ControlUnit
-import computer.architecture.cpu.cu.ControlUnit_Stall_Stall
 import computer.architecture.utils.Logger
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.params.ParameterizedTest

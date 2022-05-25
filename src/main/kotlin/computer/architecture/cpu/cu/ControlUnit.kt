@@ -55,37 +55,14 @@ class ControlUnit(
         val prevExMa = latches.exMa()
         val prevMaWb = latches.maWb()
 
-        val fwResult1 = forwardingUnit.execute(
-            readReg = prevIdEx.readReg1,
-            exmaRd = prevExMa.regWrite,
-            exmaValue = prevExMa.aluValue,
-            mawbRd = prevMaWb.regWrite,
-            mawbValue = prevMaWb.regWriteValue
-        )
-
-        val fwResult2 = forwardingUnit.execute(
-            readReg = prevIdEx.readReg2,
-            exmaRd = prevExMa.regWrite,
-            exmaValue = prevExMa.aluValue,
-            mawbRd = prevMaWb.regWrite,
-            mawbValue = prevMaWb.regWriteValue
-        )
-
-        if (fwResult1.isTarget) {
-            println(fwResult1)
-            prevIdEx.readData1 = fwResult1.value
-        }
-
-        if (fwResult2.isTarget) {
-            println(fwResult2)
-            prevIdEx.readData2 = fwResult2.value
-        }
-
-        val nextIfId = fetch(valid, pc)
-        val nextIdEx = decode(prevIfId)
-        val nextExMa = execute(prevIdEx)
-        val nextMaWb = memoryAccess(prevExMa)
         val wbResult = writeBack(prevMaWb)
+        val nextMaWb = memoryAccess(prevExMa)
+
+        forwardingUnit.execute(prevIdEx, prevExMa, prevMaWb)
+
+        val nextExMa = execute(prevIdEx)
+        val nextIdEx = decode(prevIfId)
+        val nextIfId = fetch(valid, pc)
 
         if (nextExMa.jump) {
             nextIfId.valid = false
@@ -95,6 +72,8 @@ class ControlUnit(
             }
         }
 
+        val nextPc = mux(nextExMa.jump, nextExMa.nextPc, pc + 4)
+
         latches.store(nextIfId)
         latches.store(nextIdEx)
         latches.store(nextExMa)
@@ -102,7 +81,6 @@ class ControlUnit(
 
         logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
-        val nextPc = mux(nextExMa.jump, nextExMa.nextPc, pc + 4)
         return CycleResult(
             nextPc = nextPc,
             value = registers[2],
@@ -134,27 +112,19 @@ class ControlUnit(
         val readData1 = registers[instruction.rs]
         val readData2 = registers[instruction.rt]
 
-        var src1 = mux(controlSignal.shift, readData2, readData1)
-        src1 = mux(controlSignal.upperImm, instruction.immediate, src1)
-
-        var src2 = mux(controlSignal.aluSrc, instruction.immediate, readData2)
-        src2 = mux(controlSignal.shift, instruction.shiftAmt, src2)
-        src2 = mux(controlSignal.upperImm, 16, src2)
-
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
 
         return DecodeResult(
             valid = ifResult.valid,
             pc = ifResult.pc,
+            shiftAmt = instruction.shiftAmt,
             immediate = instruction.immediate,
             address = instruction.address,
             readReg1 = instruction.rs,
             readReg2 = instruction.rt,
             readData1 = readData1,
             readData2 = readData2,
-            src1 = src1,
-            src2 = src2,
             regWrite = writeRegister,
             controlSignal = controlSignal
         )
@@ -166,10 +136,18 @@ class ControlUnit(
         }
 
         val controlSignal = idResult.controlSignal
+
+        var src1 = mux(controlSignal.shift, idResult.readData2, idResult.readData1)
+        src1 = mux(controlSignal.upperImm, idResult.immediate, src1)
+
+        var src2 = mux(controlSignal.aluSrc, idResult.immediate, idResult.readData2)
+        src2 = mux(controlSignal.shift, idResult.shiftAmt, src2)
+        src2 = mux(controlSignal.upperImm, 16, src2)
+
         val aluResult = alu.operate(
             aluOp = controlSignal.aluOp,
-            src1 = idResult.src1,
-            src2 = idResult.src2
+            src1 = src1,
+            src2 = src2
         )
 
         val aluValue = mux(controlSignal.jal, idResult.pc + 8, aluResult.value)

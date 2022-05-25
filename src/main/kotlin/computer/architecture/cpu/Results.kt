@@ -10,14 +10,13 @@ data class DecodeResult(
     var valid: Boolean = false,
     val pc: Int = 0,
     val dataHazard: Boolean = false,
+    val shiftAmt: Int = 0,
     val immediate: Int = 0,
     val address: Int = 0,
-    val readReg1: Int =0,
-    val readReg2 : Int =0,
-    var readData1: Int =0,
-    var readData2: Int =0,
-    var src1: Int = 0,
-    var src2: Int = 0,
+    val readReg1: Int = 0,
+    val readReg2: Int = 0,
+    var readData1: Int = 0,
+    var readData2: Int = 0,
     val regWrite: Int = 0,
     val controlSignal: ControlSignal = ControlSignal.NONE
 )
@@ -38,7 +37,7 @@ data class MemoryAccessResult(
     val pc: Int = 0, // TODO :: for logging
     val regWriteValue: Int = 0,
     val regWrite: Int = 0,
-    val memReadValue: Int =0,
+    val memReadValue: Int = 0,
     val memWriteValue: Int = 0,
     val controlSignal: ControlSignal = ControlSignal.NONE
 )

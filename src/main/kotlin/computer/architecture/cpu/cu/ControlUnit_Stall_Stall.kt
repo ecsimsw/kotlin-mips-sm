@@ -110,16 +110,6 @@ class ControlUnit_Stall_Stall(
         val valid = and(ifResult.valid, !dataHazard)
         val controlSignal = decodeUnit.controlSignal(valid, instruction.opcode)
 
-        val readData1 = scoreBoardingRegisters[instruction.rs]
-        val readData2 = scoreBoardingRegisters[instruction.rt]
-
-        var src1 = mux(controlSignal.shift, readData2, readData1)
-        src1 = mux(controlSignal.upperImm, instruction.immediate, src1)
-
-        var src2 = mux(controlSignal.aluSrc, instruction.immediate, readData2)
-        src2 = mux(controlSignal.shift, instruction.shiftAmt, src2)
-        src2 = mux(controlSignal.upperImm, 16, src2)
-
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
         scoreBoardingRegisters.book(controlSignal.regWrite, writeRegister, ifResult.pc)
@@ -127,13 +117,12 @@ class ControlUnit_Stall_Stall(
         return DecodeResult(
             valid = valid,
             pc = ifResult.pc,
+            shiftAmt = instruction.shiftAmt,
             dataHazard = dataHazard,
             immediate = instruction.immediate,
             address = instruction.address,
-            readData1 = readData1,
-            readData2 = readData2,
-            src1 = src1,
-            src2 = src2,
+            readData1 = scoreBoardingRegisters[instruction.rs],
+            readData2 = scoreBoardingRegisters[instruction.rt],
             regWrite = writeRegister,
             controlSignal = controlSignal
         )
@@ -145,10 +134,18 @@ class ControlUnit_Stall_Stall(
         }
 
         val controlSignal = idResult.controlSignal
+
+        var src1 = mux(controlSignal.shift, idResult.readData2, idResult.readData1)
+        src1 = mux(controlSignal.upperImm, idResult.immediate, src1)
+
+        var src2 = mux(controlSignal.aluSrc, idResult.immediate, idResult.readData2)
+        src2 = mux(controlSignal.shift, idResult.shiftAmt, src2)
+        src2 = mux(controlSignal.upperImm, 16, src2)
+
         val aluResult = alu.operate(
             aluOp = controlSignal.aluOp,
-            src1 = idResult.src1,
-            src2 = idResult.src2
+            src1 = src1,
+            src2 = src2
         )
 
         val aluValue = mux(controlSignal.jal, idResult.pc + 8, aluResult.value)

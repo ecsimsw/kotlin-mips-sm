@@ -1,23 +1,56 @@
 package computer.architecture.cpu
 
+import computer.architecture.component.Mux.Companion.mux
+
 class ForwardingUnit {
 
-    fun execute(readReg: Int, exmaRd: Int, exmaValue: Int, mawbRd: Int, mawbValue: Int): ForwardingResult {
-        if ((exmaRd != 0) && (readReg == exmaRd)) {
-            return ForwardingResult(true, exmaValue)
-        }
-        if ((mawbRd != 0) && (readReg == mawbRd)) {
-            return ForwardingResult(true, mawbValue)
-        }
-        return ForwardingResult.DO_NOTHING
+    fun execute(
+        prevIdEx: DecodeResult,
+        prevExMa: ExecutionResult,
+        prevMaWb: MemoryAccessResult
+    ) {
+        val fwSignal1 = ForwardingSignal.of(
+            readReg = prevIdEx.readReg1,
+            exmaRegWrite = prevExMa.controlSignal.regWrite,
+            exmaRd = prevExMa.regWrite,
+            mawbRegWrite = prevMaWb.controlSignal.regWrite,
+            mawbRd = prevMaWb.regWrite,
+        )
+
+        val fwSignal2 = ForwardingSignal.of(
+            readReg = prevIdEx.readReg2,
+            exmaRegWrite = prevExMa.controlSignal.regWrite,
+            exmaRd = prevExMa.regWrite,
+            mawbRegWrite = prevMaWb.controlSignal.regWrite,
+            mawbRd = prevMaWb.regWrite,
+        )
+
+        prevIdEx.readData1 = mux(fwSignal1 == ForwardingSignal.SRC_EX_MA, prevExMa.aluValue, prevIdEx.readData1)
+        prevIdEx.readData1 = mux(fwSignal1 == ForwardingSignal.SRC_MA_WB, prevMaWb.regWriteValue, prevIdEx.readData1)
+
+        prevIdEx.readData2 = mux(fwSignal2 == ForwardingSignal.SRC_EX_MA, prevExMa.aluValue, prevIdEx.readData2)
+        prevIdEx.readData2 = mux(fwSignal2 == ForwardingSignal.SRC_MA_WB, prevMaWb.regWriteValue, prevIdEx.readData2)
     }
 }
 
-data class ForwardingResult(
-    val isTarget: Boolean = false,
-    val value: Int = 0
-) {
+enum class ForwardingSignal{
+    SRC_ID_EX, SRC_EX_MA, SRC_MA_WB;
+
     companion object {
-        val DO_NOTHING = ForwardingResult()
+        fun of(
+            readReg: Int,
+            exmaRegWrite: Boolean,
+            exmaRd: Int,
+            mawbRegWrite: Boolean,
+            mawbRd: Int
+        ): ForwardingSignal {
+            if ((exmaRd != 0) && exmaRegWrite && (readReg == exmaRd)) {
+                return SRC_EX_MA
+            }
+            if ((mawbRd != 0) && mawbRegWrite && (readReg == mawbRd)) {
+                return SRC_MA_WB
+            }
+            return SRC_ID_EX
+        }
     }
 }
