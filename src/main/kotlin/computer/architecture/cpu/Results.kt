@@ -18,6 +18,8 @@ data class DecodeResult(
     var readData1: Int = 0,
     var readData2: Int = 0,
     val writeReg: Int = 0,
+    val jump: Boolean = false,
+    val nextPc: Int =0,
     val controlSignal: ControlSignal = ControlSignal.NONE
 )
 
@@ -29,6 +31,7 @@ data class ExecutionResult(
     val writeReg: Int = 0,
     val nextPc: Int = 0,
     val jump: Boolean = false,
+    val branch: Boolean = false,
     val controlSignal: ControlSignal = ControlSignal.NONE
 )
 
