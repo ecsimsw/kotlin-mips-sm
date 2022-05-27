@@ -1,6 +1,7 @@
 package computer.architecture.utils
 
 import computer.architecture.cpu.*
+import computer.architecture.cpu.Opcode
 
 open class Logger(
     private val loggingSignal: LoggingSignal

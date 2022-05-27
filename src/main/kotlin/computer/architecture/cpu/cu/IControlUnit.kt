@@ -1,5 +1,5 @@
 package computer.architecture.cpu.cu
 
-interface ControlUnitInterface {
+interface IControlUnit {
     fun process(): Int
 }

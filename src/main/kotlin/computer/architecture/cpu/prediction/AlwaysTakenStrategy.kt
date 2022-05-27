@@ -1,11 +1,11 @@
-package computer.architecture.cpu.bpu
+package computer.architecture.cpu.prediction
 
-class AlwaysTakenBpUnit : BranchPredictionUnit {
+class AlwaysTakenStrategy : IBranchPredictionStrategy {
 
     private var correctCount : Int = 0
     private var incorrectCount : Int = 0
 
-    override fun predict(pc: Int): Boolean {
+    override fun taken(pc: Int): Boolean {
         return true
     }
 

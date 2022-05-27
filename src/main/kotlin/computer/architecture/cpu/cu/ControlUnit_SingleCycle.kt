@@ -10,7 +10,7 @@ import computer.architecture.utils.Logger
 class ControlUnit_SingleCycle(
     private val memory: Memory,
     private val logger: Logger
-) : ControlUnitInterface {
+) : IControlUnit {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
@@ -120,7 +120,6 @@ class ControlUnit_SingleCycle(
     }
 
     private fun writeBack(maResult: MemoryAccessResult): WriteBackResult {
-
         if (maResult.controlSignal.regWrite) {
             registers.write(
                 register = maResult.writeReg,

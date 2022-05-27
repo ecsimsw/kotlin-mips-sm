@@ -11,8 +11,9 @@ import computer.architecture.utils.Logger
 
 class ControlUnit_Forwarding_Stall(
     private val memory: Memory,
-    private val logger: Logger
-) : ControlUnitInterface {
+    private val logger: Logger,
+    private val pcUnit: IProgramCounterUnit = StallingPcUnit()
+) : IControlUnit {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
@@ -30,7 +31,7 @@ class ControlUnit_Forwarding_Stall(
         while (true) {
             logger.printCycle(cycleResult.valid, cycle)
 
-            isEnd = or(isEnd, cycleResult.lastInstruction)
+            isEnd = or(isEnd, cycleResult.isEnd)
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
             val valid = stallUnit.valid && !isEnd
 
@@ -58,33 +59,11 @@ class ControlUnit_Forwarding_Stall(
 
         val wbResult = writeBack(prevMaWb)
         val nextMaWb = memoryAccess(prevExMa)
-
         forwardingUnit.execute(prevIdEx, prevExMa, prevMaWb)
         val nextExMa = execute(prevIdEx)
-
         val nextIdEx = decode(prevIfId)
         val nextIfId = fetch(valid, pc)
-
-        var isEnd = false
-        if (nextExMa.valid && nextExMa.branch) {
-            nextIfId.valid = false
-            nextIdEx.valid = false
-            if (nextExMa.nextPc == -1) {
-                nextExMa.controlSignal.isEnd = true
-                isEnd = true
-            }
-        }
-
-        if (nextIdEx.valid && nextIdEx.jump) {
-            nextIfId.valid = false
-            if (nextIdEx.nextPc == -1) {
-                nextIdEx.controlSignal.isEnd = true
-                isEnd = true
-            }
-        }
-
-        var nextPc = mux(nextExMa.branch, nextExMa.nextPc, pc + 4)
-        nextPc = mux(nextIdEx.jump, nextIdEx.nextPc, nextPc)
+        val nextPcInfo = pcUnit.execute(pc, nextIfId, nextIdEx, nextExMa)
 
         latches.store(nextIfId)
         latches.store(nextIdEx)
@@ -93,10 +72,10 @@ class ControlUnit_Forwarding_Stall(
         logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         return CycleResult(
-            nextPc = nextPc,
+            nextPc = nextPcInfo.nextPc,
             value = registers[2],
             valid = wbResult.valid,
-            lastInstruction = isEnd,
+            isEnd = nextPcInfo.isEnd,
             lastCycle = wbResult.controlSignal.isEnd
         )
     }

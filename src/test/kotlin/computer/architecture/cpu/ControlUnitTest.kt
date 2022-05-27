@@ -1,7 +1,7 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.cu.ControlUnit
+import computer.architecture.cpu.cu.ControlUnit_Forwarding_BranchPrediction
 import computer.architecture.cpu.cu.ControlUnit_Forwarding_Stall
 import computer.architecture.cpu.cu.ControlUnit_SingleCycle
 import computer.architecture.cpu.cu.ControlUnit_Stall_Stall
@@ -80,7 +80,7 @@ internal class ControlUnitTest {
     )
     fun branchPrediction(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit(memory, logger)
+        val controlUnit = ControlUnit_Forwarding_BranchPrediction(memory, logger)
         val processResult = controlUnit.process()
         assertThat(processResult).isEqualTo(expected)
         logger.printProcessResult(processResult)

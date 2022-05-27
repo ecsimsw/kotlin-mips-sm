@@ -6,21 +6,21 @@ import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
-import computer.architecture.cpu.bpu.AlwaysTakenBpUnit
+import computer.architecture.cpu.pc.BranchPredictionUnit
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
-class ControlUnit(
+class ControlUnit_Forwarding_BranchPrediction(
     private val memory: Memory,
-    private val logger: Logger
-) : ControlUnitInterface {
+    private val logger: Logger,
+    private val pcUnit: IProgramCounterUnit = BranchPredictionUnit()
+) : IControlUnit {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
     private val stallUnit = StallUnit()
     private val forwardingUnit = ForwardingUnit()
     private val latches = Latches()
-    private val bpUnit = AlwaysTakenBpUnit()
 
     override fun process(): Int {
         var cycle = 0
@@ -32,7 +32,7 @@ class ControlUnit(
         while (true) {
             logger.printCycle(cycleResult.valid, cycle)
 
-            isEnd = or(isEnd, cycleResult.lastInstruction)
+            isEnd = or(isEnd, cycleResult.isEnd)
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
             val valid = stallUnit.valid && !isEnd
 
@@ -60,43 +60,11 @@ class ControlUnit(
 
         val wbResult = writeBack(prevMaWb)
         val nextMaWb = memoryAccess(prevExMa)
-
         forwardingUnit.execute(prevIdEx, prevExMa, prevMaWb)
         val nextExMa = execute(prevIdEx)
-
         val nextIdEx = decode(prevIfId)
         val nextIfId = fetch(valid, pc)
-
-        var nextPc = pc + 4
-        var isEnd = false
-
-        if (nextExMa.valid && nextExMa.controlSignal.branch && !bpUnit.isCorrect(nextIfId.pc, nextExMa.nextPc)) {
-            nextIfId.valid = false
-            nextIdEx.valid = false
-            nextPc = nextExMa.pc + 4
-            if (nextExMa.nextPc == -1) {
-                nextExMa.controlSignal.isEnd = true
-                isEnd = true
-            }
-        }
-
-        if (nextIdEx.valid && nextIdEx.controlSignal.branch && bpUnit.predict(pc)) {
-            nextIfId.valid = false
-            nextPc = nextIdEx.immediate
-            if (nextPc == -1) {
-                nextIdEx.controlSignal.isEnd = true
-                isEnd = true
-            }
-        }
-
-        if (nextIdEx.valid && nextIdEx.jump) {
-            nextIfId.valid = false
-            nextPc = nextIdEx.nextPc
-            if (nextIdEx.nextPc == -1) {
-                nextIdEx.controlSignal.isEnd = true
-                isEnd = true
-            }
-        }
+        val nextPcInfo = pcUnit.execute(pc, nextIfId, nextIdEx, nextExMa)
 
         latches.store(nextIfId)
         latches.store(nextIdEx)
@@ -105,10 +73,10 @@ class ControlUnit(
         logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         return CycleResult(
-            nextPc = nextPc,
+            nextPc = nextPcInfo.nextPc,
             value = registers[2],
             valid = wbResult.valid,
-            lastInstruction = isEnd,
+            isEnd = nextPcInfo.isEnd,
             lastCycle = wbResult.controlSignal.isEnd
         )
     }

@@ -6,13 +6,15 @@ import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
+import computer.architecture.cpu.DataDependencyUnit
 import computer.architecture.cpu.register.ScoreBoardingRegisters
 import computer.architecture.utils.Logger
 
 class ControlUnit_Stall_Stall(
     private val memory: Memory,
-    private val logger: Logger
-) : ControlUnitInterface {
+    private val logger: Logger,
+    private val pcUnit: IProgramCounterUnit = StallingPcUnit()
+) : IControlUnit {
     private val scoreBoardingRegisters = ScoreBoardingRegisters(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
@@ -31,7 +33,7 @@ class ControlUnit_Stall_Stall(
             logger.printCycle(cycleResult.valid, cycle)
 
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
-            isEnd = or(isEnd, cycleResult.lastInstruction)
+            isEnd = or(isEnd, cycleResult.isEnd)
 
             val valid = stallUnit.valid && !isEnd
             cycleResult = cycleExecution(valid, pc)
@@ -62,27 +64,7 @@ class ControlUnit_Stall_Stall(
             nextIdEx.valid = false
             stallUnit.sleep(2, nextIdEx.pc)
         }
-
-        var isEnd = false
-        if (nextExMa.valid && nextExMa.branch) {
-            nextIfId.valid = false
-            nextIdEx.valid = false
-            if (nextExMa.nextPc == -1) {
-                nextExMa.controlSignal.isEnd = true
-                isEnd = true
-            }
-        }
-
-        if (nextIdEx.valid && nextIdEx.jump) {
-            nextIfId.valid = false
-            if (nextIdEx.nextPc == -1) {
-                nextIdEx.controlSignal.isEnd = true
-                isEnd = true
-            }
-        }
-
-        var nextPc = mux(nextExMa.branch, nextExMa.nextPc, pc + 4)
-        nextPc = mux(nextIdEx.jump, nextIdEx.nextPc, nextPc)
+        val nextPcInfo = pcUnit.execute(pc, nextIfId, nextIdEx, nextExMa)
 
         latches.store(nextIfId)
         latches.store(nextIdEx)
@@ -91,10 +73,10 @@ class ControlUnit_Stall_Stall(
         logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         return CycleResult(
-            nextPc = nextPc,
+            nextPc = nextPcInfo.nextPc,
             value = scoreBoardingRegisters[2],
             valid = wbResult.valid,
-            lastInstruction = isEnd,
+            isEnd = nextPcInfo.isEnd,
             lastCycle = wbResult.controlSignal.isEnd
         )
     }
