@@ -12,6 +12,8 @@ import org.junit.jupiter.params.provider.CsvSource
 
 internal class ControlUnitTest {
 
+    private val logger = Logger.RESULT_ONLY
+
     @ParameterizedTest
     @CsvSource(
         "sample/simple.bin,0",
@@ -24,9 +26,10 @@ internal class ControlUnitTest {
     )
     fun singleCycle(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit_SingleCycle(memory, Logger.NONE)
+        val controlUnit = ControlUnit_SingleCycle(memory, logger)
         val processResult = controlUnit.process()
         assertThat(processResult).isEqualTo(expected)
+        logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -41,9 +44,10 @@ internal class ControlUnitTest {
     )
     fun stall_stall(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit_Stall_Stall(memory, Logger.NONE)
+        val controlUnit = ControlUnit_Stall_Stall(memory, logger)
         val processResult = controlUnit.process()
         assertThat(processResult).isEqualTo(expected)
+        logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -58,9 +62,10 @@ internal class ControlUnitTest {
     )
     fun forwarding_stall(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit_Forwarding_Stall(memory, Logger.NONE)
+        val controlUnit = ControlUnit_Forwarding_Stall(memory, logger)
         val processResult = controlUnit.process()
         assertThat(processResult).isEqualTo(expected)
+        logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -75,8 +80,9 @@ internal class ControlUnitTest {
     )
     fun branchPrediction(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit(memory, Logger.NONE)
+        val controlUnit = ControlUnit(memory, logger)
         val processResult = controlUnit.process()
         assertThat(processResult).isEqualTo(expected)
+        logger.printProcessResult(processResult)
     }
 }

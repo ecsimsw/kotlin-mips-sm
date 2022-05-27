@@ -28,7 +28,7 @@ class ControlUnit_Forwarding_Stall(
         var isEnd = false
 
         while (true) {
-            logger.printCycle(cycleResult.valid, validCycle)
+            logger.printCycle(cycleResult.valid, cycle)
 
             isEnd = or(isEnd, cycleResult.lastInstruction)
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)

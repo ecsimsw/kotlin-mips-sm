@@ -20,7 +20,7 @@ class ControlUnit(
     private val stallUnit = StallUnit()
     private val forwardingUnit = ForwardingUnit()
     private val latches = Latches()
-    private val branchPredictionUnit = AlwaysTakenBpUnit()
+    private val bpUnit = AlwaysTakenBpUnit()
 
     override fun process(): Int {
         var cycle = 0
@@ -30,7 +30,7 @@ class ControlUnit(
         var isEnd = false
 
         while (true) {
-            logger.printCycle(cycleResult.valid, validCycle)
+            logger.printCycle(cycleResult.valid, cycle)
 
             isEnd = or(isEnd, cycleResult.lastInstruction)
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
@@ -67,28 +67,24 @@ class ControlUnit(
         val nextIdEx = decode(prevIfId)
         val nextIfId = fetch(valid, pc)
 
-        var nextPc: Int = pc + 4
+        var nextPc = pc + 4
         var isEnd = false
 
-        if (nextIdEx.valid && nextIdEx.controlSignal.branch) {
-            if (branchPredictionUnit.predict(pc)) {
-                nextPc = nextIdEx.immediate
-                if (nextPc == -1) {
-                    nextIdEx.controlSignal.isEnd = true
-                    isEnd = true
-                }
+        if (nextExMa.valid && nextExMa.controlSignal.branch && !bpUnit.isCorrect(nextIfId.pc, nextExMa.nextPc)) {
+            nextIfId.valid = false
+            nextIdEx.valid = false
+            nextPc = nextExMa.pc + 4
+            if (nextExMa.nextPc == -1) {
+                nextExMa.controlSignal.isEnd = true
+                isEnd = true
             }
         }
 
-        if (
-            nextExMa.valid &&
-            nextExMa.branch &&
-            !branchPredictionUnit.isCorrect(nextIfId.pc, nextExMa.nextPc)
-        ) {
+        if (nextIdEx.valid && nextIdEx.controlSignal.branch && bpUnit.predict(pc)) {
             nextIfId.valid = false
-            nextIdEx.valid = false
-            if (nextExMa.nextPc == -1) {
-                nextExMa.controlSignal.isEnd = true
+            nextPc = nextIdEx.immediate
+            if (nextPc == -1) {
+                nextIdEx.controlSignal.isEnd = true
                 isEnd = true
             }
         }

@@ -8,7 +8,7 @@ data class LoggingSignal(
     var execute: Boolean = false,
     var memoryAccess: Boolean = false,
     var writeBack: Boolean = false,
-    var resultInformation: Boolean = false,
+    var result: Boolean = false,
     var sleepTime: Long = 0L,
     var from: Int = 0,
     var to: Int = 0

@@ -15,6 +15,7 @@ open class Logger(
 
     companion object {
         val NONE = Logger(LoggingSignal())
+        val RESULT_ONLY = Logger(LoggingSignal(result = true))
     }
 
     open fun log(
@@ -78,10 +79,10 @@ open class Logger(
     }
 
     fun printCycle(printOrNot: Boolean, cycleCount: Int) {
+        checkPrintRange(cycleCount)
         if(!printOrNot) {
             return
         }
-        checkPrintRange(cycleCount)
         this.cycleCount = cycleCount
         try {
             Thread.sleep(loggingSignal.sleepTime)
@@ -207,7 +208,7 @@ open class Logger(
     }
 
     fun printProcessResult(resultValue: Int) {
-        if (!loggingSignal.resultInformation) return
+        if (!loggingSignal.result) return
 
         println("=== Result === ")
         println("cycle count : $cycleCount")

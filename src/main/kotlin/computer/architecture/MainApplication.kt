@@ -2,8 +2,6 @@ package computer.architecture
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ControlUnit
-import computer.architecture.cpu.cu.ControlUnit_Forwarding_Stall
-import computer.architecture.cpu.cu.ControlUnit_Stall_Stall
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 
@@ -30,8 +28,8 @@ val loggingSignal = LoggingSignal(
     execute = true,
     memoryAccess = true,
     writeBack = true,
-    resultInformation = true,
+    result = true,
     sleepTime = 0,
     from = 0,
-    to = 2000
+    to = 1999
 )
