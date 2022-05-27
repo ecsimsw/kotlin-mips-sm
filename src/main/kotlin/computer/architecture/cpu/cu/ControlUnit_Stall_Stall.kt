@@ -152,7 +152,6 @@ class ControlUnit_Stall_Stall(
             return ExecutionResult()
         }
         val controlSignal = idResult.controlSignal
-        println(controlSignal.isEnd)
         val aluValue = alu.execute(idResult)
 
         val branchCondition = and(aluValue == 1, controlSignal.branch)
@@ -176,7 +175,6 @@ class ControlUnit_Stall_Stall(
         }
 
         val controlSignal = exResult.controlSignal
-        println(controlSignal.isEnd)
         val memReadValue = memory.read(
             memRead = controlSignal.memRead,
             address = exResult.aluValue,
@@ -205,8 +203,6 @@ class ControlUnit_Stall_Stall(
         if (!maResult.valid) {
             return WriteBackResult()
         }
-
-        println(maResult.controlSignal.isEnd)
         if (maResult.controlSignal.regWrite) {
             scoreBoardingRegisters.write(
                 writeRegister = maResult.writeReg,
