@@ -4,8 +4,8 @@ import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
+import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
-import computer.architecture.cpu.pu.AlwaysTakenBpUnit
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
@@ -19,21 +19,20 @@ class ControlUnit(
     private val stallUnit = StallUnit()
     private val forwardingUnit = ForwardingUnit()
     private val latches = Latches()
-    private val branchPredictionUnit = AlwaysTakenBpUnit()
 
     override fun process(): Int {
         var cycle = 0
         var validCycle = 0
 
         var cycleResult = CycleResult()
-        val endFlag = EndFlag()
+        var isEnd = false
 
         while (true) {
             logger.printCycle(cycleResult.valid, validCycle)
 
-            endFlag.update(cycleResult.lastInstruction)
+            isEnd = or(isEnd, cycleResult.lastInstruction)
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
-            val valid = stallUnit.valid && !endFlag.isEnd
+            val valid = stallUnit.valid && !isEnd
 
             cycleResult = cycleExecution(valid, pc)
 
@@ -67,15 +66,7 @@ class ControlUnit(
         val nextIfId = fetch(valid, pc)
 
         var isEnd = false
-        if (nextIdEx.jump) {
-            nextIfId.valid = false
-            if (nextIdEx.nextPc == -1) {
-                nextIdEx.controlSignal.isEnd = true
-                isEnd = true
-            }
-        }
-
-        if (nextExMa.branch) {
+        if (nextExMa.valid && nextExMa.branch) {
             nextIfId.valid = false
             nextIdEx.valid = false
             if (nextExMa.nextPc == -1) {
@@ -84,8 +75,16 @@ class ControlUnit(
             }
         }
 
+        if (nextIdEx.valid && nextIdEx.jump) {
+            nextIfId.valid = false
+            if (nextIdEx.nextPc == -1) {
+                nextIdEx.controlSignal.isEnd = true
+                isEnd = true
+            }
+        }
+
         var nextPc = mux(nextExMa.branch, nextExMa.nextPc, pc + 4)
-        nextPc = mux(nextIdEx.jump, nextExMa.nextPc, nextPc)
+        nextPc = mux(nextIdEx.jump, nextIdEx.nextPc, nextPc)
 
         latches.store(nextIfId)
         latches.store(nextIdEx)

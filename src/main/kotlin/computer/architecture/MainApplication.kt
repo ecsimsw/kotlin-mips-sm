@@ -2,15 +2,16 @@ package computer.architecture
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ControlUnit_Forwarding_Stall
+import computer.architecture.cpu.cu.ControlUnit_Stall_Stall
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 
 fun main() {
-    val fileToLoad = "sample/simple.bin"
+    val fileToLoad = "sample/simple4.bin"
     val memory = Memory.load(20000000, fileToLoad)
 
     val logger = initLogger()
-    val controlUnit = ControlUnit_Forwarding_Stall(memory, logger)
+    val controlUnit = ControlUnit_Stall_Stall(memory, logger)
     val processResult = controlUnit.process()
 
     logger.printProcessResult(processResult)

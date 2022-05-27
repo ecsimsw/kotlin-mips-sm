@@ -1,6 +1,7 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
+import computer.architecture.cpu.cu.ControlUnit
 import computer.architecture.cpu.cu.ControlUnit_Forwarding_Stall
 import computer.architecture.cpu.cu.ControlUnit_SingleCycle
 import computer.architecture.cpu.cu.ControlUnit_Stall_Stall
@@ -58,6 +59,23 @@ internal class ControlUnitTest {
     fun forwarding_stall(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
         val controlUnit = ControlUnit_Forwarding_Stall(memory, Logger.NONE)
+        val processResult = controlUnit.process()
+        assertThat(processResult).isEqualTo(expected)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun branchPrediction(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+        val controlUnit = ControlUnit(memory, Logger.NONE)
         val processResult = controlUnit.process()
         assertThat(processResult).isEqualTo(expected)
     }

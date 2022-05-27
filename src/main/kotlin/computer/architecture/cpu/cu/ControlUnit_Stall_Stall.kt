@@ -4,6 +4,7 @@ import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
+import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
 import computer.architecture.cpu.register.ScoreBoardingRegisters
 import computer.architecture.utils.Logger
@@ -24,15 +25,15 @@ class ControlUnit_Stall_Stall(
         var validCycle = 0
 
         var cycleResult = CycleResult()
-        val endFlag = EndFlag()
+        var isEnd = false
 
         while (true) {
             logger.printCycle(cycleResult.valid, validCycle)
 
-            endFlag.update(cycleResult.lastInstruction)
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
-            val valid = stallUnit.valid && !endFlag.isEnd
+            isEnd = or(isEnd, cycleResult.lastInstruction)
 
+            val valid = stallUnit.valid && !isEnd
             cycleResult = cycleExecution(valid, pc)
 
             if (cycleResult.lastCycle) {
@@ -62,28 +63,38 @@ class ControlUnit_Stall_Stall(
             stallUnit.sleep(2, nextIdEx.pc)
         }
 
-        if (nextExMa.jump) {
+        var isEnd = false
+        if (nextExMa.valid && nextExMa.branch) {
             nextIfId.valid = false
             nextIdEx.valid = false
             if (nextExMa.nextPc == -1) {
                 nextExMa.controlSignal.isEnd = true
+                isEnd = true
             }
         }
 
-        val nextPc = mux(nextExMa.jump, nextExMa.nextPc, pc + 4)
+        if (nextIdEx.valid && nextIdEx.jump) {
+            nextIfId.valid = false
+            if (nextIdEx.nextPc == -1) {
+                nextIdEx.controlSignal.isEnd = true
+                isEnd = true
+            }
+        }
+
+        var nextPc = mux(nextExMa.branch, nextExMa.nextPc, pc + 4)
+        nextPc = mux(nextIdEx.jump, nextIdEx.nextPc, nextPc)
 
         latches.store(nextIfId)
         latches.store(nextIdEx)
         latches.store(nextExMa)
         latches.store(nextMaWb)
-
         logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         return CycleResult(
             nextPc = nextPc,
             value = scoreBoardingRegisters[2],
             valid = wbResult.valid,
-            lastInstruction = nextExMa.controlSignal.isEnd,
+            lastInstruction = isEnd,
             lastCycle = wbResult.controlSignal.isEnd
         )
     }
@@ -102,7 +113,7 @@ class ControlUnit_Stall_Stall(
 
     private fun decode(ifResult: FetchResult): DecodeResult {
         if (!ifResult.valid) {
-            return DecodeResult(ifResult.valid, 0)
+            return DecodeResult()
         }
         val instruction = decodeUnit.parse(ifResult.pc + 4, ifResult.instruction)
         val dataHazard = dataDependencyUnit.hasHazard(instruction.rs, instruction.rt)
@@ -110,20 +121,28 @@ class ControlUnit_Stall_Stall(
         val valid = and(ifResult.valid, !dataHazard)
         val controlSignal = decodeUnit.controlSignal(valid, instruction.opcode)
 
+        val readData1 = scoreBoardingRegisters[instruction.rs]
+        val readData2 = scoreBoardingRegisters[instruction.rt]
+
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
         scoreBoardingRegisters.book(controlSignal.regWrite, writeRegister, ifResult.pc)
 
+        var nextPc = mux(controlSignal.jump, instruction.address, ifResult.pc)
+        nextPc = mux(controlSignal.jr, readData1, nextPc)
+
         return DecodeResult(
-            valid = valid,
+            valid = ifResult.valid,
             pc = ifResult.pc,
             shiftAmt = instruction.shiftAmt,
-            dataHazard = dataHazard,
             immediate = instruction.immediate,
             address = instruction.address,
-            readData1 = scoreBoardingRegisters[instruction.rs],
-            readData2 = scoreBoardingRegisters[instruction.rt],
+            dataHazard = dataHazard,
+            readData1 = readData1,
+            readData2 = readData2,
             writeReg = writeRegister,
+            jump = controlSignal.jump || controlSignal.jr,
+            nextPc = nextPc,
             controlSignal = controlSignal
         )
     }
@@ -133,12 +152,11 @@ class ControlUnit_Stall_Stall(
             return ExecutionResult()
         }
         val controlSignal = idResult.controlSignal
+        println(controlSignal.isEnd)
         val aluValue = alu.execute(idResult)
 
         val branchCondition = and(aluValue == 1, controlSignal.branch)
-        var nextPc = mux(branchCondition, idResult.immediate, idResult.pc)
-        nextPc = mux(controlSignal.jump, idResult.address, nextPc)
-        nextPc = mux(controlSignal.jr, idResult.readData1, nextPc)
+        val nextPc = mux(branchCondition, idResult.immediate, idResult.pc)
 
         return ExecutionResult(
             valid = idResult.valid,
@@ -147,7 +165,7 @@ class ControlUnit_Stall_Stall(
             writeReg = idResult.writeReg,
             aluValue = aluValue,
             nextPc = nextPc,
-            jump = (branchCondition || controlSignal.jump || controlSignal.jr),
+            branch = branchCondition,
             controlSignal = controlSignal
         )
     }
@@ -158,6 +176,7 @@ class ControlUnit_Stall_Stall(
         }
 
         val controlSignal = exResult.controlSignal
+        println(controlSignal.isEnd)
         val memReadValue = memory.read(
             memRead = controlSignal.memRead,
             address = exResult.aluValue,
@@ -187,6 +206,7 @@ class ControlUnit_Stall_Stall(
             return WriteBackResult()
         }
 
+        println(maResult.controlSignal.isEnd)
         if (maResult.controlSignal.regWrite) {
             scoreBoardingRegisters.write(
                 writeRegister = maResult.writeReg,

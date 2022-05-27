@@ -4,6 +4,7 @@ import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
+import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
@@ -24,14 +25,14 @@ class ControlUnit_Forwarding_Stall(
         var validCycle = 0
 
         var cycleResult = CycleResult()
-        val endFlag = EndFlag()
+        var isEnd = false
 
         while (true) {
             logger.printCycle(cycleResult.valid, validCycle)
 
-            endFlag.update(cycleResult.lastInstruction)
+            isEnd = or(isEnd, cycleResult.lastInstruction)
             val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
-            val valid = stallUnit.valid && !endFlag.isEnd
+            val valid = stallUnit.valid && !isEnd
 
             cycleResult = cycleExecution(valid, pc)
 
@@ -59,33 +60,43 @@ class ControlUnit_Forwarding_Stall(
         val nextMaWb = memoryAccess(prevExMa)
 
         forwardingUnit.execute(prevIdEx, prevExMa, prevMaWb)
-
         val nextExMa = execute(prevIdEx)
+
         val nextIdEx = decode(prevIfId)
         val nextIfId = fetch(valid, pc)
 
-        if (nextExMa.jump) {
+        var isEnd = false
+        if (nextExMa.valid && nextExMa.branch) {
             nextIfId.valid = false
             nextIdEx.valid = false
             if (nextExMa.nextPc == -1) {
                 nextExMa.controlSignal.isEnd = true
+                isEnd = true
             }
         }
 
-        val nextPc = mux(nextExMa.jump, nextExMa.nextPc, pc + 4)
+        if (nextIdEx.valid && nextIdEx.jump) {
+            nextIfId.valid = false
+            if (nextIdEx.nextPc == -1) {
+                nextIdEx.controlSignal.isEnd = true
+                isEnd = true
+            }
+        }
+
+        var nextPc = mux(nextExMa.branch, nextExMa.nextPc, pc + 4)
+        nextPc = mux(nextIdEx.jump, nextIdEx.nextPc, nextPc)
 
         latches.store(nextIfId)
         latches.store(nextIdEx)
         latches.store(nextExMa)
         latches.store(nextMaWb)
-
         logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         return CycleResult(
             nextPc = nextPc,
             value = registers[2],
             valid = wbResult.valid,
-            lastInstruction = nextExMa.controlSignal.isEnd,
+            lastInstruction = isEnd,
             lastCycle = wbResult.controlSignal.isEnd
         )
     }
@@ -116,6 +127,9 @@ class ControlUnit_Forwarding_Stall(
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
 
+        var nextPc = mux(controlSignal.jump, instruction.address, ifResult.pc)
+        nextPc = mux(controlSignal.jr, readData1, nextPc)
+
         return DecodeResult(
             valid = ifResult.valid,
             pc = ifResult.pc,
@@ -127,6 +141,8 @@ class ControlUnit_Forwarding_Stall(
             readData1 = readData1,
             readData2 = readData2,
             writeReg = writeRegister,
+            jump = controlSignal.jump || controlSignal.jr,
+            nextPc = nextPc,
             controlSignal = controlSignal
         )
     }
@@ -140,9 +156,7 @@ class ControlUnit_Forwarding_Stall(
         val aluValue = alu.execute(idResult)
 
         val branchCondition = and(aluValue == 1, controlSignal.branch)
-        var nextPc = mux(branchCondition, idResult.immediate, idResult.pc)
-        nextPc = mux(controlSignal.jump, idResult.address, nextPc)
-        nextPc = mux(controlSignal.jr, idResult.readData1, nextPc)
+        val nextPc = mux(branchCondition, idResult.immediate, idResult.pc)
 
         return ExecutionResult(
             valid = idResult.valid,
@@ -151,7 +165,7 @@ class ControlUnit_Forwarding_Stall(
             writeReg = idResult.writeReg,
             aluValue = aluValue,
             nextPc = nextPc,
-            jump = (branchCondition || controlSignal.jump || controlSignal.jr),
+            branch = branchCondition,
             controlSignal = controlSignal
         )
     }
