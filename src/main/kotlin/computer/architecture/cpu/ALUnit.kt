@@ -1,6 +1,5 @@
 package computer.architecture.cpu
 
-import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Mux.Companion.mux
 
 class ALUnit(
@@ -37,7 +36,7 @@ class ALUnit(
 
     fun operate(aluOp: AluOp, src1: Int, src2: Int): Int {
         return operations[aluOp]?.invoke(src1, src2)
-                ?: throw IllegalArgumentException("Opcodes that cannot be computed : $aluOp")
+            ?: throw IllegalArgumentException("Opcodes that cannot be computed : $aluOp")
     }
 }
 

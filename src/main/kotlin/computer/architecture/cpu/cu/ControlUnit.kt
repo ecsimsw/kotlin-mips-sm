@@ -6,6 +6,7 @@ import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
+import computer.architecture.cpu.bpu.AlwaysTakenBpUnit
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
@@ -19,6 +20,7 @@ class ControlUnit(
     private val stallUnit = StallUnit()
     private val forwardingUnit = ForwardingUnit()
     private val latches = Latches()
+    private val branchPredictionUnit = AlwaysTakenBpUnit()
 
     override fun process(): Int {
         var cycle = 0
@@ -65,8 +67,24 @@ class ControlUnit(
         val nextIdEx = decode(prevIfId)
         val nextIfId = fetch(valid, pc)
 
+        var nextPc: Int = pc + 4
         var isEnd = false
-        if (nextExMa.valid && nextExMa.branch) {
+
+        if (nextIdEx.valid && nextIdEx.controlSignal.branch) {
+            if (branchPredictionUnit.predict(pc)) {
+                nextPc = nextIdEx.immediate
+                if (nextPc == -1) {
+                    nextIdEx.controlSignal.isEnd = true
+                    isEnd = true
+                }
+            }
+        }
+
+        if (
+            nextExMa.valid &&
+            nextExMa.branch &&
+            !branchPredictionUnit.isCorrect(nextIfId.pc, nextExMa.nextPc)
+        ) {
             nextIfId.valid = false
             nextIdEx.valid = false
             if (nextExMa.nextPc == -1) {
@@ -77,14 +95,12 @@ class ControlUnit(
 
         if (nextIdEx.valid && nextIdEx.jump) {
             nextIfId.valid = false
+            nextPc = nextIdEx.nextPc
             if (nextIdEx.nextPc == -1) {
                 nextIdEx.controlSignal.isEnd = true
                 isEnd = true
             }
         }
-
-        var nextPc = mux(nextExMa.branch, nextExMa.nextPc, pc + 4)
-        nextPc = mux(nextIdEx.jump, nextIdEx.nextPc, nextPc)
 
         latches.store(nextIfId)
         latches.store(nextIdEx)
