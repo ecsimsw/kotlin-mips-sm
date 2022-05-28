@@ -6,7 +6,6 @@ import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
-import computer.architecture.cpu.DataDependencyUnit
 import computer.architecture.cpu.register.ScoreBoardingRegisters
 import computer.architecture.utils.Logger
 
@@ -15,11 +14,11 @@ class ControlUnit_Stall_Stall(
     private val logger: Logger,
     private val pcUnit: IProgramCounterUnit = StallingPcUnit()
 ) : IControlUnit {
-    private val scoreBoardingRegisters = ScoreBoardingRegisters(32)
+    private val registers = ScoreBoardingRegisters(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
     private val stallUnit = StallUnit()
-    private val dataDependencyUnit = DataDependencyUnit(scoreBoardingRegisters)
+    private val dataDependencyUnit = DataDependencyUnit(registers)
     private val latches = Latches()
 
     override fun process(): Int {
@@ -48,15 +47,16 @@ class ControlUnit_Stall_Stall(
     private fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
         val nextIfId = fetch(valid, pc)
         val nextIdEx = decode(latches.ifId())
+        if (nextIdEx.valid) {
+            val dependencyResult = dataDependencyUnit.execute(nextIdEx, nextIfId)
+            if (dependencyResult.isHazard) {
+                stallUnit.sleep(2, dependencyResult.freezePc)
+            }
+        }
+
         val nextExMa = execute(latches.idEx())
         val nextMaWb = memoryAccess(latches.exMa())
         val wbResult = writeBack(latches.maWb())
-
-        if (nextIdEx.dataHazard) {
-            nextIfId.valid = false
-            nextIdEx.valid = false
-            stallUnit.sleep(2, nextIdEx.pc)
-        }
         val nextPcInfo = pcUnit.findNext(pc, nextIfId, nextIdEx, nextExMa)
 
         latches.store(nextIfId)
@@ -64,12 +64,11 @@ class ControlUnit_Stall_Stall(
         latches.store(nextExMa)
         latches.store(nextMaWb)
         latches.flushAll()
-
         logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         return CycleResult(
             nextPc = nextPcInfo.nextPc,
-            value = scoreBoardingRegisters[2],
+            value = registers[2],
             valid = wbResult.valid,
             isEnd = nextPcInfo.isEnd,
             lastCycle = wbResult.controlSignal.isEnd
@@ -90,20 +89,13 @@ class ControlUnit_Stall_Stall(
 
     private fun decode(ifResult: FetchResult): DecodeResult {
         val instruction = decodeUnit.parse(ifResult.pc + 4, ifResult.instruction)
-        val dataHazard = dataDependencyUnit.hasHazard(instruction.rs, instruction.rt)
-
-        val valid = and(ifResult.valid, !dataHazard)
-        val controlSignal = decodeUnit.controlSignal(valid, instruction.opcode)
-
-        val readData1 = scoreBoardingRegisters[instruction.rs]
-        val readData2 = scoreBoardingRegisters[instruction.rt]
+        val controlSignal = decodeUnit.controlSignal(ifResult.valid, instruction.opcode)
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
-        scoreBoardingRegisters.book(controlSignal.regWrite, writeRegister, ifResult.pc)
 
         var nextPc = mux(controlSignal.jump, instruction.address, ifResult.pc)
-        nextPc = mux(controlSignal.jr, readData1, nextPc)
+        nextPc = mux(controlSignal.jr, registers[instruction.rs], nextPc)
 
         return DecodeResult(
             valid = ifResult.valid,
@@ -111,9 +103,10 @@ class ControlUnit_Stall_Stall(
             shiftAmt = instruction.shiftAmt,
             immediate = instruction.immediate,
             address = instruction.address,
-            dataHazard = dataHazard,
-            readData1 = readData1,
-            readData2 = readData2,
+            readReg1 = instruction.rs,
+            readReg2 = instruction.rt,
+            readData1 = registers[instruction.rs],
+            readData2 = registers[instruction.rt],
             writeReg = writeRegister,
             jump = controlSignal.jump || controlSignal.jr,
             nextPc = nextPc,
@@ -168,7 +161,7 @@ class ControlUnit_Stall_Stall(
 
     private fun writeBack(maResult: MemoryAccessResult): WriteBackResult {
         if (maResult.controlSignal.regWrite) {
-            scoreBoardingRegisters.write(
+            registers.write(
                 writeRegister = maResult.writeReg,
                 writeData = maResult.regWriteValue,
                 tag = maResult.pc

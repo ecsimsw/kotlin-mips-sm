@@ -9,7 +9,6 @@ data class FetchResult(
 data class DecodeResult(
     var valid: Boolean = false,
     val pc: Int = 0,
-    val dataHazard: Boolean = false,
     val shiftAmt: Int = 0,
     val immediate: Int = 0,
     val address: Int = 0,
@@ -20,7 +19,7 @@ data class DecodeResult(
     val writeReg: Int = 0,
     val jump: Boolean = false,
     val nextPc: Int =0,
-    val controlSignal: ControlSignal = ControlSignal.NONE
+    var controlSignal: ControlSignal = ControlSignal.NONE
 )
 
 data class ExecutionResult(
