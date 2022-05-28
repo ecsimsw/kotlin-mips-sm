@@ -39,6 +39,7 @@ data class MemoryAccessResult(
     val pc: Int = 0, // TODO :: for logging
     val regWriteValue: Int = 0,
     val writeReg: Int = 0,
+    val address: Int =0, // TODO :: for logging
     val memReadValue: Int = 0,
     val memWriteValue: Int = 0,
     val controlSignal: ControlSignal = ControlSignal.NONE

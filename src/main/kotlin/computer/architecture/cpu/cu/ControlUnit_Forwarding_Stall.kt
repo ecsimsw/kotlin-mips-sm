@@ -151,6 +151,9 @@ class ControlUnit_Forwarding_Stall(
             valid = exResult.valid,
             pc = exResult.pc, // TODO :: only for logging
             regWriteValue = regWriteValue,
+            address = exResult.aluValue, // TODO :: only for logging
+            memReadValue = memReadValue, // TODO :: only for logging
+            memWriteValue =  exResult.readData2, // TODO :: only for logging
             writeReg = exResult.writeReg,
             controlSignal = controlSignal
         )

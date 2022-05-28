@@ -183,10 +183,10 @@ open class Logger(
         printStep("MA", result.pc)
         var msg = ""
         if (result.controlSignal.memRead) {
-            msg = "M[0x${result.regWriteValue.toHexString()}] = ${result.memReadValue} [0x${result.memReadValue.toHexString()}]"
+            msg = "M[0x${result.address.toHexString()}] = ${result.memReadValue} [0x${result.memReadValue.toHexString()}]"
         }
         if (result.controlSignal.memWrite) {
-            msg = "M[0x${result.regWriteValue.toHexString()}] = ${result.memWriteValue} [0x${result.memWriteValue.toHexString()}]"
+            msg = "M[0x${result.address.toHexString()}] = ${result.memWriteValue} [0x${result.memWriteValue.toHexString()}]"
         }
         println(msg)
     }
