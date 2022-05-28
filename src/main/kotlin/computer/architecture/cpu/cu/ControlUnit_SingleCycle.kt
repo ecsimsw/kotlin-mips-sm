@@ -50,8 +50,7 @@ class ControlUnit_SingleCycle(
     }
 
     private fun fetch(pc: Int): FetchResult {
-        val instruction = memory.read(pc)
-        return FetchResult(true, pc, instruction)
+        return FetchResult(true, pc, memory.read(pc))
     }
 
     private fun decode(ifResult: FetchResult): DecodeResult {

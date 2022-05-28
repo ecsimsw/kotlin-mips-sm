@@ -5,7 +5,7 @@ import computer.architecture.cpu.pc.ProgramCounterResult
 
 class StallingPcUnit : IProgramCounterUnit {
 
-    override fun execute(
+    override fun findNext(
         pc: Int,
         nextIfId: FetchResult,
         nextIdEx: DecodeResult,
@@ -35,5 +35,4 @@ class StallingPcUnit : IProgramCounterUnit {
 
         return ProgramCounterResult(isEnd, nextPc)
     }
-
 }

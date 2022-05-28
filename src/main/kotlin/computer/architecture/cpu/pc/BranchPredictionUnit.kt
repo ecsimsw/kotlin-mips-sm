@@ -11,7 +11,7 @@ class BranchPredictionUnit(
     private val branchPrediction: IBranchPredictionStrategy = AlwaysTakenStrategy()
 ) : IProgramCounterUnit {
 
-    override fun execute(
+    override fun findNext(
         pc: Int,
         nextIfId: FetchResult,
         nextIdEx: DecodeResult,

@@ -4,7 +4,7 @@ import computer.architecture.component.Mux.Companion.mux
 
 class ForwardingUnit {
 
-    fun execute(
+    fun forward(
         prevIdEx: DecodeResult,
         prevExMa: ExecutionResult,
         prevMaWb: MemoryAccessResult

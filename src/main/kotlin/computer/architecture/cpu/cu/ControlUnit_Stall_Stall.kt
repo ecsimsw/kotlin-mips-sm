@@ -24,7 +24,6 @@ class ControlUnit_Stall_Stall(
 
     override fun process(): Int {
         var cycle = 0
-        var validCycle = 0
 
         var cycleResult = CycleResult()
         var isEnd = false
@@ -41,12 +40,6 @@ class ControlUnit_Stall_Stall(
             if (cycleResult.lastCycle) {
                 return cycleResult.value
             }
-
-            if (cycleResult.valid) {
-                validCycle++
-            }
-
-            latches.flushAll()
             stallUnit.next()
             cycle++
         }
@@ -64,12 +57,14 @@ class ControlUnit_Stall_Stall(
             nextIdEx.valid = false
             stallUnit.sleep(2, nextIdEx.pc)
         }
-        val nextPcInfo = pcUnit.execute(pc, nextIfId, nextIdEx, nextExMa)
+        val nextPcInfo = pcUnit.findNext(pc, nextIfId, nextIdEx, nextExMa)
 
         latches.store(nextIfId)
         latches.store(nextIdEx)
         latches.store(nextExMa)
         latches.store(nextMaWb)
+        latches.flushAll()
+
         logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         return CycleResult(
@@ -94,9 +89,6 @@ class ControlUnit_Stall_Stall(
     }
 
     private fun decode(ifResult: FetchResult): DecodeResult {
-        if (!ifResult.valid) {
-            return DecodeResult()
-        }
         val instruction = decodeUnit.parse(ifResult.pc + 4, ifResult.instruction)
         val dataHazard = dataDependencyUnit.hasHazard(instruction.rs, instruction.rt)
 
@@ -130,9 +122,6 @@ class ControlUnit_Stall_Stall(
     }
 
     private fun execute(idResult: DecodeResult): ExecutionResult {
-        if (!idResult.valid) {
-            return ExecutionResult()
-        }
         val controlSignal = idResult.controlSignal
         val aluValue = alu.execute(idResult)
 
@@ -152,10 +141,6 @@ class ControlUnit_Stall_Stall(
     }
 
     private fun memoryAccess(exResult: ExecutionResult): MemoryAccessResult {
-        if (!exResult.valid) {
-            return MemoryAccessResult()
-        }
-
         val controlSignal = exResult.controlSignal
         val memReadValue = memory.read(
             memRead = controlSignal.memRead,
@@ -182,9 +167,6 @@ class ControlUnit_Stall_Stall(
     }
 
     private fun writeBack(maResult: MemoryAccessResult): WriteBackResult {
-        if (!maResult.valid) {
-            return WriteBackResult()
-        }
         if (maResult.controlSignal.regWrite) {
             scoreBoardingRegisters.write(
                 writeRegister = maResult.writeReg,
