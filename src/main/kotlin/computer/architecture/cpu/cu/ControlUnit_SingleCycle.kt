@@ -19,6 +19,7 @@ class ControlUnit_SingleCycle(
         var cycle = 0
         var cycleResult = CycleResult()
 
+        logger.init()
         while (true) {
             logger.printCycle(cycle)
 
@@ -33,7 +34,7 @@ class ControlUnit_SingleCycle(
     }
 
     private fun cycleExecution(pc: Int): CycleResult {
-        val ifResult = fetch(pc)
+        val ifResult = fetch(true, pc)
         val idResult = decode(ifResult)
         val exResult = execute(idResult)
         val maResult = memoryAccess(exResult)
@@ -49,8 +50,16 @@ class ControlUnit_SingleCycle(
         )
     }
 
-    private fun fetch(pc: Int): FetchResult {
-        return FetchResult(true, pc, memory.read(pc))
+    private fun fetch(valid: Boolean, pc: Int): FetchResult {
+        if (!valid) {
+            return FetchResult(valid, 0, 0)
+        }
+        val instruction = memory.read(pc)
+        return FetchResult(
+            valid = valid && (instruction != 0),
+            pc = pc,
+            instruction = instruction
+        )
     }
 
     private fun decode(ifResult: FetchResult): DecodeResult {

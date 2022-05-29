@@ -32,6 +32,7 @@ class ControlUnit_Forwarding_BranchPrediction(
         var cycleResult = CycleResult()
         var isEnd = false
 
+        logger.init()
         while (true) {
             logger.printCycle(cycleResult.valid, cycle)
 

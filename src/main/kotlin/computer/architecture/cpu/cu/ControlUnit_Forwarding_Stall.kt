@@ -26,6 +26,7 @@ class ControlUnit_Forwarding_Stall(
         var cycleResult = CycleResult()
         var isEnd = false
 
+        logger.init()
         while (true) {
             logger.printCycle(cycleResult.valid, cycle)
 

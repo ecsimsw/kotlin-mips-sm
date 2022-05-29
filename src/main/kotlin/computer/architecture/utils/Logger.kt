@@ -10,13 +10,23 @@ open class Logger(
     private var numberOfExecutedMA = 0
     private var numberOfWriteBack = 0
     private var numberOfTakenBranches = 0
-    private val executedOpcodes = mutableMapOf<Opcode, Int>()
-    private val executedOpcodeType = mutableMapOf<Opcode.Type, Int>()
-    private val executedInstructionSet = mutableSetOf<Int>()
+    private var executedOpcodes = mutableMapOf<Opcode, Int>()
+    private var executedOpcodeType = mutableMapOf<Opcode.Type, Int>()
+    private var executedInstructionSet = mutableSetOf<Int>()
 
     companion object {
         val NONE = Logger(LoggingSignal())
         val RESULT_ONLY = Logger(LoggingSignal(result = true))
+    }
+
+    fun init() {
+        cycleCount = 0
+        numberOfExecutedMA = 0
+        numberOfWriteBack = 0
+        numberOfTakenBranches = 0
+        executedOpcodes = mutableMapOf()
+        executedOpcodeType = mutableMapOf()
+        executedInstructionSet = mutableSetOf()
     }
 
     open fun log(
