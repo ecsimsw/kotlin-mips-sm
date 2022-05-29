@@ -16,26 +16,20 @@ class BranchPredictionPcUnit(
     ): ProgramCounterResult {
         var nextPc = pc + 4
 
-//        println(nextExMa.valid)
-//        println(nextExMa.controlSignal.branch)
-//        println(nextExMa.branch)
-//        println(nextIfId.pc)
-//        println(nextExMa.nextPc)
-
-        if (predictionFailed(nextExMa)) {
+        if (nextExMa.valid && nextExMa.controlSignal.branch && !takenCorrect(nextExMa, nextIfId)) {
             nextIfId.valid = false
             nextIdEx.valid = false
             nextPc = bpStrategy.predict(nextExMa)
             nextExMa.controlSignal.isEnd = nextPc == -1
         }
 
-        if (predictAndTake(nextIdEx, pc)) {
+        if (nextIdEx.valid && isTaken(nextIdEx, pc)) {
             nextIfId.valid = false
             nextPc = nextIdEx.immediate
             nextIdEx.controlSignal.isEnd = nextPc == -1
         }
 
-        if (jump(nextIdEx)) {
+        if (nextIdEx.valid && jump(nextIdEx)) {
             nextIfId.valid = false
             nextPc = nextIdEx.nextPc
             nextIdEx.controlSignal.isEnd = nextPc == -1
@@ -43,20 +37,16 @@ class BranchPredictionPcUnit(
         return ProgramCounterResult(nextPc == -1, nextPc)
     }
 
-    private fun predictionFailed(nextExMa: ExecutionResult): Boolean {
-        return nextExMa.valid
-                && nextExMa.controlSignal.branch
-                && nextExMa.branch != bpStrategy.taken(0)
+    private fun takenCorrect(nextExMa: ExecutionResult, nextIfId: FetchResult): Boolean {
+        val wasTaken = nextIfId.pc == nextExMa.nextPc
+        return nextExMa.branch == wasTaken
     }
 
-    private fun predictAndTake(nextIdEx: DecodeResult, pc: Int): Boolean {
-        return nextIdEx.valid
-                && nextIdEx.controlSignal.branch
-                && bpStrategy.taken(pc)
+    private fun isTaken(nextIdEx: DecodeResult, pc: Int): Boolean {
+        return nextIdEx.controlSignal.branch && bpStrategy.taken(pc)
     }
 
     private fun jump(nextIdEx: DecodeResult): Boolean {
-        return nextIdEx.valid
-                && nextIdEx.jump
+        return nextIdEx.jump
     }
 }

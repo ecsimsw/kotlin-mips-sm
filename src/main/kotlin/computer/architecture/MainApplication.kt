@@ -13,7 +13,7 @@ fun main() {
     val memory = Memory.load(20000000, fileToLoad)
 
     val logger = initLogger()
-    val controlUnit = ControlUnit_Forwarding_BranchPrediction(memory, logger, AlwaysNotTakenStrategy())
+    val controlUnit = ControlUnit_Forwarding_BranchPrediction(memory, logger, AlwaysTakenStrategy())
     val processResult = controlUnit.process()
 
     logger.printProcessResult(processResult)

@@ -118,15 +118,13 @@ class ControlUnit_Forwarding_Stall(
         val aluValue = alu.execute(idResult)
 
         val branchCondition = and(aluValue == 1, controlSignal.branch)
-        val nextPc = mux(branchCondition, idResult.immediate, idResult.pc)
-
         return ExecutionResult(
             valid = idResult.valid,
             pc = idResult.pc, // TODO :: only for logging
             readData2 = idResult.readData2,
             writeReg = idResult.writeReg,
             aluValue = aluValue,
-            nextPc = nextPc,
+            nextPc = idResult.immediate,
             branch = branchCondition,
             controlSignal = controlSignal
         )
