@@ -7,11 +7,11 @@ import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 
 fun main() {
-    val fileToLoad = "sample/simple2.bin"
+    val fileToLoad = "sample/simple3.bin"
     val memory = Memory.load(20000000, fileToLoad)
 
     val logger = initLogger()
-    val controlUnit = ControlUnit_Stall_Stall(memory, logger)
+    val controlUnit = ControlUnit_Forwarding_BranchPrediction(memory, logger)
     val processResult = controlUnit.process()
 
     logger.printProcessResult(processResult)

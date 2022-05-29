@@ -7,6 +7,7 @@ import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
 import computer.architecture.cpu.pc.BranchPredictionUnit
+import computer.architecture.cpu.prediction.AlwaysNotTakenStrategy
 import computer.architecture.cpu.prediction.AlwaysTakenStrategy
 import computer.architecture.cpu.prediction.IBranchPredictionStrategy
 import computer.architecture.cpu.register.Registers
@@ -15,7 +16,7 @@ import computer.architecture.utils.Logger
 class ControlUnit_Forwarding_BranchPrediction(
     private val memory: Memory,
     private val logger: Logger,
-    predictionStrategy: IBranchPredictionStrategy = AlwaysTakenStrategy()
+    predictionStrategy: IBranchPredictionStrategy = AlwaysNotTakenStrategy()
 ) : IControlUnit {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()

@@ -17,41 +17,32 @@ class BranchPredictionUnit(
         nextIdEx: DecodeResult,
         nextExMa: ExecutionResult
     ): ProgramCounterResult {
-
         var nextPc = pc + 4
-        var isEnd = false
 
         if (predictionFailed(nextExMa, nextIfId)) {
             nextIfId.valid = false
             nextIdEx.valid = false
-            nextPc = nextExMa.pc + 4
-            if (nextExMa.nextPc == -1) {
-                nextExMa.controlSignal.isEnd = true
-                isEnd = true
-                nextPc = -1
+
+            nextPc = if(branchPrediction.taken(pc)) {
+                nextExMa.pc + 4
+            } else {
+                nextExMa.nextPc
             }
+            nextExMa.controlSignal.isEnd = nextPc == -1
         }
 
         if (taken(nextIdEx, pc)) {
             nextIfId.valid = false
-            nextPc =  nextIdEx.immediate
-            if (nextIdEx.immediate == -1) {
-                nextIdEx.controlSignal.isEnd = true
-                isEnd = true
-                nextPc = -1
-            }
+            nextPc = nextIdEx.immediate
+            nextIdEx.controlSignal.isEnd = nextPc == -1
         }
 
         if (jump(nextIdEx)) {
             nextIfId.valid = false
             nextPc = nextIdEx.nextPc
-            if (nextIdEx.nextPc == -1) {
-                nextIdEx.controlSignal.isEnd = true
-                isEnd = true
-                nextPc = -1
-            }
+            nextIdEx.controlSignal.isEnd = nextPc == -1
         }
-        return ProgramCounterResult(isEnd, nextPc)
+        return ProgramCounterResult(nextPc == -1, nextPc)
     }
 
     private fun jump(nextIdEx: DecodeResult) =
