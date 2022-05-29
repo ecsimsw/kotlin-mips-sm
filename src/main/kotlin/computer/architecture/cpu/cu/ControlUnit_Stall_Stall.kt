@@ -23,7 +23,6 @@ class ControlUnit_Stall_Stall(
 
     override fun process(): Int {
         var cycle = 0
-
         var cycleResult = CycleResult()
         var isEnd = false
 
@@ -31,16 +30,17 @@ class ControlUnit_Stall_Stall(
         while (true) {
             logger.printCycle(cycleResult.valid, cycle)
 
-            val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
             isEnd = or(isEnd, cycleResult.isEnd)
-
+            val pc = stallUnit.next(cycleResult.nextPc)
             val valid = stallUnit.valid && !isEnd
+
             cycleResult = cycleExecution(valid, pc)
 
             if (cycleResult.lastCycle) {
                 return cycleResult.value
             }
-            stallUnit.next()
+
+            latches.flushAll()
             cycle++
         }
     }

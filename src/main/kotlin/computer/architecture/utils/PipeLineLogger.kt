@@ -37,15 +37,15 @@ class PipeLineLogger(loggingSignal: LoggingSignal) : Logger(loggingSignal) {
         writeBackResult: WriteBackResult
     ) {
         if (
-            fetchResult.pc == decodeResult.pc &&
-            decodeResult.pc == executionResult.pc &&
-            executionResult.pc == memoryAccessResult.pc &&
-            memoryAccessResult.pc == writeBackResult.pc &&
-            fetchResult.valid &&
-            decodeResult.valid &&
-            executionResult.valid &&
-            memoryAccessResult.valid &&
-            writeBackResult.valid
+            fetchResult.pc == decodeResult.pc
+            && decodeResult.pc == executionResult.pc
+            && executionResult.pc == memoryAccessResult.pc
+            && memoryAccessResult.pc == writeBackResult.pc
+            && fetchResult.valid
+            && decodeResult.valid
+            && executionResult.valid
+            && memoryAccessResult.valid
+            && writeBackResult.valid
         ) {
             super.printCycleLog(fetchResult, decodeResult, executionResult, memoryAccessResult, writeBackResult)
         }

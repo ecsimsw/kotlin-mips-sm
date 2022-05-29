@@ -1,7 +1,6 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Mux.Companion.mux
-import computer.architecture.cpu.pc.ProgramCounterResult
 
 class StallingPcUnit : IProgramCounterUnit {
 

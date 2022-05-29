@@ -31,7 +31,7 @@ class ControlUnit_Forwarding_Stall(
             logger.printCycle(cycleResult.valid, cycle)
 
             isEnd = or(isEnd, cycleResult.isEnd)
-            val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
+            val pc = stallUnit.next(cycleResult.nextPc)
             val valid = stallUnit.valid && !isEnd
 
             cycleResult = cycleExecution(valid, pc)
@@ -41,7 +41,6 @@ class ControlUnit_Forwarding_Stall(
             }
 
             latches.flushAll()
-            stallUnit.next()
             cycle++
         }
     }

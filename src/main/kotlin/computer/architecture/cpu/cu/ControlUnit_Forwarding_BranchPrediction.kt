@@ -6,9 +6,8 @@ import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
-import computer.architecture.cpu.pc.BranchPredictionUnit
+import computer.architecture.cpu.pc.BranchPredictionPcUnit
 import computer.architecture.cpu.prediction.AlwaysNotTakenStrategy
-import computer.architecture.cpu.prediction.AlwaysTakenStrategy
 import computer.architecture.cpu.prediction.IBranchPredictionStrategy
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
@@ -24,11 +23,10 @@ class ControlUnit_Forwarding_BranchPrediction(
     private val stallUnit = StallUnit()
     private val forwardingUnit = ForwardingUnit()
     private val latches = Latches()
-    private val pcUnit = BranchPredictionUnit(predictionStrategy)
+    private val pcUnit = BranchPredictionPcUnit(predictionStrategy)
 
     override fun process(): Int {
         var cycle = 0
-
         var cycleResult = CycleResult()
         var isEnd = false
 
@@ -37,16 +35,16 @@ class ControlUnit_Forwarding_BranchPrediction(
             logger.printCycle(cycleResult.valid, cycle)
 
             isEnd = or(isEnd, cycleResult.isEnd)
-            val pc = mux(stallUnit.isMelt, stallUnit.freezePc, cycleResult.nextPc)
+            val pc = stallUnit.next(cycleResult.nextPc)
             val valid = stallUnit.valid && !isEnd
 
             cycleResult = cycleExecution(valid, pc)
+
             if (cycleResult.lastCycle) {
                 return cycleResult.value
             }
 
             latches.flushAll()
-            stallUnit.next()
             cycle++
         }
     }

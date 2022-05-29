@@ -1,13 +1,10 @@
 package computer.architecture.cpu.pc
 
-import computer.architecture.cpu.DecodeResult
-import computer.architecture.cpu.ExecutionResult
-import computer.architecture.cpu.FetchResult
-import computer.architecture.cpu.IProgramCounterUnit
+import computer.architecture.cpu.*
 import computer.architecture.cpu.prediction.AlwaysTakenStrategy
 import computer.architecture.cpu.prediction.IBranchPredictionStrategy
 
-class BranchPredictionUnit(
+class BranchPredictionPcUnit(
     private val bpStrategy: IBranchPredictionStrategy = AlwaysTakenStrategy()
 ) : IProgramCounterUnit {
 
