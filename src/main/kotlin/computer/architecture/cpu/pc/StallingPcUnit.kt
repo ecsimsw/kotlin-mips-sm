@@ -9,29 +9,25 @@ class StallingPcUnit : IProgramCounterUnit {
         nextIfId: FetchResult,
         nextIdEx: DecodeResult,
         nextExMa: ExecutionResult
-    ): ProgramCounterResult {
-
-        var isEnd = false
+    ): Int {
         if (nextExMa.valid && nextExMa.branch) {
             nextIfId.valid = false
             nextIdEx.valid = false
-            if (nextExMa.nextPc == -1) {
+            val nextPc = nextExMa.nextPc
+            if (nextPc== -1) {
                 nextExMa.controlSignal.isEnd = true
-                isEnd = true
             }
+            return nextPc
         }
 
         if (nextIdEx.valid && nextIdEx.jump) {
             nextIfId.valid = false
-            if (nextIdEx.nextPc == -1) {
+            val nextPc = nextIdEx.nextPc
+            if (nextPc == -1) {
                 nextIdEx.controlSignal.isEnd = true
-                isEnd = true
             }
+            return nextPc
         }
-
-        var nextPc = mux(nextExMa.branch, nextExMa.nextPc, pc + 4)
-        nextPc = mux(nextIdEx.jump, nextIdEx.nextPc, nextPc)
-
-        return ProgramCounterResult(isEnd, nextPc)
+        return pc + 4
     }
 }

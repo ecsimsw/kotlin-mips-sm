@@ -13,28 +13,29 @@ class BranchPredictionPcUnit(
         nextIfId: FetchResult,
         nextIdEx: DecodeResult,
         nextExMa: ExecutionResult
-    ): ProgramCounterResult {
-        var nextPc = pc + 4
-
+    ): Int {
         if (nextExMa.valid && nextExMa.controlSignal.branch && !takenCorrect(nextExMa, nextIfId)) {
             nextIfId.valid = false
             nextIdEx.valid = false
-            nextPc = bpStrategy.predict(nextExMa)
+            val nextPc = bpStrategy.predict(nextExMa)
             nextExMa.controlSignal.isEnd = nextPc == -1
+            return nextPc
         }
 
         if (nextIdEx.valid && isTaken(nextIdEx, pc)) {
             nextIfId.valid = false
-            nextPc = nextIdEx.immediate
+            val nextPc = nextIdEx.immediate
             nextIdEx.controlSignal.isEnd = nextPc == -1
+            return nextPc
         }
 
         if (nextIdEx.valid && jump(nextIdEx)) {
             nextIfId.valid = false
-            nextPc = nextIdEx.nextPc
+            val nextPc = nextIdEx.nextPc
             nextIdEx.controlSignal.isEnd = nextPc == -1
+            return nextPc
         }
-        return ProgramCounterResult(nextPc == -1, nextPc)
+        return pc+4
     }
 
     private fun takenCorrect(nextExMa: ExecutionResult, nextIfId: FetchResult): Boolean {

@@ -29,7 +29,7 @@ class FPipeLineControlUnit(
         val nextExMa = execute(prevIdEx)
         val nextIdEx = decode(prevIfId)
         val nextIfId = fetch(valid, pc)
-        val nextPcInfo = pcUnit.findNext(pc, nextIfId, nextIdEx, nextExMa)
+        val nextPc = pcUnit.findNext(pc, nextIfId, nextIdEx, nextExMa)
 
         latches.store(nextIfId)
         latches.store(nextIdEx)
@@ -38,10 +38,10 @@ class FPipeLineControlUnit(
         logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         return CycleResult(
-            nextPc = nextPcInfo.nextPc,
+            nextPc = nextPc,
             value = registers[2],
             valid = wbResult.valid,
-            isEnd = nextPcInfo.isEnd,
+            isEnd = nextPc == -1,
             lastCycle = wbResult.controlSignal.isEnd
         )
     }
