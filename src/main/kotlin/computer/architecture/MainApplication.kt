@@ -3,6 +3,8 @@ package computer.architecture
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ControlUnit_Forwarding_BranchPrediction
 import computer.architecture.cpu.cu.ControlUnit_Stall_Stall
+import computer.architecture.cpu.prediction.AlwaysNotTakenStrategy
+import computer.architecture.cpu.prediction.AlwaysTakenStrategy
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 
@@ -11,7 +13,7 @@ fun main() {
     val memory = Memory.load(20000000, fileToLoad)
 
     val logger = initLogger()
-    val controlUnit = ControlUnit_Forwarding_BranchPrediction(memory, logger)
+    val controlUnit = ControlUnit_Forwarding_BranchPrediction(memory, logger, AlwaysNotTakenStrategy())
     val processResult = controlUnit.process()
 
     logger.printProcessResult(processResult)

@@ -8,7 +8,7 @@ import computer.architecture.cpu.prediction.AlwaysTakenStrategy
 import computer.architecture.cpu.prediction.IBranchPredictionStrategy
 
 class BranchPredictionUnit(
-    private val branchPrediction: IBranchPredictionStrategy = AlwaysTakenStrategy()
+    private val bpStrategy: IBranchPredictionStrategy = AlwaysTakenStrategy()
 ) : IProgramCounterUnit {
 
     override fun findNext(
@@ -19,19 +19,20 @@ class BranchPredictionUnit(
     ): ProgramCounterResult {
         var nextPc = pc + 4
 
-        if (predictionFailed(nextExMa, nextIfId)) {
+//        println(nextExMa.valid)
+//        println(nextExMa.controlSignal.branch)
+//        println(nextExMa.branch)
+//        println(nextIfId.pc)
+//        println(nextExMa.nextPc)
+
+        if (predictionFailed(nextExMa)) {
             nextIfId.valid = false
             nextIdEx.valid = false
-
-            nextPc = if(branchPrediction.taken(pc)) {
-                nextExMa.pc + 4
-            } else {
-                nextExMa.nextPc
-            }
+            nextPc = bpStrategy.predict(nextExMa)
             nextExMa.controlSignal.isEnd = nextPc == -1
         }
 
-        if (taken(nextIdEx, pc)) {
+        if (predictAndTake(nextIdEx, pc)) {
             nextIfId.valid = false
             nextPc = nextIdEx.immediate
             nextIdEx.controlSignal.isEnd = nextPc == -1
@@ -45,12 +46,20 @@ class BranchPredictionUnit(
         return ProgramCounterResult(nextPc == -1, nextPc)
     }
 
-    private fun jump(nextIdEx: DecodeResult) =
-        nextIdEx.valid && nextIdEx.jump
+    private fun predictionFailed(nextExMa: ExecutionResult): Boolean {
+        return nextExMa.valid
+                && nextExMa.controlSignal.branch
+                && nextExMa.branch != bpStrategy.taken(0)
+    }
 
-    private fun taken(nextIdEx: DecodeResult, pc: Int) =
-        nextIdEx.valid && nextIdEx.controlSignal.branch && branchPrediction.taken(pc)
+    private fun predictAndTake(nextIdEx: DecodeResult, pc: Int): Boolean {
+        return nextIdEx.valid
+                && nextIdEx.controlSignal.branch
+                && bpStrategy.taken(pc)
+    }
 
-    private fun predictionFailed(nextExMa: ExecutionResult, nextIfId: FetchResult) =
-        nextExMa.valid && nextExMa.controlSignal.branch && !branchPrediction.isCorrect(nextIfId.pc, nextExMa.nextPc)
+    private fun jump(nextIdEx: DecodeResult): Boolean {
+        return nextIdEx.valid
+                && nextIdEx.jump
+    }
 }

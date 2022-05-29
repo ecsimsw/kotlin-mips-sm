@@ -96,7 +96,7 @@ open class Logger(
     }
 
     private fun checkPrintRange(cycleCount: Int) {
-        if (cycleCount > loggingSignal.from && cycleCount < loggingSignal.to) {
+        if (cycleCount >= loggingSignal.from && cycleCount <= loggingSignal.to) {
             loggingSignal.cycle = true
             loggingSignal.fetch = true
             loggingSignal.decode = true

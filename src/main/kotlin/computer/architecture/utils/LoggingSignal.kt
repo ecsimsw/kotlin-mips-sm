@@ -10,6 +10,6 @@ data class LoggingSignal(
     var writeBack: Boolean = false,
     var result: Boolean = false,
     var sleepTime: Long = 0L,
-    var from: Int = 0,
-    var to: Int = 0
+    var from: Int = -1,
+    var to: Int = -1
 )

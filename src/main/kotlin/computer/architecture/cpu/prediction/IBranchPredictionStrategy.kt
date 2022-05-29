@@ -1,8 +1,9 @@
 package computer.architecture.cpu.prediction
 
+import computer.architecture.cpu.ExecutionResult
+
 interface IBranchPredictionStrategy {
 
     fun taken(pc :Int) : Boolean
-
-    fun isCorrect(predictedPc : Int, calculatedPc : Int) : Boolean
+    fun predict(nextExMa: ExecutionResult): Int
 }
