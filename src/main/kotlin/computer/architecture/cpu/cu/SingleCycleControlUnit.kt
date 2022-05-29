@@ -1,80 +1,52 @@
 package computer.architecture.cpu.cu
 
 import computer.architecture.component.And.Companion.and
-import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
-import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
-import computer.architecture.cpu.pc.BranchPredictionPcUnit
-import computer.architecture.cpu.prediction.AlwaysNotTakenStrategy
-import computer.architecture.cpu.prediction.IBranchPredictionStrategy
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
-class ControlUnit_Forwarding_BranchPrediction(
+class SingleCycleControlUnit(
     private val memory: Memory,
-    private val logger: Logger,
-    predictionStrategy: IBranchPredictionStrategy = AlwaysNotTakenStrategy()
+    private val logger: Logger
 ) : IControlUnit {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
-    private val stallUnit = StallUnit()
-    private val forwardingUnit = ForwardingUnit()
-    private val latches = Latches()
-    private val pcUnit = BranchPredictionPcUnit(predictionStrategy)
 
     override fun process(): Int {
         var cycle = 0
         var cycleResult = CycleResult()
-        var isEnd = false
 
         logger.init()
         while (true) {
-            logger.printCycle(cycleResult.valid, cycle)
+            logger.printCycle(cycle)
 
-            isEnd = or(isEnd, cycleResult.isEnd)
-            val pc = stallUnit.next(cycleResult.nextPc)
-            val valid = stallUnit.valid && !isEnd
-
-            cycleResult = cycleExecution(valid, pc)
-
-            if (cycleResult.lastCycle) {
+            val pc = cycleResult.nextPc
+            if (pc == -1) {
                 return cycleResult.value
             }
 
-            latches.flushAll()
+            cycleResult = cycleExecution(pc)
             cycle++
         }
     }
 
-    private fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
-        val prevIfId = latches.ifId()
-        val prevIdEx = latches.idEx()
-        val prevExMa = latches.exMa()
-        val prevMaWb = latches.maWb()
+    private fun cycleExecution(pc: Int): CycleResult {
+        val ifResult = fetch(true, pc)
+        val idResult = decode(ifResult)
+        val exResult = execute(idResult)
+        val maResult = memoryAccess(exResult)
+        val wbResult = writeBack(maResult)
 
-        val wbResult = writeBack(prevMaWb)
-        val nextMaWb = memoryAccess(prevExMa)
-        forwardingUnit.forward(prevIdEx, prevExMa, prevMaWb)
-        val nextExMa = execute(prevIdEx)
-        val nextIdEx = decode(prevIfId)
-        val nextIfId = fetch(valid, pc)
-        val nextPcInfo = pcUnit.findNext(pc, nextIfId, nextIdEx, nextExMa)
+        logger.log(ifResult, idResult, exResult, maResult, wbResult)
 
-        latches.store(nextIfId)
-        latches.store(nextIdEx)
-        latches.store(nextExMa)
-        latches.store(nextMaWb)
-        logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
-
+        val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
         return CycleResult(
-            nextPc = nextPcInfo.nextPc,
-            value = registers[2],
-            valid = wbResult.valid,
-            isEnd = nextPcInfo.isEnd,
-            lastCycle = wbResult.controlSignal.isEnd
+            nextPc = nextPc,
+            valid = true,
+            value = registers[2]
         )
     }
 
@@ -92,27 +64,20 @@ class ControlUnit_Forwarding_BranchPrediction(
 
     private fun decode(ifResult: FetchResult): DecodeResult {
         val instruction = decodeUnit.parse(ifResult.pc + 4, ifResult.instruction)
-        val controlSignal = decodeUnit.controlSignal(ifResult.valid, instruction.opcode)
+        val controlSignal = decodeUnit.controlSignal(opcode = instruction.opcode)
 
         var writeRegister = mux(controlSignal.regDest, instruction.rd, instruction.rt)
         writeRegister = mux(controlSignal.jal, 31, writeRegister)
 
-        var nextPc = mux(controlSignal.jump, instruction.address, ifResult.pc)
-        nextPc = mux(controlSignal.jr, registers[instruction.rs], nextPc)
-
         return DecodeResult(
-            valid = ifResult.valid,
+            valid = true,
             pc = ifResult.pc,
             shiftAmt = instruction.shiftAmt,
             immediate = instruction.immediate,
             address = instruction.address,
-            readReg1 = instruction.rs,
-            readReg2 = instruction.rt,
             readData1 = registers[instruction.rs],
             readData2 = registers[instruction.rt],
             writeReg = writeRegister,
-            jump = controlSignal.jump || controlSignal.jr,
-            nextPc = nextPc,
             controlSignal = controlSignal
         )
     }
@@ -122,14 +87,18 @@ class ControlUnit_Forwarding_BranchPrediction(
         val aluValue = alu.execute(idResult)
 
         val branchCondition = and(aluValue == 1, controlSignal.branch)
+        var nextPc = mux(branchCondition, idResult.immediate, idResult.pc)
+        nextPc = mux(controlSignal.jump, idResult.address, nextPc)
+        nextPc = mux(controlSignal.jr, idResult.readData1, nextPc)
+
         return ExecutionResult(
-            valid = idResult.valid,
+            valid = true,
             pc = idResult.pc, // TODO :: only for logging
             readData2 = idResult.readData2,
             writeReg = idResult.writeReg,
             aluValue = aluValue,
-            nextPc = idResult.immediate,
-            branch = branchCondition,
+            nextPc = nextPc,
+            jump = (branchCondition || controlSignal.jump || controlSignal.jr),
             controlSignal = controlSignal
         )
     }
@@ -141,16 +110,16 @@ class ControlUnit_Forwarding_BranchPrediction(
             address = exResult.aluValue,
         )
 
+        val regWriteValue = mux(controlSignal.memToReg, memReadValue, exResult.aluValue)
+
         memory.write(
             memWrite = controlSignal.memWrite,
             address = exResult.aluValue,
             value = exResult.readData2
         )
 
-        val regWriteValue = mux(controlSignal.memToReg, memReadValue, exResult.aluValue)
-
         return MemoryAccessResult(
-            valid = exResult.valid,
+            valid = true,
             pc = exResult.pc, // TODO :: only for logging
             regWriteValue = regWriteValue,
             address = exResult.aluValue, // TODO :: only for logging
@@ -172,8 +141,8 @@ class ControlUnit_Forwarding_BranchPrediction(
         return WriteBackResult(
             valid = maResult.valid,
             pc = maResult.pc, // TODO :: only for logging
-            regWriteValue = maResult.regWriteValue,
             writeReg = maResult.writeReg,
+            regWriteValue = maResult.regWriteValue,
             controlSignal = maResult.controlSignal
         )
     }

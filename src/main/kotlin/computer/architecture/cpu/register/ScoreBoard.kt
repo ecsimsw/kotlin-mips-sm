@@ -1,13 +1,10 @@
 package computer.architecture.cpu.register
 
-open class ScoreBoardingRegisters(
+class ScoreBoard(
     size: Int
 ) {
-    private val registers = Registers(size)
-    private val valid: Array<Boolean> = Array(registers.registerSize) { true }
-    private val tag: Array<Int> = Array(registers.registerSize) { 0 }
-
-    operator fun get(register: Int) = registers[register]
+    private val valid: Array<Boolean> = Array(size) { true }
+    private val tag: Array<Int> = Array(size) { 0 }
 
     fun book(regWrite: Boolean, writeRegister: Int, tag: Int) {
         if (regWrite && writeRegister != 0) {
@@ -16,8 +13,7 @@ open class ScoreBoardingRegisters(
         }
     }
 
-    open fun write(writeRegister: Int, writeData: Int, tag: Int) {
-        this.registers.write(writeRegister, writeData)
+    fun release(writeRegister: Int, tag: Int) {
         if (this.tag[writeRegister] == tag) {
             this.valid[writeRegister] = true
         }

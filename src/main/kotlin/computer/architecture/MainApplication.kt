@@ -1,8 +1,8 @@
 package computer.architecture
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.cu.ControlUnit_Forwarding_BranchPrediction
-import computer.architecture.cpu.cu.ControlUnit_Stall_Stall
+import computer.architecture.cpu.cu.FPipeLineControlUnit
+import computer.architecture.cpu.pc.BranchPredictionPcUnit
 import computer.architecture.cpu.prediction.AlwaysNotTakenStrategy
 import computer.architecture.cpu.prediction.AlwaysTakenStrategy
 import computer.architecture.utils.Logger
@@ -13,7 +13,10 @@ fun main() {
     val memory = Memory.load(20000000, fileToLoad)
 
     val logger = initLogger()
-    val controlUnit = ControlUnit_Forwarding_BranchPrediction(memory, logger, AlwaysTakenStrategy())
+
+    val predictionStrategy = AlwaysTakenStrategy()
+    val pcUnit = BranchPredictionPcUnit(predictionStrategy)
+    val controlUnit = FPipeLineControlUnit(memory, logger, pcUnit)
     val processResult = controlUnit.process()
 
     logger.printProcessResult(processResult)

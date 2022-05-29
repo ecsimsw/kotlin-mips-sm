@@ -3,8 +3,8 @@ package computer.architecture.cpu.register
 open class Registers(
     size: Int
 ) {
-    val registerSize = if (size < 32) 32 else size
-    private val r: Array<Int> = Array(registerSize) { 0 }
+    val size = if (size < 32) 32 else size
+    private val r: Array<Int> = Array(this.size) { 0 }
 
     init {
         r[29] = 0x1000000

@@ -1,15 +1,15 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.cu.ControlUnit_Forwarding_BranchPrediction
-import computer.architecture.cpu.cu.ControlUnit_Forwarding_Stall
-import computer.architecture.cpu.cu.ControlUnit_SingleCycle
-import computer.architecture.cpu.cu.ControlUnit_Stall_Stall
+import computer.architecture.cpu.cu.FPipeLineControlUnit
+import computer.architecture.cpu.cu.IControlUnit
+import computer.architecture.cpu.cu.SingleCycleControlUnit
+import computer.architecture.cpu.cu.SPipeLineControlUnit
+import computer.architecture.cpu.pc.BranchPredictionPcUnit
 import computer.architecture.cpu.prediction.AlwaysNotTakenStrategy
 import computer.architecture.cpu.prediction.AlwaysTakenStrategy
 import computer.architecture.utils.Logger
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -29,8 +29,10 @@ internal class ControlUnitTest {
     )
     fun singleCycle(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit_SingleCycle(memory, logger)
+
+        val controlUnit = SingleCycleControlUnit(memory, logger)
         val processResult = controlUnit.process()
+
         assertThat(processResult).isEqualTo(expected)
         logger.printProcessResult(processResult)
     }
@@ -47,8 +49,55 @@ internal class ControlUnitTest {
     )
     fun stall_stall(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit_Stall_Stall(memory, logger)
+
+        val pcUnit = StallingPcUnit()
+        val controlUnit = SPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
+
+        assertThat(processResult).isEqualTo(expected)
+        logger.printProcessResult(processResult)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun stall_alwaysNotTaken(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+
+        val predictionStrategy = AlwaysNotTakenStrategy()
+        val pcUnit = BranchPredictionPcUnit(predictionStrategy)
+        val controlUnit = SPipeLineControlUnit(memory, logger, pcUnit)
+        val processResult = controlUnit.process()
+
+        assertThat(processResult).isEqualTo(expected)
+        logger.printProcessResult(processResult)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun stall_alwaysTaken(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+
+        val predictionStrategy = AlwaysTakenStrategy()
+        val pcUnit = BranchPredictionPcUnit(predictionStrategy)
+        val controlUnit = SPipeLineControlUnit(memory, logger, pcUnit)
+        val processResult = controlUnit.process()
+
         assertThat(processResult).isEqualTo(expected)
         logger.printProcessResult(processResult)
     }
@@ -65,8 +114,11 @@ internal class ControlUnitTest {
     )
     fun forwarding_stall(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit_Forwarding_Stall(memory, logger)
+
+        val pcUnit = StallingPcUnit()
+        val controlUnit = FPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
+
         assertThat(processResult).isEqualTo(expected)
         logger.printProcessResult(processResult)
     }
@@ -81,10 +133,14 @@ internal class ControlUnitTest {
         "sample/fib.bin,55",
         "sample/input4.bin,85"
     )
-    fun branchPrediction_alwaysTaken(path: String, expected: Int) {
+    fun forwarding_alwaysTaken(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit_Forwarding_BranchPrediction(memory, logger, AlwaysTakenStrategy())
+
+        val predictionStrategy = AlwaysTakenStrategy()
+        val pcUnit = BranchPredictionPcUnit(predictionStrategy)
+        val controlUnit = FPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
+
         assertThat(processResult).isEqualTo(expected)
         logger.printProcessResult(processResult)
     }
@@ -99,10 +155,14 @@ internal class ControlUnitTest {
         "sample/fib.bin,55",
         "sample/input4.bin,85"
     )
-    fun branchPrediction_alwaysNotTaken(path: String, expected: Int) {
+    fun forwarding_alwaysNotTaken(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val controlUnit = ControlUnit_Forwarding_BranchPrediction(memory, logger, AlwaysNotTakenStrategy())
+
+        val predictionStrategy = AlwaysNotTakenStrategy()
+        val pcUnit = BranchPredictionPcUnit(predictionStrategy)
+        val controlUnit = FPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
+
         assertThat(processResult).isEqualTo(expected)
         logger.printProcessResult(processResult)
     }
