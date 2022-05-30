@@ -1,6 +1,6 @@
 package computer.architecture.cpu.prediction
 
-class BTFNT : BranchPredictionStrategy() {
+class BTFNTStrategy : BranchPredictionStrategy() {
 
     override fun taken(nowPc: Int, branchPc : Int): Boolean {
         if(branchPc > nowPc) {

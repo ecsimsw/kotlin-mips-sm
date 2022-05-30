@@ -2,9 +2,7 @@ package computer.architecture
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.FPipeLineControlUnit
-import computer.architecture.cpu.pc.BranchPredictionPcUnit
-import computer.architecture.cpu.prediction.AlwaysNotTakenStrategy
-import computer.architecture.cpu.prediction.AlwaysTakenStrategy
+import computer.architecture.cpu.pc.OneBitBranchPredictionPcUnit
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 
@@ -14,8 +12,7 @@ fun main() {
 
     val logger = initLogger()
 
-    val predictionStrategy = AlwaysTakenStrategy()
-    val pcUnit = BranchPredictionPcUnit(predictionStrategy)
+    val pcUnit = OneBitBranchPredictionPcUnit()
     val controlUnit = FPipeLineControlUnit(memory, logger, pcUnit)
     val processResult = controlUnit.process()
 

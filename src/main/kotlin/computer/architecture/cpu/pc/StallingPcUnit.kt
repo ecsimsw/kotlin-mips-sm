@@ -1,7 +1,5 @@
 package computer.architecture.cpu
 
-import computer.architecture.component.Mux.Companion.mux
-
 class StallingPcUnit : IProgramCounterUnit {
 
     override fun findNext(
@@ -14,7 +12,7 @@ class StallingPcUnit : IProgramCounterUnit {
             nextIfId.valid = false
             nextIdEx.valid = false
             val nextPc = nextExMa.nextPc
-            if (nextPc== -1) {
+            if (nextPc == -1) {
                 nextExMa.controlSignal.isEnd = true
             }
             return nextPc

@@ -4,7 +4,7 @@ import computer.architecture.cpu.*
 import computer.architecture.cpu.prediction.AlwaysTakenStrategy
 import computer.architecture.cpu.prediction.IBranchPredictionStrategy
 
-class BranchPredictionPcUnit(
+class StaticBranchPredictionPcUnit(
     private val bpStrategy: IBranchPredictionStrategy = AlwaysTakenStrategy()
 ) : IProgramCounterUnit {
 

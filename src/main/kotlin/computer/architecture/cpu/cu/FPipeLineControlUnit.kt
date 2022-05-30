@@ -5,9 +5,6 @@ import computer.architecture.cpu.CycleResult
 import computer.architecture.cpu.ForwardingUnit
 import computer.architecture.cpu.IProgramCounterUnit
 import computer.architecture.cpu.StallingPcUnit
-import computer.architecture.cpu.pc.BranchPredictionPcUnit
-import computer.architecture.cpu.prediction.AlwaysNotTakenStrategy
-import computer.architecture.cpu.prediction.IBranchPredictionStrategy
 import computer.architecture.utils.Logger
 
 class FPipeLineControlUnit(
