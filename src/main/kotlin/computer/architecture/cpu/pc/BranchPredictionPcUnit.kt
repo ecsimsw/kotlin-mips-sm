@@ -44,7 +44,7 @@ class BranchPredictionPcUnit(
     }
 
     private fun isTaken(nextIdEx: DecodeResult, pc: Int): Boolean {
-        return nextIdEx.controlSignal.branch && bpStrategy.taken(pc)
+        return nextIdEx.controlSignal.branch && bpStrategy.taken(pc, nextIdEx.immediate)
     }
 
     private fun jump(nextIdEx: DecodeResult): Boolean {

@@ -4,6 +4,7 @@ import computer.architecture.cpu.ExecutionResult
 
 interface IBranchPredictionStrategy {
 
-    fun taken(pc :Int) : Boolean
+    fun taken(nowPc: Int, branchPc: Int): Boolean
+
     fun predict(nextExMa: ExecutionResult): Int
 }

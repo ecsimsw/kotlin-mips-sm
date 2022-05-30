@@ -1,8 +1,7 @@
 package computer.architecture.cpu.prediction
 
 class AlwaysNotTakenStrategy : BranchPredictionStrategy() {
-
-    override fun taken(pc: Int): Boolean {
+    override fun taken(nowPc: Int, branchPc: Int): Boolean {
         return false
     }
 }
