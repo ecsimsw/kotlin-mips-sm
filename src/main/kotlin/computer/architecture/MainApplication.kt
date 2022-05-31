@@ -2,8 +2,8 @@ package computer.architecture
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
-import computer.architecture.cpu.pc.BitStateBranchPredictionPcUnit
-import computer.architecture.cpu.prediction.SingleBitState
+import computer.architecture.cpu.pc.StateBranchPredictionPcUnit
+import computer.architecture.cpu.prediction.SaturationTwoBitStateMachine
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 
@@ -13,8 +13,8 @@ fun main() {
 
     val logger = initLogger()
 
-    val bitState = SingleBitState()
-    val pcUnit = BitStateBranchPredictionPcUnit(bitState)
+    val bitState = SaturationTwoBitStateMachine()
+    val pcUnit = StateBranchPredictionPcUnit(bitState)
     val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
     val processResult = controlUnit.process()
 

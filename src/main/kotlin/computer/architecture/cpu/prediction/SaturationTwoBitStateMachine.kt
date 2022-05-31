@@ -1,6 +1,6 @@
 package computer.architecture.cpu.prediction
 
-class HysteresisTwoBitState : BitStateMachine {
+class SaturationTwoBitStateMachine : BitStateMachine {
 
     var state = TWO_BIT_STATE.WEAKLY_NOT_TAKEN
 
@@ -8,21 +8,21 @@ class HysteresisTwoBitState : BitStateMachine {
         return state.taken
     }
 
-    override fun change(wasWrong: Boolean) {
-        if(wasWrong) {
+    override fun change(isTaken: Boolean) {
+        if(!isTaken) {
             state = when(state) {
-                TWO_BIT_STATE.STRONGLY_TAKEN -> TWO_BIT_STATE.WEAKLY_NOT_TAKEN
-                TWO_BIT_STATE.WEAKLY_TAKEN -> TWO_BIT_STATE.STRONGLY_NOT_TAKEN
+                TWO_BIT_STATE.STRONGLY_TAKEN -> TWO_BIT_STATE.WEAKLY_TAKEN
+                TWO_BIT_STATE.WEAKLY_TAKEN -> TWO_BIT_STATE.WEAKLY_NOT_TAKEN
                 TWO_BIT_STATE.WEAKLY_NOT_TAKEN -> TWO_BIT_STATE.STRONGLY_NOT_TAKEN
                 TWO_BIT_STATE.STRONGLY_NOT_TAKEN -> TWO_BIT_STATE.STRONGLY_NOT_TAKEN
             }
         }
 
-        if(!wasWrong) {
+        if(isTaken) {
             state = when(state) {
                 TWO_BIT_STATE.STRONGLY_TAKEN -> TWO_BIT_STATE.STRONGLY_TAKEN
                 TWO_BIT_STATE.WEAKLY_TAKEN -> TWO_BIT_STATE.STRONGLY_TAKEN
-                TWO_BIT_STATE.WEAKLY_NOT_TAKEN -> TWO_BIT_STATE.STRONGLY_TAKEN
+                TWO_BIT_STATE.WEAKLY_NOT_TAKEN -> TWO_BIT_STATE.WEAKLY_TAKEN
                 TWO_BIT_STATE.STRONGLY_NOT_TAKEN -> TWO_BIT_STATE.WEAKLY_NOT_TAKEN
             }
         }

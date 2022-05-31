@@ -20,5 +20,5 @@ interface BitStateMachine {
 
     fun taken() : Boolean
 
-    fun change(wasWrong: Boolean)
+    fun change(isTaken: Boolean)
 }

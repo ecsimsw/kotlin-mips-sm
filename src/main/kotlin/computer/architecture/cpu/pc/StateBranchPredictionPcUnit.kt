@@ -4,10 +4,10 @@ import computer.architecture.cpu.DecodeResult
 import computer.architecture.cpu.ExecutionResult
 import computer.architecture.cpu.FetchResult
 import computer.architecture.cpu.prediction.BitStateMachine
-import computer.architecture.cpu.prediction.SaturationTwoBitState
+import computer.architecture.cpu.prediction.SaturationTwoBitStateMachine
 
-class BitStateBranchPredictionPcUnit(
-    val state: BitStateMachine = SaturationTwoBitState()
+class StateBranchPredictionPcUnit(
+    val state: BitStateMachine = SaturationTwoBitStateMachine()
 ) : IProgramCounterUnit {
 
     override fun findNext(
@@ -19,6 +19,7 @@ class BitStateBranchPredictionPcUnit(
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
             if(takenCorrect(nextExMa, nextIfId)) {
                 state.change(false)
+                println("correct!")
             } else {
                 nextIfId.valid = false
                 nextIdEx.valid = false
@@ -46,10 +47,10 @@ class BitStateBranchPredictionPcUnit(
     }
 
     private fun nextPc(nextExMa: ExecutionResult) : Int {
-        return if (state.taken()) {
-            nextExMa.pc + 4
-        } else {
+        return if (nextExMa.branch) {
             nextExMa.nextPc
+        } else {
+            nextExMa.pc + 4
         }
     }
 

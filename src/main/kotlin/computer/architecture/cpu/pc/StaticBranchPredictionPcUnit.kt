@@ -38,11 +38,11 @@ class StaticBranchPredictionPcUnit(
         return pc+4
     }
 
-    private fun nextPc(nextExMa: ExecutionResult): Int {
-        return if (bpStrategy.predictAsTaken(nextExMa.pc, nextExMa.nextPc)) {
-            nextExMa.pc + 4
-        } else {
+    private fun nextPc(nextExMa: ExecutionResult) : Int {
+        return if (nextExMa.branch) {
             nextExMa.nextPc
+        } else {
+            nextExMa.pc + 4
         }
     }
 

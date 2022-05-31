@@ -1,6 +1,6 @@
 package computer.architecture.cpu.prediction
 
-class SingleBitState : BitStateMachine {
+class SingleBitStateMachine : BitStateMachine {
 
     var state = ONE_BIT_STATE.NOT_TAKEN
 
@@ -8,8 +8,8 @@ class SingleBitState : BitStateMachine {
         return state.taken
     }
 
-    override fun change(wasWrong: Boolean) {
-        if(wasWrong) {
+    override fun change(isTaken: Boolean) {
+        if(!isTaken) {
             state = when(state) {
                 ONE_BIT_STATE.TAKEN -> ONE_BIT_STATE.NOT_TAKEN
                 ONE_BIT_STATE.NOT_TAKEN -> ONE_BIT_STATE.TAKEN

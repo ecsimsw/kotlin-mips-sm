@@ -26,7 +26,7 @@ abstract class PipeLineControlUnit(
 
         logger.init()
         while (true) {
-            logger.printCycle(cycleResult.valid, cycle)
+            logger.printCycle(cycle)
 
             isEnd = or(isEnd, cycleResult.isEnd)
             val pc = stallUnit.next(cycleResult.nextPc)
