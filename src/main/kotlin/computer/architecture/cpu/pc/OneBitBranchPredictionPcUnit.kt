@@ -7,7 +7,7 @@ import computer.architecture.cpu.IProgramCounterUnit
 
 class OneBitBranchPredictionPcUnit : IProgramCounterUnit {
 
-    var lastPredictionTaken = false
+    var lastTakenBit = false
 
     override fun findNext(
         pc: Int,
@@ -18,11 +18,12 @@ class OneBitBranchPredictionPcUnit : IProgramCounterUnit {
         if (nextExMa.valid && nextExMa.controlSignal.branch && !takenCorrect(nextExMa, nextIfId)) {
             nextIfId.valid = false
             nextIdEx.valid = false
-            val nextPc = if (lastPredictionTaken) {
+            val nextPc = if (lastTakenBit) {
                 nextExMa.pc + 4
             } else {
                 nextExMa.nextPc
             }
+            lastTakenBit = !lastTakenBit
             nextExMa.controlSignal.isEnd = nextPc == -1
             return nextPc
         }
@@ -49,7 +50,7 @@ class OneBitBranchPredictionPcUnit : IProgramCounterUnit {
     }
 
     private fun isTaken(nextIdEx: DecodeResult): Boolean {
-        return nextIdEx.controlSignal.branch && lastPredictionTaken
+        return nextIdEx.controlSignal.branch && lastTakenBit
     }
 
     private fun jump(nextIdEx: DecodeResult): Boolean {
