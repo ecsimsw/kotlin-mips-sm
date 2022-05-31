@@ -1,14 +1,13 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.cu.FPipeLineControlUnit
-import computer.architecture.cpu.cu.SPipeLineControlUnit
+import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
+import computer.architecture.cpu.cu.StallingPipeLineControlUnit
 import computer.architecture.cpu.cu.SingleCycleControlUnit
 import computer.architecture.cpu.pc.StaticBranchPredictionPcUnit
-import computer.architecture.cpu.pc.OneBitBranchPredictionPcUnit
-import computer.architecture.cpu.prediction.AlwaysNotTakenStrategy
-import computer.architecture.cpu.prediction.AlwaysTakenStrategy
-import computer.architecture.cpu.prediction.BTFNTStrategy
+import computer.architecture.cpu.pc.NonePredictionPcUnit
+import computer.architecture.cpu.pc.BitStateBranchPredictionPcUnit
+import computer.architecture.cpu.prediction.*
 import computer.architecture.utils.Logger
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.params.ParameterizedTest
@@ -51,8 +50,8 @@ internal class ControlUnitTest {
     fun stall_stall(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
 
-        val pcUnit = StallingPcUnit()
-        val controlUnit = SPipeLineControlUnit(memory, logger, pcUnit)
+        val pcUnit = NonePredictionPcUnit()
+        val controlUnit = StallingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
@@ -74,7 +73,7 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysNotTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = SPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = StallingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
@@ -96,7 +95,7 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = SPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = StallingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
@@ -116,8 +115,8 @@ internal class ControlUnitTest {
     fun forwarding_stall(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
 
-        val pcUnit = StallingPcUnit()
-        val controlUnit = FPipeLineControlUnit(memory, logger, pcUnit)
+        val pcUnit = NonePredictionPcUnit()
+        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
@@ -139,7 +138,7 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = FPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
@@ -161,7 +160,7 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysNotTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = FPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
@@ -183,7 +182,7 @@ internal class ControlUnitTest {
 
         val predictionStrategy = BTFNTStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = FPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
@@ -203,8 +202,53 @@ internal class ControlUnitTest {
     fun forwarding_1bitPrediction(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
 
-        val pcUnit = OneBitBranchPredictionPcUnit()
-        val controlUnit = FPipeLineControlUnit(memory, logger, pcUnit)
+        val bitState = SingleBitState()
+        val pcUnit = BitStateBranchPredictionPcUnit(bitState)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val processResult = controlUnit.process()
+
+        assertThat(processResult).isEqualTo(expected)
+        logger.printProcessResult(processResult)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun forwarding_saturation2bitPrediction(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+
+        val bitState = SaturationTwoBitState()
+        val pcUnit = BitStateBranchPredictionPcUnit(bitState)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val processResult = controlUnit.process()
+
+        assertThat(processResult).isEqualTo(expected)
+        logger.printProcessResult(processResult)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun forwarding_hysteresis2bitPrediction(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+
+        val bitState = HysteresisTwoBitState()
+        val pcUnit = BitStateBranchPredictionPcUnit(bitState)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)

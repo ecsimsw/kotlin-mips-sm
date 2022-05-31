@@ -17,7 +17,7 @@ class StaticBranchPredictionPcUnit(
         if (nextExMa.valid && nextExMa.controlSignal.branch && !takenCorrect(nextExMa, nextIfId)) {
             nextIfId.valid = false
             nextIdEx.valid = false
-            val nextPc = bpStrategy.predict(nextExMa)
+            val nextPc = nextPc(nextExMa)
             nextExMa.controlSignal.isEnd = nextPc == -1
             return nextPc
         }
@@ -38,13 +38,21 @@ class StaticBranchPredictionPcUnit(
         return pc+4
     }
 
+    private fun nextPc(nextExMa: ExecutionResult): Int {
+        return if (bpStrategy.predictAsTaken(nextExMa.pc, nextExMa.nextPc)) {
+            nextExMa.pc + 4
+        } else {
+            nextExMa.nextPc
+        }
+    }
+
     private fun takenCorrect(nextExMa: ExecutionResult, nextIfId: FetchResult): Boolean {
         val wasTaken = nextIfId.pc == nextExMa.nextPc
         return nextExMa.branch == wasTaken
     }
 
     private fun isTaken(nextIdEx: DecodeResult, pc: Int): Boolean {
-        return nextIdEx.controlSignal.branch && bpStrategy.taken(pc, nextIdEx.immediate)
+        return nextIdEx.controlSignal.branch && bpStrategy.predictAsTaken(pc, nextIdEx.immediate)
     }
 
     private fun jump(nextIdEx: DecodeResult): Boolean {

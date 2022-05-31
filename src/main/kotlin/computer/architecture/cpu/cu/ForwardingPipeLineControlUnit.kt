@@ -3,14 +3,14 @@ package computer.architecture.cpu.cu
 import computer.architecture.component.Memory
 import computer.architecture.cpu.CycleResult
 import computer.architecture.cpu.ForwardingUnit
-import computer.architecture.cpu.IProgramCounterUnit
-import computer.architecture.cpu.StallingPcUnit
+import computer.architecture.cpu.pc.IProgramCounterUnit
+import computer.architecture.cpu.pc.NonePredictionPcUnit
 import computer.architecture.utils.Logger
 
-class FPipeLineControlUnit(
+class ForwardingPipeLineControlUnit(
     memory: Memory,
     private val logger: Logger,
-    private val pcUnit: IProgramCounterUnit = StallingPcUnit()
+    private val pcUnit: IProgramCounterUnit = NonePredictionPcUnit()
 ) : PipeLineControlUnit(memory, logger) {
     private val forwardingUnit = ForwardingUnit()
 

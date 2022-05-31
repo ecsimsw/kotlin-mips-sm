@@ -1,6 +1,10 @@
-package computer.architecture.cpu
+package computer.architecture.cpu.pc
 
-class StallingPcUnit : IProgramCounterUnit {
+import computer.architecture.cpu.DecodeResult
+import computer.architecture.cpu.ExecutionResult
+import computer.architecture.cpu.FetchResult
+
+class NonePredictionPcUnit : IProgramCounterUnit {
 
     override fun findNext(
         pc: Int,
