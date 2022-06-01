@@ -1,32 +1,25 @@
 package computer.architecture.cpu.prediction
 
-import computer.architecture.cpu.bht.BranchHistory
-import computer.architecture.cpu.bht.IBranchHistoryTable
-import computer.architecture.cpu.bht.LocalHistoryTable
-import computer.architecture.cpu.bht.PatternHistoryTable
+import computer.architecture.cpu.bht.*
 
 open class OneLevelBranchHistoryTable(
     private val size: Int = 16,
 ) : IBranchHistoryTable {
+    private val branchHistoryTable = BranchHistoryTable(size)
     private val patternHistoryTable = PatternHistoryTable(size)
 
-    private val histories = Array(size) {
-        BranchHistory(-1,-1)
-    }
-
     override fun isHit(pc : Int) : Boolean {
-        return histories[index(pc)].branchAddress == pc
+        return branchHistoryTable.isHit(index(pc), pc)
     }
 
     override fun update(branchAddress:Int, target: Int, isTaken: Boolean) {
         val index = index(branchAddress)
-        histories[index].branchAddress = branchAddress
-        histories[index].targetAddress = target
+        branchHistoryTable.update(index, branchAddress, target)
         patternHistoryTable.update(index, isTaken)
     }
 
     override fun target(pc : Int) : Int {
-        return histories[index(pc)].targetAddress
+        return branchHistoryTable.targetAddress(index(pc))
     }
 
     override fun state(pc: Int): IBitStateMachine {

@@ -1,33 +1,30 @@
 package computer.architecture.cpu.prediction
 
-import computer.architecture.cpu.bht.BranchHistory
-import computer.architecture.cpu.bht.IBranchHistoryTable
-import computer.architecture.cpu.bht.LocalHistoryTable
-import computer.architecture.cpu.bht.PatternHistoryTable
+import computer.architecture.cpu.bht.*
+import kotlin.math.pow
 
 open class TwoLevelBranchHistoryTable(
     private val size: Int = 16,
+    private val historyBitSize:Int = 4
 ) : IBranchHistoryTable {
-    private val localHistoryTable = LocalHistoryTable(size)
-    private val patternHistoryTable = PatternHistoryTable(size)
-
-    private val histories = Array(size) {
-        BranchHistory(-1,-1)
-    }
+    private val branchHistoryTable = BranchHistoryTable(size)
+    private val localHistoryTable = LocalHistoryTable(size, historyBitSize)
+    private val patternHistoryTable = PatternHistoryTable(2.0.pow(historyBitSize).toInt())
 
     override fun isHit(pc : Int) : Boolean {
-        return histories[index(pc)].branchAddress == pc
+        return branchHistoryTable.isHit(index(pc), pc)
     }
 
     override fun update(branchAddress:Int, target: Int, isTaken: Boolean) {
         val index = index(branchAddress)
-        histories[index].branchAddress = branchAddress
-        histories[index].targetAddress = target
+        branchHistoryTable.update(index, branchAddress, target)
+        val historyValue = localHistoryTable.historyValue(index)
+        patternHistoryTable.pattern(historyValue).change(isTaken)
         localHistoryTable.update(index, isTaken)
     }
 
     override fun target(pc : Int) : Int {
-        return histories[index(pc)].targetAddress
+        return branchHistoryTable.targetAddress(index(pc))
     }
 
     override fun state(pc: Int): IBitStateMachine {

@@ -3,6 +3,7 @@ package computer.architecture
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
 import computer.architecture.cpu.pc.HistoryBufferedBranchPredictionPcUnit
+import computer.architecture.cpu.prediction.TwoLevelBranchHistoryTable
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 
@@ -12,7 +13,7 @@ fun main() {
 
     val logger = initLogger()
 
-    val pcUnit = HistoryBufferedBranchPredictionPcUnit()
+    val pcUnit = HistoryBufferedBranchPredictionPcUnit(TwoLevelBranchHistoryTable())
     val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
     val processResult = controlUnit.process()
 

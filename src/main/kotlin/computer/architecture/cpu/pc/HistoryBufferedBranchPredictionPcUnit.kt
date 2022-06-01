@@ -30,7 +30,7 @@ class HistoryBufferedBranchPredictionPcUnit(
                 nextIdEx.valid = false
                 nextExMa.controlSignal.isEnd = nextPc == -1
             } else {
-                println("Correct")
+//                println("Correct")
             }
             historyBuffer.update(nextExMa.pc, nextExMa.nextPc, nextExMa.branch)
             return nextPc
