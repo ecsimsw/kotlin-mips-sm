@@ -19,7 +19,6 @@ class StateBranchPredictionPcUnit(
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
             if(takenCorrect(nextExMa, nextIfId)) {
                 state.change(false)
-                println("correct!")
             } else {
                 nextIfId.valid = false
                 nextIdEx.valid = false

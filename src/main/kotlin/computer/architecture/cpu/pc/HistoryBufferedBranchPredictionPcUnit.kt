@@ -17,20 +17,18 @@ class HistoryBufferedBranchPredictionPcUnit(
     ): Int {
         if(historyBuffer.isHit(nextIfId.pc)) {
             if(historyBuffer.state(nextIfId.pc).taken()) {
-                println("taken")
                 return historyBuffer.target(nextIfId.pc)
             }
         }
 
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
-            val nextPc = nextPc(nextExMa)
+            var nextPc = pc + 4
             if(!takenCorrect(nextExMa, nextIdEx)) {
+                nextPc = nextPc(nextExMa)
                 nextIfId.valid = false
                 nextIdEx.valid = false
                 nextExMa.controlSignal.isEnd = nextPc == -1
-                println("wrong")
             } else {
-                println("correct!")
             }
             historyBuffer.update(nextExMa.pc, nextExMa.nextPc, nextExMa.branch)
             return nextPc
