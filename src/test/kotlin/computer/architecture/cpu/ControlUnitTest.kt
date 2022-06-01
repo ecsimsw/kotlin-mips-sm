@@ -6,7 +6,8 @@ import computer.architecture.cpu.cu.StallingPipeLineControlUnit
 import computer.architecture.cpu.cu.SingleCycleControlUnit
 import computer.architecture.cpu.pc.StaticBranchPredictionPcUnit
 import computer.architecture.cpu.pc.NonePredictionPcUnit
-import computer.architecture.cpu.pc.StateBranchPredictionPcUnit
+import computer.architecture.cpu.pc.DynamicBranchPredictionPcUnit
+import computer.architecture.cpu.pc.HistoryBufferedBranchPredictionPcUnit
 import computer.architecture.cpu.prediction.*
 import computer.architecture.utils.Logger
 import org.assertj.core.api.Assertions.assertThat
@@ -203,7 +204,7 @@ internal class ControlUnitTest {
         val memory = Memory.load(20000000, path)
 
         val bitState = SingleBitStateMachine()
-        val pcUnit = StateBranchPredictionPcUnit(bitState)
+        val pcUnit = DynamicBranchPredictionPcUnit(bitState)
         val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
@@ -225,7 +226,7 @@ internal class ControlUnitTest {
         val memory = Memory.load(20000000, path)
 
         val bitState = SaturationTwoBitStateMachine()
-        val pcUnit = StateBranchPredictionPcUnit(bitState)
+        val pcUnit = DynamicBranchPredictionPcUnit(bitState)
         val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
@@ -247,7 +248,51 @@ internal class ControlUnitTest {
         val memory = Memory.load(20000000, path)
 
         val bitState = HysteresisTwoBitStateMachine()
-        val pcUnit = StateBranchPredictionPcUnit(bitState)
+        val pcUnit = DynamicBranchPredictionPcUnit(bitState)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val processResult = controlUnit.process()
+
+        assertThat(processResult).isEqualTo(expected)
+        logger.printProcessResult(processResult)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun forwarding_1LevelHistoryBuffered(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+
+        val branchHistoryTable = OneLevelBranchHistoryTable()
+        val pcUnit = HistoryBufferedBranchPredictionPcUnit(branchHistoryTable)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val processResult = controlUnit.process()
+
+        assertThat(processResult).isEqualTo(expected)
+        logger.printProcessResult(processResult)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun forwarding_2LevelHistoryBuffered(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+
+        val branchHistoryTable = TwoLevelBranchHistoryTable()
+        val pcUnit = HistoryBufferedBranchPredictionPcUnit(branchHistoryTable)
         val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 

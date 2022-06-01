@@ -3,8 +3,6 @@ package computer.architecture
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
 import computer.architecture.cpu.pc.HistoryBufferedBranchPredictionPcUnit
-import computer.architecture.cpu.pc.StateBranchPredictionPcUnit
-import computer.architecture.cpu.prediction.SaturationTwoBitStateMachine
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 

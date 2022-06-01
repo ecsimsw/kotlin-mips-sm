@@ -3,10 +3,11 @@ package computer.architecture.cpu.pc
 import computer.architecture.cpu.DecodeResult
 import computer.architecture.cpu.ExecutionResult
 import computer.architecture.cpu.FetchResult
-import computer.architecture.cpu.prediction.BranchHistoryTable
+import computer.architecture.cpu.bht.IBranchHistoryTable
+import computer.architecture.cpu.prediction.TwoLevelBranchHistoryTable
 
 class HistoryBufferedBranchPredictionPcUnit(
-    private val historyBuffer : BranchHistoryTable = BranchHistoryTable()
+    private val historyBuffer : IBranchHistoryTable = TwoLevelBranchHistoryTable()
 ) : IProgramCounterUnit {
 
     override fun findNext(
@@ -29,6 +30,7 @@ class HistoryBufferedBranchPredictionPcUnit(
                 nextIdEx.valid = false
                 nextExMa.controlSignal.isEnd = nextPc == -1
             } else {
+                println("Correct")
             }
             historyBuffer.update(nextExMa.pc, nextExMa.nextPc, nextExMa.branch)
             return nextPc

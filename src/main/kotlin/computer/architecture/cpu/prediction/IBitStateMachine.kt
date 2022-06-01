@@ -16,7 +16,7 @@ enum class TWO_BIT_STATE(
     STRONGLY_NOT_TAKEN(false);
 }
 
-interface BitStateMachine {
+interface IBitStateMachine {
 
     fun taken() : Boolean
 

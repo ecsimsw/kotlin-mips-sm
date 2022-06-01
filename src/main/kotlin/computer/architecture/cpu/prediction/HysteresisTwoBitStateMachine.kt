@@ -1,6 +1,6 @@
 package computer.architecture.cpu.prediction
 
-class HysteresisTwoBitStateMachine : BitStateMachine {
+class HysteresisTwoBitStateMachine : IBitStateMachine {
 
     var state = TWO_BIT_STATE.WEAKLY_NOT_TAKEN
 

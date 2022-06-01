@@ -1,6 +1,6 @@
 package computer.architecture.cpu.prediction
 
-class SingleBitStateMachine : BitStateMachine {
+class SingleBitStateMachine : IBitStateMachine {
 
     var state = ONE_BIT_STATE.NOT_TAKEN
 

@@ -1,6 +1,6 @@
 package computer.architecture.cpu.prediction
 
-class SaturationTwoBitStateMachine : BitStateMachine {
+class SaturationTwoBitStateMachine : IBitStateMachine {
 
     var state = TWO_BIT_STATE.WEAKLY_NOT_TAKEN
 
