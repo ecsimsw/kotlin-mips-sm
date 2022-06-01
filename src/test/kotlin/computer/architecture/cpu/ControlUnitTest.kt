@@ -2,6 +2,7 @@ package computer.architecture.cpu
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
+import computer.architecture.cpu.cu.MultiProcessingPipelineControlUnit
 import computer.architecture.cpu.cu.StallingPipeLineControlUnit
 import computer.architecture.cpu.cu.SingleCycleControlUnit
 import computer.architecture.cpu.pc.StaticBranchPredictionPcUnit
@@ -298,5 +299,29 @@ internal class ControlUnitTest {
 
         assertThat(processResult).isEqualTo(expected)
         logger.printProcessResult(processResult)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun multiProccessing(path: String, expected: Int) {
+        val memory1 = Memory.load(20000000, path)
+        val memory2 = Memory.load(20000000, path)
+        val memory3 = Memory.load(20000000, path)
+        val memory4 = Memory.load(20000000, path)
+        val memory5 = Memory.load(20000000, path)
+
+        val controlUnit = MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5), logger)
+        val processResult = controlUnit.process()
+
+        assertThat(processResult[0]).isEqualTo(expected)
+        logger.printProcessResult(processResult[0])
     }
 }

@@ -2,6 +2,7 @@ package computer.architecture
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
+import computer.architecture.cpu.cu.MultiProcessingPipelineControlUnit
 import computer.architecture.cpu.pc.HistoryBufferedBranchPredictionPcUnit
 import computer.architecture.cpu.prediction.TwoLevelBranchHistoryTable
 import computer.architecture.utils.Logger
@@ -9,15 +10,20 @@ import computer.architecture.utils.LoggingSignal
 
 fun main() {
     val fileToLoad = "sample/simple3.bin"
-    val memory = Memory.load(20000000, fileToLoad)
+    val memory1 = Memory.load(20000000, fileToLoad)
+    val memory2 = Memory.load(20000000, fileToLoad)
+    val memory3 = Memory.load(20000000, fileToLoad)
+    val memory4 = Memory.load(20000000, fileToLoad)
+    val memory5 = Memory.load(20000000, fileToLoad)
 
     val logger = initLogger()
 
-    val pcUnit = HistoryBufferedBranchPredictionPcUnit(TwoLevelBranchHistoryTable())
-    val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+    val controlUnit = MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5), logger)
     val processResult = controlUnit.process()
 
-    logger.printProcessResult(processResult)
+    processResult.forEach { println(it) }
+
+//    logger.printProcessResult(processResult[0])
 }
 
 private fun initLogger(): Logger {

@@ -3,7 +3,8 @@ package computer.architecture.cpu
 data class FetchResult(
     var valid: Boolean = false,
     val pc: Int = 0,
-    val instruction: Int = 0
+    val instruction: Int = 0,
+    val pn : Int = -1
 )
 
 data class DecodeResult(
@@ -19,7 +20,8 @@ data class DecodeResult(
     val writeReg: Int = 0,
     val jump: Boolean = false,
     val nextPc: Int =0,
-    var controlSignal: ControlSignal = ControlSignal.NONE
+    var controlSignal: ControlSignal = ControlSignal.NONE,
+    val pn : Int = -1
 )
 
 data class ExecutionResult(
@@ -31,7 +33,8 @@ data class ExecutionResult(
     val nextPc: Int = 0,
     val jump: Boolean = false,
     val branch: Boolean = false,
-    val controlSignal: ControlSignal = ControlSignal.NONE
+    val controlSignal: ControlSignal = ControlSignal.NONE,
+    val pn : Int = -1
 )
 
 data class MemoryAccessResult(
@@ -42,7 +45,8 @@ data class MemoryAccessResult(
     val address: Int =0, // TODO :: for logging
     val memReadValue: Int = 0,
     val memWriteValue: Int = 0,
-    val controlSignal: ControlSignal = ControlSignal.NONE
+    val controlSignal: ControlSignal = ControlSignal.NONE,
+    val pn : Int = -1
 )
 
 data class WriteBackResult(
@@ -50,7 +54,8 @@ data class WriteBackResult(
     val pc: Int = 0, // TODO :: for logging
     val regWriteValue: Int = 0,
     val writeReg: Int = 0,
-    val controlSignal: ControlSignal = ControlSignal.NONE
+    val controlSignal: ControlSignal = ControlSignal.NONE,
+    val pn : Int = -1
 )
 
 data class CycleResult(
@@ -58,5 +63,6 @@ data class CycleResult(
     val valid: Boolean = false,
     val value: Int = 0,
     val isEnd: Boolean = false,
-    val lastCycle: Boolean = false
+    val lastCycle: Boolean = false,
+    val pn: Int = -1
 )
