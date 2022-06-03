@@ -6,7 +6,7 @@ import computer.architecture.cpu.FetchResult
 import computer.architecture.cpu.prediction.IBitStateMachine
 import computer.architecture.cpu.prediction.SaturationTwoBitStateMachine
 
-class DynamicBranchPredictionPcUnit(
+open class DynamicBranchPredictionPcUnit(
     private val state: IBitStateMachine = SaturationTwoBitStateMachine()
 ) : IProgramCounterUnit {
 
@@ -17,13 +17,13 @@ class DynamicBranchPredictionPcUnit(
         nextExMa: ExecutionResult
     ): Int {
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
-            if(takenCorrect(nextExMa, nextIfId)) {
-                state.change(false)
+            if (takenCorrect(nextExMa, nextIfId)) {
+                state.update(false)
             } else {
                 nextIfId.valid = false
                 nextIdEx.valid = false
                 val nextPc = nextPc(nextExMa)
-                state.change(true)
+                state.update(true)
                 nextExMa.controlSignal.isEnd = nextPc == -1
                 return nextPc
             }
@@ -45,7 +45,7 @@ class DynamicBranchPredictionPcUnit(
         return pc + 4
     }
 
-    private fun nextPc(nextExMa: ExecutionResult) : Int {
+    private fun nextPc(nextExMa: ExecutionResult): Int {
         return if (nextExMa.branch) {
             nextExMa.nextPc
         } else {

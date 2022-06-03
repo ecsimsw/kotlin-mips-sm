@@ -1,14 +1,14 @@
 package computer.architecture.cpu.prediction
 
 enum class ONE_BIT_STATE(
-    val taken : Boolean
+    val taken: Boolean
 ) {
     TAKEN(true),
     NOT_TAKEN(false);
 }
 
 enum class TWO_BIT_STATE(
-    val taken : Boolean
+    val taken: Boolean
 ) {
     STRONGLY_TAKEN(true),
     WEAKLY_TAKEN(true),
@@ -18,7 +18,7 @@ enum class TWO_BIT_STATE(
 
 interface IBitStateMachine {
 
-    fun taken() : Boolean
+    fun taken(): Boolean
 
-    fun change(isTaken: Boolean)
+    fun update(isTaken: Boolean)
 }

@@ -4,13 +4,13 @@ class HysteresisTwoBitStateMachine : IBitStateMachine {
 
     var state = TWO_BIT_STATE.WEAKLY_NOT_TAKEN
 
-    override fun taken() : Boolean {
+    override fun taken(): Boolean {
         return state.taken
     }
 
-    override fun change(isTaken: Boolean) {
-        if(!isTaken) {
-            state = when(state) {
+    override fun update(isTaken: Boolean) {
+        if (!isTaken) {
+            state = when (state) {
                 TWO_BIT_STATE.STRONGLY_TAKEN -> TWO_BIT_STATE.WEAKLY_NOT_TAKEN
                 TWO_BIT_STATE.WEAKLY_TAKEN -> TWO_BIT_STATE.STRONGLY_NOT_TAKEN
                 TWO_BIT_STATE.WEAKLY_NOT_TAKEN -> TWO_BIT_STATE.STRONGLY_NOT_TAKEN
@@ -18,8 +18,8 @@ class HysteresisTwoBitStateMachine : IBitStateMachine {
             }
         }
 
-        if(isTaken) {
-            state = when(state) {
+        if (isTaken) {
+            state = when (state) {
                 TWO_BIT_STATE.STRONGLY_TAKEN -> TWO_BIT_STATE.STRONGLY_TAKEN
                 TWO_BIT_STATE.WEAKLY_TAKEN -> TWO_BIT_STATE.STRONGLY_TAKEN
                 TWO_BIT_STATE.WEAKLY_NOT_TAKEN -> TWO_BIT_STATE.STRONGLY_TAKEN

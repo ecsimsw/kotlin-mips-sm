@@ -1,16 +1,16 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.bht.OneLevelHistoryTable
-import computer.architecture.cpu.bht.TwoLevelHistoryTable
+import computer.architecture.cpu.bht.GlobalHistoryRegister
+import computer.architecture.cpu.bht.LocalHistoryRegister
 import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
 import computer.architecture.cpu.cu.MultiProcessingPipelineControlUnit
-import computer.architecture.cpu.cu.StallingPipeLineControlUnit
 import computer.architecture.cpu.cu.SingleCycleControlUnit
-import computer.architecture.cpu.pc.StaticBranchPredictionPcUnit
-import computer.architecture.cpu.pc.NonePredictionPcUnit
+import computer.architecture.cpu.cu.StallingPipeLineControlUnit
 import computer.architecture.cpu.pc.DynamicBranchPredictionPcUnit
 import computer.architecture.cpu.pc.HistoryBufferedBranchPredictionPcUnit
+import computer.architecture.cpu.pc.NonePredictionPcUnit
+import computer.architecture.cpu.pc.StaticBranchPredictionPcUnit
 import computer.architecture.cpu.prediction.*
 import computer.architecture.utils.Logger
 import org.assertj.core.api.Assertions.assertThat
@@ -269,11 +269,10 @@ internal class ControlUnitTest {
         "sample/fib.bin,55",
         "sample/input4.bin,85"
     )
-    fun forwarding_1LevelHistoryBuffered(path: String, expected: Int) {
+    fun forwarding_2LevelGlobalHistoryBuffered(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
 
-        val branchHistoryTable = OneLevelHistoryTable()
-        val pcUnit = HistoryBufferedBranchPredictionPcUnit(branchHistoryTable)
+        val pcUnit = HistoryBufferedBranchPredictionPcUnit(16, GlobalHistoryRegister())
         val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
@@ -291,11 +290,10 @@ internal class ControlUnitTest {
         "sample/fib.bin,55",
         "sample/input4.bin,85"
     )
-    fun forwarding_2LevelHistoryBuffered(path: String, expected: Int) {
+    fun forwarding_2LevelLocalHistoryBuffered(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
 
-        val branchHistoryTable = TwoLevelHistoryTable()
-        val pcUnit = HistoryBufferedBranchPredictionPcUnit(branchHistoryTable)
+        val pcUnit = HistoryBufferedBranchPredictionPcUnit(16, LocalHistoryRegister())
         val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
 
@@ -313,14 +311,15 @@ internal class ControlUnitTest {
         "sample/fib.bin,55",
         "sample/input4.bin,85"
     )
-    fun multiProccessing(path: String, expected: Int) {
+    fun multiProcessing(path: String, expected: Int) {
         val memory1 = Memory.load(20000000, path)
         val memory2 = Memory.load(20000000, path)
         val memory3 = Memory.load(20000000, path)
         val memory4 = Memory.load(20000000, path)
         val memory5 = Memory.load(20000000, path)
 
-        val controlUnit = MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5), logger)
+        val controlUnit =
+            MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5), logger)
         val processResult = controlUnit.process()
 
         assertThat(processResult[0]).isEqualTo(expected)

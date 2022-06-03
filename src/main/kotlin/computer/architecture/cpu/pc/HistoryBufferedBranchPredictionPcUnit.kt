@@ -1,14 +1,21 @@
 package computer.architecture.cpu.pc
 
+import computer.architecture.component.And.Companion.and
 import computer.architecture.cpu.DecodeResult
 import computer.architecture.cpu.ExecutionResult
 import computer.architecture.cpu.FetchResult
-import computer.architecture.cpu.bht.IHistoryTable
-import computer.architecture.cpu.bht.TwoLevelHistoryTable
+import computer.architecture.cpu.bht.GlobalHistoryRegister
+import computer.architecture.cpu.bht.IHistoryRegister
+import computer.architecture.cpu.bht.PatternHistoryRegister
+import computer.architecture.cpu.prediction.BranchTargetBuffer
 
 class HistoryBufferedBranchPredictionPcUnit(
-    private val historyBuffer: IHistoryTable = TwoLevelHistoryTable()
-) : IProgramCounterUnit {
+    private val size: Int = 16,
+    private val historyRegister: IHistoryRegister = GlobalHistoryRegister(size)
+) : DynamicBranchPredictionPcUnit() {
+
+    private val branchTargetBuffer: BranchTargetBuffer = BranchTargetBuffer(size)
+    private val patternHistoryRegister: PatternHistoryRegister = PatternHistoryRegister(size)
 
     override fun findNext(
         pc: Int,
@@ -16,8 +23,13 @@ class HistoryBufferedBranchPredictionPcUnit(
         nextIdEx: DecodeResult,
         nextExMa: ExecutionResult
     ): Int {
-        if (historyBuffer.isHit(nextIfId.pc) && historyBuffer.state(nextIfId.pc).taken()) {
-            return historyBuffer.target(nextIfId.pc)
+
+        val btbHit = branchTargetBuffer.isHit(index(nextIfId.pc), (nextIfId.pc))
+        val historyValue = historyRegister.valueOf(pc)
+        val isTaken = patternHistoryRegister.pattern(historyValue).taken()
+
+        if (and(btbHit, isTaken)) {
+            return branchTargetBuffer.targetAddress(index(nextIfId.pc))
         }
 
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
@@ -28,7 +40,7 @@ class HistoryBufferedBranchPredictionPcUnit(
                 nextIdEx.valid = false
                 nextExMa.controlSignal.isEnd = nextPc == -1
             }
-            historyBuffer.update(nextExMa.pc, nextExMa.nextPc, nextExMa.branch)
+            updateHistory(nextExMa.pc, nextExMa.nextPc, nextExMa.branch)
             return nextPc
         }
 
@@ -39,6 +51,14 @@ class HistoryBufferedBranchPredictionPcUnit(
             return nextPc
         }
         return pc + 4
+    }
+
+    private fun updateHistory(branchAddr: Int, targetAddr: Int, isTaken: Boolean) {
+        val index = index(branchAddr)
+        branchTargetBuffer.update(index, branchAddr, targetAddr)
+        val historyValue = historyRegister.valueOf(branchAddr)
+        patternHistoryRegister.pattern(historyValue).update(isTaken)
+        historyRegister.update(branchAddr, isTaken)
     }
 
     private fun nextPc(nextExMa: ExecutionResult): Int {
@@ -56,5 +76,9 @@ class HistoryBufferedBranchPredictionPcUnit(
 
     private fun jump(nextIdEx: DecodeResult): Boolean {
         return nextIdEx.jump
+    }
+
+    private fun index(pc: Int): Int {
+        return (pc / 4) % size
     }
 }
