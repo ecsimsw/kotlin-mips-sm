@@ -3,11 +3,11 @@ package computer.architecture.cpu.pc
 import computer.architecture.cpu.DecodeResult
 import computer.architecture.cpu.ExecutionResult
 import computer.architecture.cpu.FetchResult
-import computer.architecture.cpu.bht.IBranchHistoryTable
-import computer.architecture.cpu.prediction.TwoLevelBranchHistoryTable
+import computer.architecture.cpu.bht.IHistoryTable
+import computer.architecture.cpu.bht.TwoLevelHistoryTable
 
 class HistoryBufferedBranchPredictionPcUnit(
-    private val historyBuffer : IBranchHistoryTable = TwoLevelBranchHistoryTable()
+    private val historyBuffer: IHistoryTable = TwoLevelHistoryTable()
 ) : IProgramCounterUnit {
 
     override fun findNext(
@@ -16,21 +16,17 @@ class HistoryBufferedBranchPredictionPcUnit(
         nextIdEx: DecodeResult,
         nextExMa: ExecutionResult
     ): Int {
-        if(historyBuffer.isHit(nextIfId.pc)) {
-            if(historyBuffer.state(nextIfId.pc).taken()) {
-                return historyBuffer.target(nextIfId.pc)
-            }
+        if (historyBuffer.isHit(nextIfId.pc) && historyBuffer.state(nextIfId.pc).taken()) {
+            return historyBuffer.target(nextIfId.pc)
         }
 
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
             var nextPc = pc + 4
-            if(!takenCorrect(nextExMa, nextIdEx)) {
+            if (!takenCorrect(nextExMa, nextIdEx)) {
                 nextPc = nextPc(nextExMa)
                 nextIfId.valid = false
                 nextIdEx.valid = false
                 nextExMa.controlSignal.isEnd = nextPc == -1
-            } else {
-//                println("Correct")
             }
             historyBuffer.update(nextExMa.pc, nextExMa.nextPc, nextExMa.branch)
             return nextPc
@@ -45,7 +41,7 @@ class HistoryBufferedBranchPredictionPcUnit(
         return pc + 4
     }
 
-    private fun nextPc(nextExMa: ExecutionResult) : Int {
+    private fun nextPc(nextExMa: ExecutionResult): Int {
         return if (nextExMa.branch) {
             nextExMa.nextPc
         } else {

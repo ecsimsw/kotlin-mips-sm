@@ -7,7 +7,7 @@ import computer.architecture.cpu.prediction.IBitStateMachine
 import computer.architecture.cpu.prediction.SaturationTwoBitStateMachine
 
 class DynamicBranchPredictionPcUnit(
-    val state: IBitStateMachine = SaturationTwoBitStateMachine()
+    private val state: IBitStateMachine = SaturationTwoBitStateMachine()
 ) : IProgramCounterUnit {
 
     override fun findNext(

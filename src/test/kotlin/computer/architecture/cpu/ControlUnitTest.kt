@@ -1,6 +1,8 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
+import computer.architecture.cpu.bht.OneLevelHistoryTable
+import computer.architecture.cpu.bht.TwoLevelHistoryTable
 import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
 import computer.architecture.cpu.cu.MultiProcessingPipelineControlUnit
 import computer.architecture.cpu.cu.StallingPipeLineControlUnit
@@ -270,7 +272,7 @@ internal class ControlUnitTest {
     fun forwarding_1LevelHistoryBuffered(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
 
-        val branchHistoryTable = OneLevelBranchHistoryTable()
+        val branchHistoryTable = OneLevelHistoryTable()
         val pcUnit = HistoryBufferedBranchPredictionPcUnit(branchHistoryTable)
         val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()
@@ -292,7 +294,7 @@ internal class ControlUnitTest {
     fun forwarding_2LevelHistoryBuffered(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
 
-        val branchHistoryTable = TwoLevelBranchHistoryTable()
+        val branchHistoryTable = TwoLevelHistoryTable()
         val pcUnit = HistoryBufferedBranchPredictionPcUnit(branchHistoryTable)
         val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
         val processResult = controlUnit.process()

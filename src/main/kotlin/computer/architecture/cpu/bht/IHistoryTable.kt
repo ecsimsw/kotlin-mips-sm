@@ -2,7 +2,7 @@ package computer.architecture.cpu.bht
 
 import computer.architecture.cpu.prediction.IBitStateMachine
 
-interface IBranchHistoryTable {
+interface IHistoryTable {
 
     fun isHit(pc : Int) : Boolean
 
