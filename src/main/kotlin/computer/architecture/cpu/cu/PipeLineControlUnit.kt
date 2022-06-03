@@ -11,7 +11,6 @@ import computer.architecture.utils.Logger
 
 abstract class PipeLineControlUnit(
     private val memory: Memory,
-    private val logger: Logger,
 ) : IControlUnit {
     protected val registers: Registers = Registers(32)
     protected val stallUnit = StallUnit()
@@ -24,9 +23,9 @@ abstract class PipeLineControlUnit(
         var cycleResult = CycleResult()
         var isEnd = false
 
-        logger.init()
+        Logger.init()
         while (true) {
-            logger.printCycle(cycle)
+            Logger.printCycle(cycle)
 
             isEnd = or(isEnd, cycleResult.isEnd)
             val pc = stallUnit.next(cycleResult.nextPc)

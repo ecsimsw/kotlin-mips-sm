@@ -9,9 +9,8 @@ import computer.architecture.utils.Logger
 
 class ForwardingPipeLineControlUnit(
     memory: Memory,
-    private val logger: Logger,
     private val pcUnit: IProgramCounterUnit = NonePredictionPcUnit()
-) : PipeLineControlUnit(memory, logger) {
+) : PipeLineControlUnit(memory) {
     private val forwardingUnit = ForwardingUnit()
 
     override fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
@@ -32,7 +31,7 @@ class ForwardingPipeLineControlUnit(
         latches.store(nextIdEx)
         latches.store(nextExMa)
         latches.store(nextMaWb)
-        logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
+        Logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         return CycleResult(
             nextPc = nextPc,

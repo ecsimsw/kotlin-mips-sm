@@ -8,8 +8,7 @@ import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
 class SingleCycleControlUnit(
-    private val memory: Memory,
-    private val logger: Logger
+    private val memory: Memory
 ) : IControlUnit {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
@@ -19,9 +18,9 @@ class SingleCycleControlUnit(
         var cycle = 0
         var cycleResult = CycleResult()
 
-        logger.init()
+        Logger.init()
         while (true) {
-            logger.printCycle(cycle)
+            Logger.printCycle(cycle)
 
             val pc = cycleResult.nextPc
             if (pc == -1) {
@@ -40,7 +39,7 @@ class SingleCycleControlUnit(
         val maResult = memoryAccess(exResult)
         val wbResult = writeBack(maResult)
 
-        logger.log(ifResult, idResult, exResult, maResult, wbResult)
+        Logger.log(ifResult, idResult, exResult, maResult, wbResult)
 
         val nextPc = mux(exResult.jump, exResult.nextPc, pc + 4)
         return CycleResult(

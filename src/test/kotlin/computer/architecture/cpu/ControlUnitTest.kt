@@ -7,19 +7,24 @@ import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
 import computer.architecture.cpu.cu.MultiProcessingPipelineControlUnit
 import computer.architecture.cpu.cu.SingleCycleControlUnit
 import computer.architecture.cpu.cu.StallingPipeLineControlUnit
-import computer.architecture.cpu.pc.DynamicBranchPredictionPcUnit
-import computer.architecture.cpu.pc.HistoryBufferedBranchPredictionPcUnit
-import computer.architecture.cpu.pc.NonePredictionPcUnit
-import computer.architecture.cpu.pc.StaticBranchPredictionPcUnit
+import computer.architecture.cpu.pc.*
 import computer.architecture.cpu.prediction.*
 import computer.architecture.utils.Logger
+import computer.architecture.utils.LoggingSignal
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeAll
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
 internal class ControlUnitTest {
 
-    private val logger = Logger.RESULT_ONLY
+    @BeforeEach
+    fun initLogger() {
+        Logger.loggingSignal = LoggingSignal(result = true)
+        Logger.init()
+    }
 
     @ParameterizedTest
     @CsvSource(
@@ -34,11 +39,11 @@ internal class ControlUnitTest {
     fun singleCycle(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
 
-        val controlUnit = SingleCycleControlUnit(memory, logger)
+        val controlUnit = SingleCycleControlUnit(memory)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -55,11 +60,11 @@ internal class ControlUnitTest {
         val memory = Memory.load(20000000, path)
 
         val pcUnit = NonePredictionPcUnit()
-        val controlUnit = StallingPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = StallingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -77,11 +82,11 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysNotTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = StallingPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = StallingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -99,11 +104,11 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = StallingPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = StallingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -120,11 +125,11 @@ internal class ControlUnitTest {
         val memory = Memory.load(20000000, path)
 
         val pcUnit = NonePredictionPcUnit()
-        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -142,11 +147,11 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -164,11 +169,11 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysNotTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -186,11 +191,11 @@ internal class ControlUnitTest {
 
         val predictionStrategy = BTFNTStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -208,11 +213,11 @@ internal class ControlUnitTest {
 
         val bitState = SingleBitStateMachine()
         val pcUnit = DynamicBranchPredictionPcUnit(bitState)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -230,11 +235,11 @@ internal class ControlUnitTest {
 
         val bitState = SaturationTwoBitStateMachine()
         val pcUnit = DynamicBranchPredictionPcUnit(bitState)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -252,11 +257,11 @@ internal class ControlUnitTest {
 
         val bitState = HysteresisTwoBitStateMachine()
         val pcUnit = DynamicBranchPredictionPcUnit(bitState)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -272,12 +277,12 @@ internal class ControlUnitTest {
     fun forwarding_2LevelGlobalHistoryBuffered(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
 
-        val pcUnit = HistoryBufferedBranchPredictionPcUnit(16, GlobalHistoryRegister())
-        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val pcUnit = TwoLevelGlobalHistoryPredictionPcUnit()
+        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -293,12 +298,12 @@ internal class ControlUnitTest {
     fun forwarding_2LevelLocalHistoryBuffered(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
 
-        val pcUnit = HistoryBufferedBranchPredictionPcUnit(16, LocalHistoryRegister())
-        val controlUnit = ForwardingPipeLineControlUnit(memory, logger, pcUnit)
+        val pcUnit = TwoLevelLocalHistoryPredictionPcUnit()
+        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(expected)
-        logger.printProcessResult(processResult)
+        Logger.printProcessResult(processResult)
     }
 
     @ParameterizedTest
@@ -319,10 +324,10 @@ internal class ControlUnitTest {
         val memory5 = Memory.load(20000000, path)
 
         val controlUnit =
-            MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5), logger)
+            MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5))
         val processResult = controlUnit.process()
 
         assertThat(processResult[0]).isEqualTo(expected)
-        logger.printProcessResult(processResult[0])
+        Logger.printProcessResult(processResult[0])
     }
 }

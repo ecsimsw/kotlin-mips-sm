@@ -8,9 +8,8 @@ import computer.architecture.utils.Logger
 
 class StallingPipeLineControlUnit(
     memory: Memory,
-    private val logger: Logger,
     private val pcUnit: IProgramCounterUnit = NonePredictionPcUnit()
-) : PipeLineControlUnit(memory, logger) {
+) : PipeLineControlUnit(memory) {
     private val dataDependencyUnit = DataDependencyUnit(registers.size)
 
     override fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
@@ -40,7 +39,7 @@ class StallingPipeLineControlUnit(
         latches.store(nextExMa)
         latches.store(nextMaWb)
         latches.flushAll()
-        logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
+        Logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         return CycleResult(
             nextPc = nextPc,

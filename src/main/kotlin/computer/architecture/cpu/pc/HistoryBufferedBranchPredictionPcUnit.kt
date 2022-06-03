@@ -4,14 +4,13 @@ import computer.architecture.component.And.Companion.and
 import computer.architecture.cpu.DecodeResult
 import computer.architecture.cpu.ExecutionResult
 import computer.architecture.cpu.FetchResult
-import computer.architecture.cpu.bht.GlobalHistoryRegister
 import computer.architecture.cpu.bht.IHistoryRegister
 import computer.architecture.cpu.bht.PatternHistoryRegister
 import computer.architecture.cpu.prediction.BranchTargetBuffer
 
-class HistoryBufferedBranchPredictionPcUnit(
+open class HistoryBufferedBranchPredictionPcUnit(
     private val size: Int = 16,
-    private val historyRegister: IHistoryRegister = GlobalHistoryRegister(size)
+    private val historyRegister: IHistoryRegister
 ) : DynamicBranchPredictionPcUnit() {
 
     private val branchTargetBuffer: BranchTargetBuffer = BranchTargetBuffer(size)

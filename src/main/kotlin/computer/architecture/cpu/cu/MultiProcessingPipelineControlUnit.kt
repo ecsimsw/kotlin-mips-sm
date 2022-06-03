@@ -10,7 +10,6 @@ import computer.architecture.utils.Logger
 
 class MultiProcessingPipelineControlUnit(
     private val memories: List<Memory>,
-    private val logger: Logger
 ) {
     private val registers: List<Registers> = List(memories.size) { Registers(32) }
     private val schedulingUnit = SchedulingUnit(memories.size)
@@ -21,9 +20,9 @@ class MultiProcessingPipelineControlUnit(
     fun process(): List<Int> {
         var cycle = 0
 
-        logger.init()
+        Logger.init()
         while (true) {
-            logger.printCycle(cycle)
+            Logger.printCycle(cycle)
 
             val programInfo = schedulingUnit.pop()
 
@@ -58,7 +57,7 @@ class MultiProcessingPipelineControlUnit(
         latches.store(nextExMa)
         latches.store(nextMaWb)
         latches.flushAll()
-        logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
+        Logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
         if(!wbResult.valid) {
             return CycleResult(

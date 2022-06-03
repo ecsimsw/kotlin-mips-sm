@@ -2,10 +2,11 @@ package computer.architecture.utils
 
 import computer.architecture.cpu.*
 
-class PipeLineLogger(loggingSignal: LoggingSignal) : Logger(loggingSignal) {
+class PipeLineLogger : Logger() {
+
     private val cycleLogs = Array(5) { CycleLog() }
 
-    override fun log(
+    fun log(
         fetchResult: FetchResult,
         decodeResult: DecodeResult,
         executionResult: ExecutionResult,
@@ -29,7 +30,7 @@ class PipeLineLogger(loggingSignal: LoggingSignal) : Logger(loggingSignal) {
         flushCycleLog()
     }
 
-    override fun printCycleLog(
+    fun printCycleLog(
         fetchResult: FetchResult,
         decodeResult: DecodeResult,
         executionResult: ExecutionResult,
@@ -47,7 +48,7 @@ class PipeLineLogger(loggingSignal: LoggingSignal) : Logger(loggingSignal) {
             && memoryAccessResult.valid
             && writeBackResult.valid
         ) {
-            super.printCycleLog(fetchResult, decodeResult, executionResult, memoryAccessResult, writeBackResult)
+            printCycleLog(fetchResult, decodeResult, executionResult, memoryAccessResult, writeBackResult)
         }
     }
 
