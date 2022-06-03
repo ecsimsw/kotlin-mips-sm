@@ -3,6 +3,7 @@ package computer.architecture.cpu.pc
 import computer.architecture.cpu.*
 import computer.architecture.cpu.prediction.AlwaysTakenStrategy
 import computer.architecture.cpu.prediction.IBranchPredictionStrategy
+import computer.architecture.utils.Logger
 
 class StaticBranchPredictionPcUnit(
     private val bpStrategy: IBranchPredictionStrategy = AlwaysTakenStrategy()
@@ -14,18 +15,24 @@ class StaticBranchPredictionPcUnit(
         nextIdEx: DecodeResult,
         nextExMa: ExecutionResult
     ): Int {
-        if (nextExMa.valid && nextExMa.controlSignal.branch && !takenCorrect(nextExMa, nextIfId)) {
-            nextIfId.valid = false
-            nextIdEx.valid = false
-            val nextPc = nextPc(nextExMa)
-            nextExMa.controlSignal.isEnd = nextPc == -1
-            return nextPc
+        if (nextExMa.valid && nextExMa.controlSignal.branch) {
+            if(takenCorrect(nextExMa, nextIfId)) {
+                Logger.predictionSucceed()
+            } else {
+                nextIfId.valid = false
+                nextIdEx.valid = false
+                val nextPc = nextPc(nextExMa)
+                nextExMa.controlSignal.isEnd = nextPc == -1
+                Logger.predictionFailed()
+                return nextPc
+            }
         }
 
         if (nextIdEx.valid && isTaken(nextIdEx, pc)) {
             nextIfId.valid = false
             val nextPc = nextIdEx.immediate
             nextIdEx.controlSignal.isEnd = nextPc == -1
+            Logger.predictTaken()
             return nextPc
         }
 

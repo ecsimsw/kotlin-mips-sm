@@ -7,6 +7,7 @@ import computer.architecture.cpu.FetchResult
 import computer.architecture.cpu.bht.IHistoryRegister
 import computer.architecture.cpu.bht.PatternHistoryRegister
 import computer.architecture.cpu.prediction.BranchTargetBuffer
+import computer.architecture.utils.Logger
 
 open class HistoryBufferedBranchPredictionPcUnit(
     private val size: Int = 16,
@@ -28,16 +29,20 @@ open class HistoryBufferedBranchPredictionPcUnit(
         val isTaken = patternHistoryRegister.pattern(historyValue).taken()
 
         if (and(btbHit, isTaken)) {
+            Logger.predictTaken()
             return branchTargetBuffer.targetAddress(index(nextIfId.pc))
         }
 
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
             var nextPc = pc + 4
-            if (!takenCorrect(nextExMa, nextIdEx)) {
+            if (takenCorrect(nextExMa, nextIdEx)) {
+                Logger.predictionSucceed()
+            } else {
                 nextPc = nextPc(nextExMa)
                 nextIfId.valid = false
                 nextIdEx.valid = false
                 nextExMa.controlSignal.isEnd = nextPc == -1
+                Logger.predictionFailed()
             }
             updateHistory(nextExMa.pc, nextExMa.nextPc, nextExMa.branch)
             return nextPc

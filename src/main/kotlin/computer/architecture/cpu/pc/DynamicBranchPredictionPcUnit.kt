@@ -5,6 +5,7 @@ import computer.architecture.cpu.ExecutionResult
 import computer.architecture.cpu.FetchResult
 import computer.architecture.cpu.prediction.IBitStateMachine
 import computer.architecture.cpu.prediction.SaturationTwoBitStateMachine
+import computer.architecture.utils.Logger
 
 open class DynamicBranchPredictionPcUnit(
     private val state: IBitStateMachine = SaturationTwoBitStateMachine()
@@ -19,12 +20,14 @@ open class DynamicBranchPredictionPcUnit(
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
             if (takenCorrect(nextExMa, nextIfId)) {
                 state.update(false)
+                Logger.predictionSucceed()
             } else {
                 nextIfId.valid = false
                 nextIdEx.valid = false
                 val nextPc = nextPc(nextExMa)
                 state.update(true)
                 nextExMa.controlSignal.isEnd = nextPc == -1
+                Logger.predictionFailed()
                 return nextPc
             }
         }
@@ -33,6 +36,7 @@ open class DynamicBranchPredictionPcUnit(
             nextIfId.valid = false
             val nextPc = nextIdEx.immediate
             nextIdEx.controlSignal.isEnd = nextPc == -1
+            Logger.predictTaken()
             return nextPc
         }
 

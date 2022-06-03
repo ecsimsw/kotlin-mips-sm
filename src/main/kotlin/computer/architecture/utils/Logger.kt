@@ -2,7 +2,7 @@ package computer.architecture.utils
 
 import computer.architecture.cpu.*
 
-open class Logger{
+open class Logger {
 
     companion object {
         var loggingSignal: LoggingSignal = LoggingSignal()
@@ -14,6 +14,9 @@ open class Logger{
         private var executedOpcodes = mutableMapOf<Opcode, Int>()
         private var executedOpcodeType = mutableMapOf<Opcode.Type, Int>()
         private var executedInstructionSet = mutableSetOf<Int>()
+        private var takenCount = 0
+        private var predictionSucceedCount = 0
+        private var predictionFailedCount = 0
 
         fun init() {
             cycleCount = 0
@@ -23,6 +26,9 @@ open class Logger{
             executedOpcodes = mutableMapOf()
             executedOpcodeType = mutableMapOf()
             executedInstructionSet = mutableSetOf()
+            takenCount = 0
+            predictionSucceedCount = 0
+            predictionFailedCount = 0
         }
 
         fun log(
@@ -121,6 +127,18 @@ open class Logger{
 
         fun printCycle(cycleCount: Int) {
             printCycle(true, cycleCount)
+        }
+
+        fun predictTaken() {
+            takenCount++
+        }
+
+        fun predictionSucceed() {
+            predictionSucceedCount++
+        }
+
+        fun predictionFailed() {
+            predictionFailedCount++
         }
 
         private fun printFetchResult(result: FetchResult) {
@@ -222,6 +240,25 @@ open class Logger{
             println("=== Result === ")
             println("cycle count : $cycleCount")
             println("result value : $resultValue")
+            println()
+
+            println("=== Prediction result === ")
+            val totalPredictedCount = predictionSucceedCount + predictionFailedCount
+            println("total prediction count : ${totalPredictedCount}")
+            println("taken count : $takenCount")
+            if(totalPredictedCount == 0) {
+                println("taken ratio : 0%")
+            } else {
+                println("taken ratio : ${takenCount / totalPredictedCount.toFloat() * 100} %")
+            }
+            println("succeed prediction count : $predictionSucceedCount")
+            println("failed prediction count : $predictionFailedCount")
+
+            if(totalPredictedCount == 0) {
+                println("success ratio : 0%")
+            } else {
+                println("success ratio : ${predictionSucceedCount / totalPredictedCount.toFloat() * 100}%")
+            }
             println()
 
             println("=== executed instructions ===")
