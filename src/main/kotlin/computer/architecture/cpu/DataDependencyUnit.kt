@@ -1,11 +1,11 @@
 package computer.architecture.cpu
 
-import computer.architecture.cpu.register.ScoreBoard
+import computer.architecture.cpu.register.Scoreboard
 
 class DataDependencyUnit(
     registerSize: Int
 ) {
-    private val scoreBoard: ScoreBoard = ScoreBoard(registerSize)
+    private val scoreBoard: Scoreboard = Scoreboard(registerSize)
 
     fun book(nextIdEx: DecodeResult) {
         scoreBoard.book(nextIdEx.controlSignal.regWrite, nextIdEx.writeReg, nextIdEx.pc)

@@ -1,6 +1,6 @@
 package computer.architecture.cpu.register
 
-class ScoreBoard(
+class Scoreboard(
     size: Int
 ) {
     private val valid: Array<Boolean> = Array(size) { true }
