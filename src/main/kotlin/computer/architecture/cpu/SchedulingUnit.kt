@@ -9,13 +9,19 @@ class SchedulingUnit(
         ProgramInfo(
             pn = it,
             processEnd = false,
-            nextPc = 0
+            nextPc = 0,
+            fetchAlive = true
         )
     }
 
     fun next(): ProgramInfo {
-        lastProcessIndex = (lastProcessIndex + 1) % size
-        return programNumbers[lastProcessIndex]
+        for (i in 0..size) {
+            lastProcessIndex = (lastProcessIndex + 1) % size
+            if (programNumbers[lastProcessIndex].fetchAlive) {
+                return programNumbers[lastProcessIndex]
+            }
+        }
+        throw IllegalArgumentException("No process to fetch")
     }
 
     fun isAllEnd(): Boolean {
@@ -26,17 +32,23 @@ class SchedulingUnit(
         if (!cycleResult.valid || cycleResult.pn == -1) {
             return
         }
-        programNumbers[cycleResult.pn].update(cycleResult)
+        if (cycleResult.nextPc == -1 && programNumbers.count { !it.fetchAlive } > 3) {
+            programNumbers[cycleResult.pn].update(cycleResult, false)
+            return
+        }
+        programNumbers[cycleResult.pn].update(cycleResult, true)
     }
 }
 
 data class ProgramInfo(
     var pn: Int = 0,
     var processEnd: Boolean = false,
-    var nextPc: Int = 0
+    var nextPc: Int = 0,
+    var fetchAlive: Boolean = true
 ) {
-    fun update(cycleResult: CycleResult) {
+    fun update(cycleResult: CycleResult, fetchAlive: Boolean) {
         this.nextPc = cycleResult.nextPc
         this.processEnd = cycleResult.nextPc == -1
+        this.fetchAlive = fetchAlive
     }
 }

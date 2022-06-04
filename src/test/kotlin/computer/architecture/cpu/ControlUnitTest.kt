@@ -315,14 +315,14 @@ internal class ControlUnitTest {
 
     @Test
     fun multiProcessing_three() {
-        val memory1 = Memory.load(20000000, "sample/simple.bin")
-        val memory2 = Memory.load(20000000, "sample/simple2.bin")
-        val memory3 = Memory.load(20000000, "sample/simple3.bin")
+        val memory1 = Memory.load(20000000, "sample/simple4.bin")
+        val memory2 = Memory.load(20000000, "sample/simple3.bin")
+        val memory3 = Memory.load(20000000, "sample/fib.bin")
 
         val controlUnit = MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3))
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(listOf(0, 100, 5050))
+        assertThat(processResult).isEqualTo(listOf(55, 5050, 55))
     }
 
     @Test
