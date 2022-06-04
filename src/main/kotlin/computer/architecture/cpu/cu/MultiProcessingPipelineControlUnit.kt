@@ -29,8 +29,9 @@ class MultiProcessingPipelineControlUnit(
             val isNop = programInfo.ignoreFetch || programInfo.processEnd
             val cycleResult = cycleExecution(!isNop, programInfo.pn, programInfo.nextPc)
 
-            programInfo.update(cycleResult)
-            if(cycleResult.lastCycle) {
+            schedulingUnit.update(cycleResult)
+
+            if (cycleResult.nextPc == -1) {
                 schedulingUnit.end(cycleResult.pn)
             }
 
@@ -50,7 +51,6 @@ class MultiProcessingPipelineControlUnit(
         val nextExMa = execute(latches.idEx())
         val nextMaWb = memoryAccess(latches.exMa())
         val wbResult = writeBack(latches.maWb())
-        val nextPc = findNext(pc, nextIdEx, nextExMa)
 
         latches.store(nextIfId)
         latches.store(nextIdEx)
@@ -59,48 +59,25 @@ class MultiProcessingPipelineControlUnit(
         latches.flushAll()
         Logger.log(nextIfId, nextIdEx, nextExMa, nextMaWb, wbResult)
 
-        if(!wbResult.valid) {
+        if (!wbResult.valid) {
             return CycleResult(
-                nextPc = nextPc,
+                nextPc = wbResult.nextPc,
                 value = 0,
                 valid = true,
-                isEnd = nextPc == -1,
+                isEnd = wbResult.nextPc == -1,
                 lastCycle = wbResult.controlSignal.isEnd,
                 pn = wbResult.pn
             )
         }
 
         return CycleResult(
-            nextPc = nextPc,
+            nextPc = wbResult.nextPc,
             value = registers[wbResult.pn][2],
             valid = true,
-            isEnd = nextPc == -1,
+            isEnd = wbResult.nextPc == -1,
             lastCycle = wbResult.controlSignal.isEnd,
             pn = wbResult.pn
         )
-    }
-
-    private fun findNext(
-        pc: Int,
-        nextIdEx: DecodeResult,
-        nextExMa: ExecutionResult
-    ): Int {
-        if (nextExMa.valid && nextExMa.branch) {
-            val nextPc = nextExMa.nextPc
-            if (nextPc == -1) {
-                nextExMa.controlSignal.isEnd = true
-            }
-            return nextPc
-        }
-
-        if (nextIdEx.valid && nextIdEx.jump) {
-            val nextPc = nextIdEx.nextPc
-            if (nextPc == -1) {
-                nextIdEx.controlSignal.isEnd = true
-            }
-            return nextPc
-        }
-        return pc + 4
     }
 
     fun fetch(valid: Boolean, pn: Int, pc: Int): FetchResult {
@@ -116,7 +93,7 @@ class MultiProcessingPipelineControlUnit(
     }
 
     private fun decode(ifResult: FetchResult): DecodeResult {
-        if(!ifResult.valid) {
+        if (!ifResult.valid) {
             return DecodeResult()
         }
 
@@ -149,7 +126,7 @@ class MultiProcessingPipelineControlUnit(
     }
 
     private fun execute(idResult: DecodeResult): ExecutionResult {
-        if(!idResult.valid) {
+        if (!idResult.valid) {
             return ExecutionResult()
         }
 
@@ -157,13 +134,16 @@ class MultiProcessingPipelineControlUnit(
         val aluValue = alu.execute(idResult)
 
         val branchCondition = and(aluValue == 1, controlSignal.branch)
+        var nextPc = mux(branchCondition, idResult.immediate, idResult.pc + 4)
+        nextPc = mux(idResult.jump, idResult.nextPc, nextPc)
+
         return ExecutionResult(
             valid = true,
-            pc = idResult.pc, // TODO :: only for logging
+            pc = idResult.pc,
             readData2 = idResult.readData2,
             writeReg = idResult.writeReg,
             aluValue = aluValue,
-            nextPc = idResult.immediate,
+            nextPc = nextPc,
             branch = branchCondition,
             controlSignal = controlSignal,
             pn = idResult.pn
@@ -171,7 +151,7 @@ class MultiProcessingPipelineControlUnit(
     }
 
     private fun memoryAccess(exResult: ExecutionResult): MemoryAccessResult {
-        if(!exResult.valid) {
+        if (!exResult.valid) {
             return MemoryAccessResult()
         }
 
@@ -193,19 +173,20 @@ class MultiProcessingPipelineControlUnit(
 
         return MemoryAccessResult(
             valid = true,
-            pc = exResult.pc, // TODO :: only for logging
+            pc = exResult.pc,
             regWriteValue = regWriteValue,
-            address = exResult.aluValue, // TODO :: only for logging
-            memReadValue = memReadValue, // TODO :: only for logging
-            memWriteValue = exResult.readData2, // TODO :: only for logging
+            address = exResult.aluValue,
+            memReadValue = memReadValue,
+            memWriteValue = exResult.readData2,
             writeReg = exResult.writeReg,
+            nextPc = exResult.nextPc,
             controlSignal = controlSignal,
             pn = exResult.pn
         )
     }
 
     private fun writeBack(maResult: MemoryAccessResult): WriteBackResult {
-        if(!maResult.valid) {
+        if (!maResult.valid) {
             return WriteBackResult()
         }
 
@@ -220,10 +201,11 @@ class MultiProcessingPipelineControlUnit(
 
         return WriteBackResult(
             valid = true,
-            pc = maResult.pc, // TODO :: only for logging
+            pc = maResult.pc,
             regWriteValue = maResult.regWriteValue,
             writeReg = maResult.writeReg,
             controlSignal = maResult.controlSignal,
+            nextPc = maResult.nextPc,
             pn = maResult.pn
         )
     }

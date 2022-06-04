@@ -92,7 +92,7 @@ class SingleCycleControlUnit(
 
         return ExecutionResult(
             valid = true,
-            pc = idResult.pc, // TODO :: only for logging
+            pc = idResult.pc,
             readData2 = idResult.readData2,
             writeReg = idResult.writeReg,
             aluValue = aluValue,
@@ -119,11 +119,11 @@ class SingleCycleControlUnit(
 
         return MemoryAccessResult(
             valid = true,
-            pc = exResult.pc, // TODO :: only for logging
+            pc = exResult.pc,
             regWriteValue = regWriteValue,
-            address = exResult.aluValue, // TODO :: only for logging
-            memReadValue = memReadValue, // TODO :: only for logging
-            memWriteValue =  exResult.readData2, // TODO :: only for logging
+            address = exResult.aluValue,
+            memReadValue = memReadValue,
+            memWriteValue = exResult.readData2,
             writeReg = exResult.writeReg,
             controlSignal = controlSignal
         )
@@ -139,7 +139,7 @@ class SingleCycleControlUnit(
 
         return WriteBackResult(
             valid = maResult.valid,
-            pc = maResult.pc, // TODO :: only for logging
+            pc = maResult.pc,
             writeReg = maResult.writeReg,
             regWriteValue = maResult.regWriteValue,
             controlSignal = maResult.controlSignal

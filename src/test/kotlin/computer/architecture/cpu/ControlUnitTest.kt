@@ -11,6 +11,7 @@ import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 
@@ -310,6 +311,34 @@ internal class ControlUnitTest {
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
+    }
+
+    @Test
+    fun multiProcessing_three() {
+        val memory1 = Memory.load(20000000, "sample/simple.bin")
+        val memory2 = Memory.load(20000000, "sample/simple2.bin")
+        val memory3 = Memory.load(20000000, "sample/simple3.bin")
+
+        val controlUnit = MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3))
+        val processResult = controlUnit.process()
+
+        assertThat(processResult).isEqualTo(listOf(0, 100, 5050))
+    }
+
+    @Test
+    fun multiProcessing_six() {
+        val memory1 = Memory.load(17000000, "sample/simple.bin")
+        val memory2 = Memory.load(17000000, "sample/simple2.bin")
+        val memory3 = Memory.load(17000000, "sample/simple3.bin")
+        val memory4 = Memory.load(17000000, "sample/simple4.bin")
+        val memory5 = Memory.load(17000000, "sample/gcd.bin")
+        val memory6 = Memory.load(17000000, "sample/fib.bin")
+
+        val controlUnit =
+            MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5, memory6))
+        val processResult = controlUnit.process()
+
+        assertThat(processResult).isEqualTo(listOf(0, 100, 5050, 55, 1, 55))
     }
 
     private fun checkProcessResult(processResult: Int, expected: Int) {

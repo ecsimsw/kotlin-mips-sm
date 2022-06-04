@@ -90,7 +90,7 @@ abstract class SingleProcessingPipelineControlUnit(
         val branchCondition = and(aluValue == 1, controlSignal.branch)
         return ExecutionResult(
             valid = idResult.valid,
-            pc = idResult.pc, // TODO :: only for logging
+            pc = idResult.pc,
             readData2 = idResult.readData2,
             writeReg = idResult.writeReg,
             aluValue = aluValue,
@@ -117,11 +117,11 @@ abstract class SingleProcessingPipelineControlUnit(
 
         return MemoryAccessResult(
             valid = exResult.valid,
-            pc = exResult.pc, // TODO :: only for logging
+            pc = exResult.pc,
             regWriteValue = regWriteValue,
-            address = exResult.aluValue, // TODO :: only for logging
-            memReadValue = memReadValue, // TODO :: only for logging
-            memWriteValue = exResult.readData2, // TODO :: only for logging
+            address = exResult.aluValue,
+            memReadValue = memReadValue,
+            memWriteValue = exResult.readData2,
             writeReg = exResult.writeReg,
             controlSignal = controlSignal
         )
@@ -137,7 +137,7 @@ abstract class SingleProcessingPipelineControlUnit(
 
         return WriteBackResult(
             valid = maResult.valid,
-            pc = maResult.pc, // TODO :: only for logging
+            pc = maResult.pc,
             regWriteValue = maResult.regWriteValue,
             writeReg = maResult.writeReg,
             controlSignal = maResult.controlSignal

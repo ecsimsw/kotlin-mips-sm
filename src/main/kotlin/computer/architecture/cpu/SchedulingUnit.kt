@@ -29,6 +29,13 @@ class SchedulingUnit(
     fun end(pn: Int) {
         programNumbers[pn].processEnd = true
     }
+
+    fun update(cycleResult: CycleResult) {
+        if (cycleResult.pn == -1) {
+            return
+        }
+        programNumbers[cycleResult.pn].update(cycleResult)
+    }
 }
 
 data class ProgramInfo(
