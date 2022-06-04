@@ -1,7 +1,5 @@
 package computer.architecture.cpu
 
-import computer.architecture.component.Or.Companion.or
-
 class SchedulingUnit(
     private val size: Int
 ) {
@@ -11,13 +9,11 @@ class SchedulingUnit(
         ProgramInfo(
             pn = it,
             processEnd = false,
-            ignoreFetch = false,
-            isLastCycle = false,
             nextPc = 0
         )
     }
 
-    fun pop(): ProgramInfo {
+    fun next(): ProgramInfo {
         lastProcessIndex = (lastProcessIndex + 1) % size
         return programNumbers[lastProcessIndex]
     }
@@ -26,12 +22,8 @@ class SchedulingUnit(
         return programNumbers.none { !it.processEnd }
     }
 
-    fun end(pn: Int) {
-        programNumbers[pn].processEnd = true
-    }
-
     fun update(cycleResult: CycleResult) {
-        if (cycleResult.pn == -1) {
+        if (!cycleResult.valid || cycleResult.pn == -1) {
             return
         }
         programNumbers[cycleResult.pn].update(cycleResult)
@@ -41,13 +33,10 @@ class SchedulingUnit(
 data class ProgramInfo(
     var pn: Int = 0,
     var processEnd: Boolean = false,
-    var ignoreFetch: Boolean = false,
-    var isLastCycle: Boolean = false,
     var nextPc: Int = 0
 ) {
     fun update(cycleResult: CycleResult) {
-        this.ignoreFetch = or(this.ignoreFetch, cycleResult.isEnd)
         this.nextPc = cycleResult.nextPc
-        this.isLastCycle = cycleResult.lastCycle
+        this.processEnd = cycleResult.nextPc == -1
     }
 }

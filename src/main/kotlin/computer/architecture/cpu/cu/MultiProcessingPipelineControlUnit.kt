@@ -21,23 +21,13 @@ class MultiProcessingPipelineControlUnit(
         var cycle = 0
 
         Logger.init()
-        while (true) {
+        while (!schedulingUnit.isAllEnd()) {
             Logger.printCycle(cycle)
 
-            val programInfo = schedulingUnit.pop()
-
-            val isNop = programInfo.ignoreFetch || programInfo.processEnd
-            val cycleResult = cycleExecution(!isNop, programInfo.pn, programInfo.nextPc)
-
+            val programInfo = schedulingUnit.next()
+            val isProcessEnd = programInfo.processEnd
+            val cycleResult = cycleExecution(!isProcessEnd, programInfo.pn, programInfo.nextPc)
             schedulingUnit.update(cycleResult)
-
-            if (cycleResult.nextPc == -1) {
-                schedulingUnit.end(cycleResult.pn)
-            }
-
-            if (schedulingUnit.isAllEnd()) {
-                break
-            }
 
             latches.flushAll()
             cycle++
