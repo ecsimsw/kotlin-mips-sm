@@ -24,13 +24,13 @@ open class HistoryBufferedBranchPredictionPcUnit(
         nextExMa: ExecutionResult
     ): Int {
 
-        val btbHit = branchTargetBuffer.isHit(index(nextIfId.pc), (nextIfId.pc))
+        val btbHit = branchTargetBuffer.isHit(nextIfId.pc)
         val historyValue = historyRegister.valueOf(pc)
         val isTaken = patternHistoryRegister.pattern(historyValue).taken()
 
         if (and(btbHit, isTaken)) {
             Logger.predictTaken()
-            return branchTargetBuffer.targetAddress(index(nextIfId.pc))
+            return branchTargetBuffer.targetAddress(nextIfId.pc)
         }
 
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
@@ -58,8 +58,7 @@ open class HistoryBufferedBranchPredictionPcUnit(
     }
 
     private fun updateHistory(branchAddr: Int, targetAddr: Int, isTaken: Boolean) {
-        val index = index(branchAddr)
-        branchTargetBuffer.update(index, branchAddr, targetAddr)
+        branchTargetBuffer.update(branchAddr, targetAddr)
         val historyValue = historyRegister.valueOf(branchAddr)
         patternHistoryRegister.pattern(historyValue).update(isTaken)
         historyRegister.update(branchAddr, isTaken)
@@ -80,9 +79,5 @@ open class HistoryBufferedBranchPredictionPcUnit(
 
     private fun jump(nextIdEx: DecodeResult): Boolean {
         return nextIdEx.jump
-    }
-
-    private fun index(pc: Int): Int {
-        return (pc / 4) % size
     }
 }
