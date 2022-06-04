@@ -3,12 +3,14 @@ package computer.architecture.cpu.prediction
 class BranchTargetBuffer(
     val size: Int
 ) {
+    private val valid = Array(size) { false }
     private val tags = Array(size) { 0 }
     private val targetAddresses = Array(size) { 0 }
 
-    fun update(branchAddress: Int, targetAddress: Int) {
-        val index = index(branchAddress)
-        tags[index] = branchAddress
+    fun update(pc: Int, targetAddress: Int) {
+        val index = index(pc)
+        valid[index] = true
+        tags[index] = tag(pc)
         targetAddresses[index] = targetAddress
     }
 
@@ -18,10 +20,15 @@ class BranchTargetBuffer(
     }
 
     fun isHit(pc: Int): Boolean {
-        return tags[index(pc)] == pc
+        val index = index(pc)
+        return valid[index] && tags[index] == tag(pc)
     }
 
     private fun index(pc: Int): Int {
         return (pc / 4) % size
+    }
+
+    private fun tag(pc: Int): Int {
+        return (pc / 4) / size
     }
 }

@@ -14,7 +14,7 @@ class LocalHistoryRegister(
         val index = index(pc)
         var updateValue = historyValue[index] shl 1
         if (isTaken) {
-            updateValue += 1
+            updateValue ++
         }
         if (updateValue >= maximumHistoryValue) {
             updateValue -= maximumHistoryValue
