@@ -9,7 +9,7 @@ import computer.architecture.cpu.*
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
-abstract class PipeLineControlUnit(
+abstract class SingleProcessingPipeLineControlUnit(
     private val memory: Memory,
 ) : IControlUnit {
     protected val registers: Registers = Registers(32)

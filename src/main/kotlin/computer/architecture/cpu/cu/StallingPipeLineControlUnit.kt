@@ -9,7 +9,7 @@ import computer.architecture.utils.Logger
 class StallingPipeLineControlUnit(
     memory: Memory,
     private val pcUnit: IProgramCounterUnit = NonePredictionPcUnit()
-) : PipeLineControlUnit(memory) {
+) : SingleProcessingPipeLineControlUnit(memory) {
     private val dataDependencyUnit = DataDependencyUnit(registers.size)
 
     override fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
