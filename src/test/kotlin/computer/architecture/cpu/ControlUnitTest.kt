@@ -1,10 +1,10 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
+import computer.architecture.cpu.cu.ForwardingPipelineControlUnit
 import computer.architecture.cpu.cu.MultiProcessingPipelineControlUnit
 import computer.architecture.cpu.cu.SingleCycleControlUnit
-import computer.architecture.cpu.cu.StallingPipeLineControlUnit
+import computer.architecture.cpu.cu.StallingPipelineControlUnit
 import computer.architecture.cpu.pc.*
 import computer.architecture.cpu.prediction.*
 import computer.architecture.utils.Logger
@@ -55,7 +55,7 @@ internal class ControlUnitTest {
         val memory = Memory.load(20000000, path)
 
         val pcUnit = NonePredictionPcUnit()
-        val controlUnit = StallingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = StallingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -76,7 +76,7 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysNotTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = StallingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = StallingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -97,7 +97,7 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = StallingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = StallingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -117,7 +117,7 @@ internal class ControlUnitTest {
         val memory = Memory.load(20000000, path)
 
         val pcUnit = NonePredictionPcUnit()
-        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = ForwardingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -138,7 +138,7 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = ForwardingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -159,7 +159,7 @@ internal class ControlUnitTest {
 
         val predictionStrategy = AlwaysNotTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = ForwardingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -180,7 +180,7 @@ internal class ControlUnitTest {
 
         val predictionStrategy = BTFNTStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = ForwardingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -201,7 +201,7 @@ internal class ControlUnitTest {
 
         val bitState = SingleBitStateMachine()
         val pcUnit = DynamicBranchPredictionPcUnit(bitState)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = ForwardingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -222,7 +222,7 @@ internal class ControlUnitTest {
 
         val bitState = SaturationTwoBitStateMachine()
         val pcUnit = DynamicBranchPredictionPcUnit(bitState)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = ForwardingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -243,7 +243,7 @@ internal class ControlUnitTest {
 
         val bitState = HysteresisTwoBitStateMachine()
         val pcUnit = DynamicBranchPredictionPcUnit(bitState)
-        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = ForwardingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -263,7 +263,7 @@ internal class ControlUnitTest {
         val memory = Memory.load(20000000, path)
 
         val pcUnit = TwoLevelGlobalHistoryPredictionPcUnit()
-        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = ForwardingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
@@ -283,7 +283,7 @@ internal class ControlUnitTest {
         val memory = Memory.load(20000000, path)
 
         val pcUnit = TwoLevelLocalHistoryPredictionPcUnit()
-        val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
+        val controlUnit = ForwardingPipelineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)

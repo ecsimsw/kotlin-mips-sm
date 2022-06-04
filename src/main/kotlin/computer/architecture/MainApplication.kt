@@ -1,7 +1,7 @@
 package computer.architecture
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
+import computer.architecture.cpu.cu.ForwardingPipelineControlUnit
 import computer.architecture.cpu.pc.TwoLevelGlobalHistoryPredictionPcUnit
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
@@ -13,7 +13,7 @@ fun main() {
     val memory = Memory.load(20000000, fileToLoad)
 
     val pcUnit = TwoLevelGlobalHistoryPredictionPcUnit()
-    val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
+    val controlUnit = ForwardingPipelineControlUnit(memory, pcUnit)
     val processResult = controlUnit.process()
 
     Logger.printProcessResult(processResult[0])

@@ -9,7 +9,7 @@ import computer.architecture.cpu.*
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
-abstract class SingleProcessingPipeLineControlUnit(
+abstract class SingleProcessingPipelineControlUnit(
     private val memory: Memory,
 ) : IControlUnit {
     protected val registers: Registers = Registers(32)
@@ -17,6 +17,8 @@ abstract class SingleProcessingPipeLineControlUnit(
     protected val latches = Latches()
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
+
+    abstract fun cycleExecution(valid: Boolean, pc: Int): CycleResult
 
     override fun process(): List<Int> {
         var cycle = 0
@@ -41,8 +43,6 @@ abstract class SingleProcessingPipeLineControlUnit(
             cycle++
         }
     }
-
-    abstract fun cycleExecution(valid: Boolean, pc: Int): CycleResult
 
     fun fetch(valid: Boolean, pc: Int): FetchResult {
         if (!valid) {

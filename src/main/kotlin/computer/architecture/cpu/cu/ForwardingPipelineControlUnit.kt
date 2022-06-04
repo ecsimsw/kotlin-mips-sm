@@ -7,10 +7,10 @@ import computer.architecture.cpu.pc.IProgramCounterUnit
 import computer.architecture.cpu.pc.NonePredictionPcUnit
 import computer.architecture.utils.Logger
 
-class ForwardingPipeLineControlUnit(
+class ForwardingPipelineControlUnit(
     memory: Memory,
     private val pcUnit: IProgramCounterUnit = NonePredictionPcUnit()
-) : SingleProcessingPipeLineControlUnit(memory) {
+) : SingleProcessingPipelineControlUnit(memory) {
     private val forwardingUnit = ForwardingUnit()
 
     override fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
@@ -42,3 +42,4 @@ class ForwardingPipeLineControlUnit(
         )
     }
 }
+

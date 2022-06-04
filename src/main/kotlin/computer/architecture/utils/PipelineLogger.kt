@@ -2,7 +2,7 @@ package computer.architecture.utils
 
 import computer.architecture.cpu.*
 
-class PipeLineLogger : Logger() {
+class PipelineLogger : Logger() {
 
     private val cycleLogs = Array(5) { CycleLog() }
 

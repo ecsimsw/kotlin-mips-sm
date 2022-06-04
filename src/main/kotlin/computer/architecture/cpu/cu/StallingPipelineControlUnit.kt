@@ -6,10 +6,10 @@ import computer.architecture.cpu.pc.IProgramCounterUnit
 import computer.architecture.cpu.pc.NonePredictionPcUnit
 import computer.architecture.utils.Logger
 
-class StallingPipeLineControlUnit(
+class StallingPipelineControlUnit(
     memory: Memory,
     private val pcUnit: IProgramCounterUnit = NonePredictionPcUnit()
-) : SingleProcessingPipeLineControlUnit(memory) {
+) : SingleProcessingPipelineControlUnit(memory) {
     private val dataDependencyUnit = DataDependencyUnit(registers.size)
 
     override fun cycleExecution(valid: Boolean, pc: Int): CycleResult {
