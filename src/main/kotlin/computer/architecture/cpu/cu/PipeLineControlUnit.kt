@@ -18,7 +18,7 @@ abstract class PipeLineControlUnit(
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
 
-    override fun process(): Int {
+    override fun process(): List<Int> {
         var cycle = 0
         var cycleResult = CycleResult()
         var isEnd = false
@@ -34,7 +34,7 @@ abstract class PipeLineControlUnit(
             cycleResult = cycleExecution(valid, pc)
 
             if (cycleResult.lastCycle) {
-                return cycleResult.value
+                return listOf(cycleResult.value)
             }
 
             latches.flushAll()

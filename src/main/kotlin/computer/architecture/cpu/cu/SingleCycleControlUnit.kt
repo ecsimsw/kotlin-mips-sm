@@ -14,7 +14,7 @@ class SingleCycleControlUnit(
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
 
-    override fun process(): Int {
+    override fun process(): List<Int> {
         var cycle = 0
         var cycleResult = CycleResult()
 
@@ -24,7 +24,7 @@ class SingleCycleControlUnit(
 
             val pc = cycleResult.nextPc
             if (pc == -1) {
-                return cycleResult.value
+                return listOf(cycleResult.value)
             }
 
             cycleResult = cycleExecution(pc)

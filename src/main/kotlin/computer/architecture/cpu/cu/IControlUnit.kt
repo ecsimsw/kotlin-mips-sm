@@ -1,5 +1,5 @@
 package computer.architecture.cpu.cu
 
 interface IControlUnit {
-    fun process(): Int
+    fun process(): List<Int>
 }

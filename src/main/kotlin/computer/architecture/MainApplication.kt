@@ -16,7 +16,7 @@ fun main() {
     val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
     val processResult = controlUnit.process()
 
-    Logger.printProcessResult(processResult)
+    Logger.printProcessResult(processResult[0])
 }
 
 val loggingSignal = LoggingSignal(

@@ -1,8 +1,6 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.bht.GlobalHistoryRegister
-import computer.architecture.cpu.bht.LocalHistoryRegister
 import computer.architecture.cpu.cu.ForwardingPipeLineControlUnit
 import computer.architecture.cpu.cu.MultiProcessingPipelineControlUnit
 import computer.architecture.cpu.cu.SingleCycleControlUnit
@@ -12,8 +10,6 @@ import computer.architecture.cpu.prediction.*
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -42,8 +38,7 @@ internal class ControlUnitTest {
         val controlUnit = SingleCycleControlUnit(memory)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -63,8 +58,7 @@ internal class ControlUnitTest {
         val controlUnit = StallingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -85,8 +79,7 @@ internal class ControlUnitTest {
         val controlUnit = StallingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -107,8 +100,7 @@ internal class ControlUnitTest {
         val controlUnit = StallingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -128,8 +120,7 @@ internal class ControlUnitTest {
         val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -150,8 +141,7 @@ internal class ControlUnitTest {
         val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -172,8 +162,7 @@ internal class ControlUnitTest {
         val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -194,8 +183,7 @@ internal class ControlUnitTest {
         val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -216,8 +204,7 @@ internal class ControlUnitTest {
         val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -238,8 +225,7 @@ internal class ControlUnitTest {
         val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -260,8 +246,7 @@ internal class ControlUnitTest {
         val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -281,8 +266,7 @@ internal class ControlUnitTest {
         val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -302,8 +286,7 @@ internal class ControlUnitTest {
         val controlUnit = ForwardingPipeLineControlUnit(memory, pcUnit)
         val processResult = controlUnit.process()
 
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
+        checkProcessResult(processResult[0], expected)
     }
 
     @ParameterizedTest
@@ -323,11 +306,14 @@ internal class ControlUnitTest {
         val memory4 = Memory.load(20000000, path)
         val memory5 = Memory.load(20000000, path)
 
-        val controlUnit =
-            MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5))
+        val controlUnit = MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5))
         val processResult = controlUnit.process()
 
-        assertThat(processResult[0]).isEqualTo(expected)
-        Logger.printProcessResult(processResult[0])
+        checkProcessResult(processResult[0], expected)
+    }
+
+    private fun checkProcessResult(processResult: Int, expected: Int) {
+        assertThat(processResult).isEqualTo(expected)
+        Logger.printProcessResult(processResult)
     }
 }

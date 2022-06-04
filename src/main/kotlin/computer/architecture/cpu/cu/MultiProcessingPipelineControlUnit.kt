@@ -9,15 +9,15 @@ import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
 class MultiProcessingPipelineControlUnit(
-    private val memories: List<Memory>,
-) {
+    private val memories: List<Memory>
+) : IControlUnit {
     private val registers: List<Registers> = List(memories.size) { Registers(32) }
     private val schedulingUnit = SchedulingUnit(memories.size)
     private val latches = Latches()
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
 
-    fun process(): List<Int> {
+    override fun process(): List<Int> {
         var cycle = 0
 
         Logger.init()
@@ -44,7 +44,7 @@ class MultiProcessingPipelineControlUnit(
         return registers.map { it[2] }.toList()
     }
 
-    fun cycleExecution(valid: Boolean, pn: Int, pc: Int): CycleResult {
+    private fun cycleExecution(valid: Boolean, pn: Int, pc: Int): CycleResult {
         val nextIfId = fetch(valid, pn, pc)
         val nextIdEx = decode(latches.ifId())
         val nextExMa = execute(latches.idEx())
