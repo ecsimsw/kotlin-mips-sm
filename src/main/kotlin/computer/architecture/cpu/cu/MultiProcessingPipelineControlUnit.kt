@@ -5,12 +5,14 @@ import computer.architecture.component.Latches
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.cpu.*
+import computer.architecture.cpu.cache.DirectMappedCache
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
 class MultiProcessingPipelineControlUnit(
-    private val memories: List<Memory>
+    memories: List<Memory>
 ) : IControlUnit {
+    private val caches = memories.map { DirectMappedCache(it, 4, 8) }
     private val registers: List<Registers> = List(memories.size) { Registers(32) }
     private val schedulingUnit = SchedulingUnit(memories.size)
     private val latches = Latches()
@@ -77,7 +79,7 @@ class MultiProcessingPipelineControlUnit(
         return FetchResult(
             valid = true,
             pc = pc,
-            instruction = memories[pn].read(pc),
+            instruction = caches[pn].read(pc),
             pn = pn
         )
     }
@@ -146,11 +148,11 @@ class MultiProcessingPipelineControlUnit(
         }
 
         val controlSignal = exResult.controlSignal
-        val memReadValue = if(controlSignal.memRead) memories[exResult.pn].read(exResult.aluValue) else 0
+        val memReadValue = if (controlSignal.memRead) caches[exResult.pn].read(exResult.aluValue) else 0
         val regWriteValue = mux(controlSignal.memToReg, memReadValue, exResult.aluValue)
 
         if (controlSignal.memWrite) {
-            memories[exResult.pn].write(exResult.aluValue, exResult.readData2)
+            caches[exResult.pn].write(exResult.aluValue, exResult.readData2)
         }
 
         return MemoryAccessResult(

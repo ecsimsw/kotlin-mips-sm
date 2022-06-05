@@ -17,6 +17,8 @@ open class Logger {
         private var takenCount = 0
         private var predictionSucceedCount = 0
         private var predictionFailedCount = 0
+        private var hitCount = 0
+        private var missCount = 0
 
         fun init() {
             cycleCount = 0
@@ -141,6 +143,14 @@ open class Logger {
             predictionFailedCount++
         }
 
+        fun cacheHit() {
+            hitCount++
+        }
+
+        fun cacheMiss() {
+            missCount++
+        }
+
         private fun printFetchResult(result: FetchResult) {
             if (!loggingSignal.fetch) return
             if (!result.valid) {
@@ -242,11 +252,21 @@ open class Logger {
             println("result value : $resultValue")
             println()
 
+            println("=== Cache result === ")
+            println("hit count : ${hitCount}")
+            println("miss count : ${missCount}")
+            if (hitCount + missCount == 0) {
+                println("cache hit ratio : 0%")
+            } else {
+                println("cache hit ratio : ${hitCount.toFloat() / (hitCount + missCount) * 100}%")
+            }
+            println()
+
             println("=== Prediction result === ")
             val totalPredictedCount = predictionSucceedCount + predictionFailedCount
             println("total prediction count : ${totalPredictedCount}")
             println("taken count : $takenCount")
-            if(totalPredictedCount == 0) {
+            if (totalPredictedCount == 0) {
                 println("taken ratio : 0%")
             } else {
                 println("taken ratio : ${takenCount / totalPredictedCount.toFloat() * 100} %")
@@ -254,7 +274,7 @@ open class Logger {
             println("succeed prediction count : $predictionSucceedCount")
             println("failed prediction count : $predictionFailedCount")
 
-            if(totalPredictedCount == 0) {
+            if (totalPredictedCount == 0) {
                 println("success ratio : 0%")
             } else {
                 println("success ratio : ${predictionSucceedCount / totalPredictedCount.toFloat() * 100}%")

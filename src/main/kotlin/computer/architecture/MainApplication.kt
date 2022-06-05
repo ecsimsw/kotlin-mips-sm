@@ -9,7 +9,7 @@ import computer.architecture.utils.LoggingSignal
 fun main() {
     Logger.loggingSignal = loggingSignal
 
-    val fileToLoad = "sample/gcd.bin"
+    val fileToLoad = "sample/simple.bin"
     val memory = Memory.load(20000000, fileToLoad)
 
     val controlUnit = ForwardingPipelineControlUnit(memory, TwoLevelLocalHistoryPredictionPcUnit())
@@ -29,5 +29,5 @@ val loggingSignal = LoggingSignal(
     result = true,
     sleepTime = 0,
     from = 0,
-    to = Int.MAX_VALUE
+    to = 20
 )
