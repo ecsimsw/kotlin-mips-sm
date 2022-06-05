@@ -2,9 +2,7 @@ package computer.architecture
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cu.ForwardingPipelineControlUnit
-import computer.architecture.cpu.cu.MultiProcessingPipelineControlUnit
-import computer.architecture.cpu.pc.StaticBranchPredictionPcUnit
-import computer.architecture.cpu.prediction.AlwaysTakenStrategy
+import computer.architecture.cpu.pc.TwoLevelLocalHistoryPredictionPcUnit
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 
@@ -14,7 +12,7 @@ fun main() {
     val fileToLoad = "sample/gcd.bin"
     val memory = Memory.load(20000000, fileToLoad)
 
-    val controlUnit = ForwardingPipelineControlUnit(memory, StaticBranchPredictionPcUnit(AlwaysTakenStrategy()))
+    val controlUnit = ForwardingPipelineControlUnit(memory, TwoLevelLocalHistoryPredictionPcUnit())
     val processResult = controlUnit.process()
 
     Logger.printProcessResult(processResult[0])
