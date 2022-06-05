@@ -53,7 +53,7 @@ open class DynamicBranchPredictionPcUnit(
         return if (nextExMa.branch) {
             nextExMa.nextPc
         } else {
-            nextExMa.pc + 4
+            nextExMa.pc + 8
         }
     }
 

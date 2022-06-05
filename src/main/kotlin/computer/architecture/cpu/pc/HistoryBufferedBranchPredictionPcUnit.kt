@@ -68,7 +68,7 @@ open class HistoryBufferedBranchPredictionPcUnit(
         return if (nextExMa.branch) {
             nextExMa.nextPc
         } else {
-            nextExMa.pc + 4
+            nextExMa.pc + 8
         }
     }
 
