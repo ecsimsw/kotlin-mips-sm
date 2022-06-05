@@ -145,21 +145,13 @@ class MultiProcessingPipelineControlUnit(
             return MemoryAccessResult()
         }
 
-        val processMemory = memories[exResult.pn]
-
         val controlSignal = exResult.controlSignal
-        val memReadValue = processMemory.read(
-            memRead = controlSignal.memRead,
-            address = exResult.aluValue,
-        )
-
-        processMemory.write(
-            memWrite = controlSignal.memWrite,
-            address = exResult.aluValue,
-            value = exResult.readData2
-        )
-
+        val memReadValue = if(controlSignal.memRead) memories[exResult.pn].read(exResult.aluValue) else 0
         val regWriteValue = mux(controlSignal.memToReg, memReadValue, exResult.aluValue)
+
+        if (controlSignal.memWrite) {
+            memories[exResult.pn].write(exResult.aluValue, exResult.readData2)
+        }
 
         return MemoryAccessResult(
             valid = true,

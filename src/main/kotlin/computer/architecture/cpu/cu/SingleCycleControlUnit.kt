@@ -104,18 +104,13 @@ class SingleCycleControlUnit(
 
     private fun memoryAccess(exResult: ExecutionResult): MemoryAccessResult {
         val controlSignal = exResult.controlSignal
-        val memReadValue = memory.read(
-            memRead = controlSignal.memRead,
-            address = exResult.aluValue,
-        )
 
+        val memReadValue = if(controlSignal.memRead) memory.read(exResult.aluValue) else 0
         val regWriteValue = mux(controlSignal.memToReg, memReadValue, exResult.aluValue)
 
-        memory.write(
-            memWrite = controlSignal.memWrite,
-            address = exResult.aluValue,
-            value = exResult.readData2
-        )
+        if (controlSignal.memWrite) {
+            memory.write(exResult.aluValue, exResult.readData2)
+        }
 
         return MemoryAccessResult(
             valid = true,
