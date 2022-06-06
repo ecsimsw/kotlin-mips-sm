@@ -21,9 +21,11 @@ open class Logger {
         private var predictionFailedCount = 0
         private var hitCount = 0
         private var missCount = 0
-        private var cacheFetchCount = 0
+        private var memoryFetchCount = 0
+        private var memoryWriteCount = 0
 
         fun init() {
+            printControl = loggingSignal.copy()
             cycleCount = 0
             numberOfExecutedMA = 0
             numberOfWriteBack = 0
@@ -36,8 +38,8 @@ open class Logger {
             predictionFailedCount = 0
             hitCount = 0
             missCount = 0
-            cacheFetchCount = 0
-            printControl = loggingSignal.copy()
+            memoryFetchCount = 0
+            memoryWriteCount = 0
         }
 
         fun log(
@@ -156,8 +158,12 @@ open class Logger {
             missCount++
         }
 
-        fun cacheFetch() {
-            cacheFetchCount++
+        fun memoryFetch() {
+            memoryFetchCount++
+        }
+
+        fun memoryWrite() {
+            memoryWriteCount++
         }
 
         private fun printFetchResult(result: FetchResult) {
@@ -264,7 +270,8 @@ open class Logger {
             println("=== Cache result === ")
             println("hit count : ${hitCount}")
             println("miss count : ${missCount}")
-            println("fetch count : ${cacheFetchCount}")
+            println("memory write count : ${memoryWriteCount}")
+            println("memory fetch count : ${memoryFetchCount}")
             if (hitCount + missCount == 0) {
                 println("cache hit ratio : 0%")
             } else {

@@ -14,7 +14,9 @@ class WriteThroughDirectMappedCache(
         val index = index(address)
         val offset = offset(address)
 
+        Logger.memoryWrite()
         memory.write(address, value)
+
         if (isHit(tag, index)) {
             Logger.cacheHit()
             cacheLines[index][offset] = value
@@ -25,7 +27,7 @@ class WriteThroughDirectMappedCache(
     }
 
     override fun memoryFetch(tag: Int, index: Int) {
-        Logger.cacheFetch()
+        Logger.memoryFetch()
         valids[index] = true
         tags[index] = tag
         cacheLines[index] = Array(blockCount) {
