@@ -1,6 +1,9 @@
 package computer.architecture.component
 
-import computer.architecture.cpu.*
+import computer.architecture.cpu.dto.DecodeResult
+import computer.architecture.cpu.dto.ExecutionResult
+import computer.architecture.cpu.dto.FetchResult
+import computer.architecture.cpu.dto.MemoryAccessResult
 
 class Latches {
 

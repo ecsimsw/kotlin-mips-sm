@@ -1,6 +1,9 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Mux.Companion.mux
+import computer.architecture.cpu.dto.DecodeResult
+import computer.architecture.cpu.dto.ExecutionResult
+import computer.architecture.cpu.dto.MemoryAccessResult
 
 class ForwardingUnit {
 

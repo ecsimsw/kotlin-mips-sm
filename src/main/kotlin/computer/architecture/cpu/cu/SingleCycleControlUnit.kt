@@ -3,9 +3,10 @@ package computer.architecture.cpu.cu
 import computer.architecture.component.And.Companion.and
 import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
-import computer.architecture.cpu.*
-import computer.architecture.cpu.cache.DirectMappedCache
+import computer.architecture.cpu.ALUnit
+import computer.architecture.cpu.DecodeUnit
 import computer.architecture.cpu.cache.WriteBackDirectMappedCache
+import computer.architecture.cpu.dto.*
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
@@ -108,7 +109,7 @@ class SingleCycleControlUnit(
     private fun memoryAccess(exResult: ExecutionResult): MemoryAccessResult {
         val controlSignal = exResult.controlSignal
 
-        val memReadValue = if(controlSignal.memRead) cache.read(exResult.aluValue) else 0
+        val memReadValue = if (controlSignal.memRead) cache.read(exResult.aluValue) else 0
         val regWriteValue = mux(controlSignal.memToReg, memReadValue, exResult.aluValue)
 
         if (controlSignal.memWrite) {

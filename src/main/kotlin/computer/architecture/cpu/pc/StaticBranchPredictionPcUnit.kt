@@ -1,6 +1,8 @@
 package computer.architecture.cpu.pc
 
-import computer.architecture.cpu.*
+import computer.architecture.cpu.dto.DecodeResult
+import computer.architecture.cpu.dto.ExecutionResult
+import computer.architecture.cpu.dto.FetchResult
 import computer.architecture.cpu.prediction.AlwaysTakenStrategy
 import computer.architecture.cpu.prediction.IBranchPredictionStrategy
 import computer.architecture.utils.Logger
@@ -16,7 +18,7 @@ class StaticBranchPredictionPcUnit(
         nextExMa: ExecutionResult
     ): Int {
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
-            if(takenCorrect(nextExMa, nextIfId)) {
+            if (takenCorrect(nextExMa, nextIfId)) {
                 Logger.predictionSucceed()
             } else {
                 nextIfId.valid = false
@@ -42,10 +44,10 @@ class StaticBranchPredictionPcUnit(
             nextIdEx.controlSignal.isEnd = nextPc == -1
             return nextPc
         }
-        return pc+4
+        return pc + 4
     }
 
-    private fun nextPc(nextExMa: ExecutionResult) : Int {
+    private fun nextPc(nextExMa: ExecutionResult): Int {
         return if (nextExMa.branch) {
             nextExMa.nextPc
         } else {

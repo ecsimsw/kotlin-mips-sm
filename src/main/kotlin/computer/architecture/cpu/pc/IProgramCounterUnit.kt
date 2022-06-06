@@ -1,8 +1,8 @@
 package computer.architecture.cpu.pc
 
-import computer.architecture.cpu.DecodeResult
-import computer.architecture.cpu.ExecutionResult
-import computer.architecture.cpu.FetchResult
+import computer.architecture.cpu.dto.DecodeResult
+import computer.architecture.cpu.dto.ExecutionResult
+import computer.architecture.cpu.dto.FetchResult
 
 interface IProgramCounterUnit {
 

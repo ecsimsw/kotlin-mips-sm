@@ -1,6 +1,7 @@
 package computer.architecture.utils
 
-import computer.architecture.cpu.*
+import computer.architecture.cpu.Opcode
+import computer.architecture.cpu.dto.*
 
 open class Logger {
 

@@ -1,6 +1,6 @@
 package computer.architecture.utils
 
-import computer.architecture.cpu.*
+import computer.architecture.cpu.dto.*
 
 class PipelineLogger : Logger() {
 

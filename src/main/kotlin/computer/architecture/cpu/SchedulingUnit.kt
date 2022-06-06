@@ -1,5 +1,7 @@
 package computer.architecture.cpu
 
+import computer.architecture.cpu.dto.CycleResult
+
 class SchedulingUnit(
     private val size: Int
 ) {

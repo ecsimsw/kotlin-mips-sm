@@ -1,13 +1,11 @@
 package computer.architecture.cpu.cache
 
-import computer.architecture.component.Memory
 import computer.architecture.utils.Logger
 import kotlin.math.pow
 
-class DirectMappedCache(
-    private val memory: Memory,
-    private val offsetBits: Int = 4,
-    private val indexBits: Int = 8,
+abstract class DirectMappedCache(
+    private val offsetBits: Int,
+    private val indexBits: Int,
 ) : ICache {
     private val addressBits = 32
     private val byteOffsetBits = 2
@@ -17,12 +15,11 @@ class DirectMappedCache(
         }
     }
 
-    private val linesCount = 2.0.pow(indexBits).toInt()
-    private val blockCount = 2.0.pow(offsetBits).toInt()
-
-    private val valids = Array(linesCount) { false }
-    private val tags = Array(linesCount) { 0 }
-    private val cacheLines = Array(linesCount) { Array(blockCount) { 0 } }
+    protected val linesCount = 2.0.pow(indexBits).toInt()
+    protected val blockCount = 2.0.pow(offsetBits).toInt()
+    protected val valids = Array(linesCount) { false }
+    protected val tags = Array(linesCount) { 0 }
+    protected val cacheLines = Array(linesCount) { Array(blockCount) { 0 } }
 
     override fun read(address: Int): Int {
         val tag = tag(address)
@@ -39,34 +36,11 @@ class DirectMappedCache(
         return cacheLines[index][offset]
     }
 
-    override fun write(address: Int, value: Int) {
-        val tag = tag(address)
-        val index = index(address)
-        val offset = offset(address)
+    abstract override fun write(address: Int, value: Int)
 
-        memory.write(address, value)
-        if (isHit(tag, index)) {
-            Logger.cacheHit()
-            cacheLines[index][offset] = value
-        } else {
-            Logger.cacheMiss()
-            memoryFetch(tag, index)
-        }
-    }
+    abstract fun memoryFetch(tag: Int, index: Int)
 
-    private fun isHit(tag: Int, index: Int): Boolean {
-        return valids[index] && (tags[index] == tag)
-    }
-
-    private fun memoryFetch(tag: Int, index: Int) {
-        Logger.cacheFetch()
-        valids[index] = true
-        tags[index] = tag
-        cacheLines[index] = Array(blockCount) {
-            val address = address(tag, index, it)
-            memory.read(address)
-        }
-    }
+    fun isHit(tag: Int, index: Int) = valids[index] && (tags[index] == tag)
 
     fun tag(address: Int) = address ushr (addressBits - tagBits)
 

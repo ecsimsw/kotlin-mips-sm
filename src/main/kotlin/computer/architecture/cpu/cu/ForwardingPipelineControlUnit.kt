@@ -1,8 +1,8 @@
 package computer.architecture.cpu.cu
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.CycleResult
 import computer.architecture.cpu.ForwardingUnit
+import computer.architecture.cpu.dto.CycleResult
 import computer.architecture.cpu.pc.IProgramCounterUnit
 import computer.architecture.cpu.pc.NonePredictionPcUnit
 import computer.architecture.utils.Logger

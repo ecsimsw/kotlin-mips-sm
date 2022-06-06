@@ -1,5 +1,7 @@
 package computer.architecture.cpu
 
+import computer.architecture.cpu.dto.DecodeResult
+import computer.architecture.cpu.dto.WriteBackResult
 import computer.architecture.cpu.register.Scoreboard
 
 class DataDependencyUnit(
@@ -12,7 +14,7 @@ class DataDependencyUnit(
     }
 
     fun release(wbResult: WriteBackResult) {
-        if(wbResult.valid && wbResult.controlSignal.regWrite) {
+        if (wbResult.valid && wbResult.controlSignal.regWrite) {
             scoreBoard.release(wbResult.writeReg, wbResult.pc)
         }
     }
