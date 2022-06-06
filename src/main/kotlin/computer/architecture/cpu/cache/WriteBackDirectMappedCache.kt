@@ -29,14 +29,15 @@ class WriteBackDirectMappedCache(
         Logger.memoryFetch()
 
         updateDirties(index)
-
         valids[index] = true
         dirties[index] = false
         tags[index] = tag
-        cacheLines[index] = Array(blockCount) {
-            val address = address(tag, index, it)
-            memory.read(address)
-        }
+        cacheLines[index] = readBlockLine(tag, index)
+    }
+
+    private fun readBlockLine(tag: Int, index: Int) = Array(blockCount) {
+        val address = address(tag, index, it)
+        memory.read(address)
     }
 
     private fun updateDirties(index: Int) {

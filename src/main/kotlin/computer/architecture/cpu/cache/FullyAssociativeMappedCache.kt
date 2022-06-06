@@ -1,13 +1,11 @@
 package computer.architecture.cpu.cache
 
-import computer.architecture.component.Memory
 import computer.architecture.utils.Logger
 import kotlin.math.pow
 
-class FullyAssociativeMappedCache(
-    private val memory: Memory,
-    private val offsetBits: Int = 4,
-    private val lineBits: Int = 8
+abstract class FullyAssociativeMappedCache(
+    private val offsetBits: Int,
+    lineBits: Int
 ) : ICache {
 
     private val addressBits = 32
@@ -18,14 +16,12 @@ class FullyAssociativeMappedCache(
         }
     }
 
-    private val lineCount: Int = 2.0.pow(lineBits).toInt()
-    private val blockCount = 2.0.pow(offsetBits).toInt()
+    protected val lineCount: Int = 2.0.pow(lineBits).toInt()
+    protected val blockCount = 2.0.pow(offsetBits).toInt()
 
-    private val valids = Array(lineCount) { false }
-    private val tags = Array(lineCount) { 0 }
-    private val cacheLines = Array(lineCount) { Array(blockCount) { 0 } }
-
-    private var oldestLineIndex = 0
+    protected val valids = Array(lineCount) { false }
+    protected val tags = Array(lineCount) { 0 }
+    protected val cacheLines = Array(lineCount) { Array(blockCount) { 0 } }
 
     override fun read(address: Int): Int {
         val tag = tag(address)
@@ -42,59 +38,16 @@ class FullyAssociativeMappedCache(
         }
     }
 
-    override fun write(address: Int, value: Int) {
-        Logger.memoryWrite()
-        memory.write(address, value)
+    abstract override fun write(address: Int, value: Int)
 
-        val tag = tag(address)
-        val offset = offset(address)
-        val index = index(tag)
-
-        if (index != -1) {
-            Logger.cacheHit()
-            cacheLines[index][offset] = value
-        } else {
-            Logger.cacheMiss()
-            memoryFetch(tag)
-        }
-    }
-
-    private fun memoryFetch(tag: Int): Int {
-        Logger.memoryFetch()
-
-        val readLine = Array(blockCount) {
-            val address = address(tag, it)
-            memory.read(address)
-        }
-
-        for (i in 0..lineBits) {
-            if (!valids[i]) {
-                valids[i] = true
-                tags[i] = tag
-                cacheLines[i] = readLine
-                return i
-            }
-
-            if (valids[i] && tags[i] == tag) {
-                cacheLines[i] = readLine
-                return i
-            }
-        }
-
-        val fetchIndex = oldestLineIndex
-        valids[fetchIndex] = true
-        tags[fetchIndex] = tag
-        cacheLines[fetchIndex] = readLine
-        oldestLineIndex = (oldestLineIndex + 1) % lineCount
-        return fetchIndex
-    }
+    abstract fun memoryFetch(tag: Int): Int
 
     fun tag(address: Int) = address ushr (addressBits - tagBits)
 
     fun offset(address: Int) = (address shr byteOffsetBits) % blockCount
 
     fun index(tag: Int): Int {
-        for (i in 0..lineBits) {
+        for (i in 0 until lineCount) {
             if (valids[i] && tags[i] == tag) {
                 return i
             }

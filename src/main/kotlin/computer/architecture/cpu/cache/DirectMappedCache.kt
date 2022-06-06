@@ -26,14 +26,14 @@ abstract class DirectMappedCache(
         val index = index(address)
         val offset = offset(address)
 
-        if (isHit(tag, index)) {
+        return if (isHit(tag, index)) {
             Logger.cacheHit()
-            return cacheLines[index][offset]
+            cacheLines[index][offset]
+        } else {
+            Logger.cacheMiss()
+            memoryFetch(tag, index)
+            cacheLines[index][offset]
         }
-
-        Logger.cacheMiss()
-        memoryFetch(tag, index)
-        return cacheLines[index][offset]
     }
 
     abstract override fun write(address: Int, value: Int)
@@ -42,13 +42,13 @@ abstract class DirectMappedCache(
 
     fun isHit(tag: Int, index: Int) = valids[index] && (tags[index] == tag)
 
-    fun tag(address: Int) = address ushr (addressBits - tagBits)
+    protected fun tag(address: Int) = address ushr (addressBits - tagBits)
 
-    fun index(address: Int) = (address shr byteOffsetBits shr offsetBits) % lineCount
+    protected fun index(address: Int) = (address shr byteOffsetBits shr offsetBits) % lineCount
 
-    fun offset(address: Int) = (address shr byteOffsetBits) % blockCount
+    protected fun offset(address: Int) = (address shr byteOffsetBits) % blockCount
 
-    fun address(tag: Int, index: Int, offset: Int): Int {
+    protected fun address(tag: Int, index: Int, offset: Int): Int {
         return ((((tag shl indexBits) + index) shl offsetBits) + offset) shl byteOffsetBits + 0
     }
 }
