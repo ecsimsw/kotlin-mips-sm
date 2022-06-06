@@ -7,6 +7,7 @@ import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.*
 import computer.architecture.cpu.cache.DirectMappedCache
+import computer.architecture.cpu.cache.WriteBackDirectMappedCache
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
@@ -17,7 +18,7 @@ abstract class SingleProcessingPipelineControlUnit(
     protected val stallUnit = StallUnit()
     protected val latches = Latches()
 
-    private val cache = DirectMappedCache(memory, 4, 8)
+    private val cache = WriteBackDirectMappedCache(memory, 4, 8)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
 

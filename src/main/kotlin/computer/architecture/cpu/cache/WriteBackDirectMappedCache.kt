@@ -4,7 +4,7 @@ import computer.architecture.component.Memory
 import computer.architecture.utils.Logger
 import kotlin.math.pow
 
-class DirectMappedCache(
+class WriteBackDirectMappedCache(
     private val memory: Memory,
     private val offsetBits: Int = 4,
     private val indexBits: Int = 8,
@@ -20,6 +20,7 @@ class DirectMappedCache(
     private val linesCount = 2.0.pow(indexBits).toInt()
     private val blockCount = 2.0.pow(offsetBits).toInt()
 
+    private val dirties = Array(linesCount) { false }
     private val valids = Array(linesCount) { false }
     private val tags = Array(linesCount) { 0 }
     private val cacheLines = Array(linesCount) { Array(blockCount) { 0 } }
@@ -44,13 +45,14 @@ class DirectMappedCache(
         val index = index(address)
         val offset = offset(address)
 
-        memory.write(address, value)
         if (isHit(tag, index)) {
             Logger.cacheHit()
+            dirties[index] = true
             cacheLines[index][offset] = value
         } else {
             Logger.cacheMiss()
             memoryFetch(tag, index)
+            cacheLines[index][offset] = value
         }
     }
 
@@ -60,7 +62,16 @@ class DirectMappedCache(
 
     private fun memoryFetch(tag: Int, index: Int) {
         Logger.cacheFetch()
+
+        if (dirties[index]) {
+            cacheLines[index].forEachIndexed { offset, data ->
+                val address = address(tags[index], index, offset)
+                memory.write(address, data)
+            }
+        }
+
         valids[index] = true
+        dirties[index] = false
         tags[index] = tag
         cacheLines[index] = Array(blockCount) {
             val address = address(tag, index, it)

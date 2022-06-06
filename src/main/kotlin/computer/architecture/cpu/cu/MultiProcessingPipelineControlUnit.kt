@@ -6,13 +6,14 @@ import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.cpu.*
 import computer.architecture.cpu.cache.DirectMappedCache
+import computer.architecture.cpu.cache.WriteBackDirectMappedCache
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
 class MultiProcessingPipelineControlUnit(
     memories: List<Memory>
 ) : IControlUnit {
-    private val caches = memories.map { DirectMappedCache(it, 4, 8) }
+    private val caches = memories.map { WriteBackDirectMappedCache(it, 4, 8) }
     private val registers: List<Registers> = List(memories.size) { Registers(32) }
     private val schedulingUnit = SchedulingUnit(memories.size)
     private val latches = Latches()
