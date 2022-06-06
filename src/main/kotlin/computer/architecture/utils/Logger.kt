@@ -19,6 +19,7 @@ open class Logger {
         private var predictionFailedCount = 0
         private var hitCount = 0
         private var missCount = 0
+        private var cacheFetchCount = 0
 
         fun init() {
             cycleCount = 0
@@ -31,6 +32,9 @@ open class Logger {
             takenCount = 0
             predictionSucceedCount = 0
             predictionFailedCount = 0
+            hitCount = 0
+            missCount = 0
+            cacheFetchCount = 0
         }
 
         fun log(
@@ -111,14 +115,12 @@ open class Logger {
 
         private fun checkPrintRange(cycleCount: Int) {
             if (cycleCount >= loggingSignal.from && cycleCount <= loggingSignal.to) {
-                loggingSignal.cycle = true
                 loggingSignal.fetch = true
                 loggingSignal.decode = true
                 loggingSignal.execute = true
                 loggingSignal.memoryAccess = true
                 loggingSignal.writeBack = true
             } else {
-                loggingSignal.cycle = false
                 loggingSignal.fetch = false
                 loggingSignal.decode = false
                 loggingSignal.execute = false
@@ -149,6 +151,10 @@ open class Logger {
 
         fun cacheMiss() {
             missCount++
+        }
+
+        fun cacheFetch() {
+            cacheFetchCount++
         }
 
         private fun printFetchResult(result: FetchResult) {
@@ -255,6 +261,7 @@ open class Logger {
             println("=== Cache result === ")
             println("hit count : ${hitCount}")
             println("miss count : ${missCount}")
+            println("fetch count : ${cacheFetchCount}")
             if (hitCount + missCount == 0) {
                 println("cache hit ratio : 0%")
             } else {

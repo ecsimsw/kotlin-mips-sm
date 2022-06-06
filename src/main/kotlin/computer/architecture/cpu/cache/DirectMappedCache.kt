@@ -2,7 +2,6 @@ package computer.architecture.cpu.cache
 
 import computer.architecture.component.Memory
 import computer.architecture.utils.Logger
-import computer.architecture.utils.toHexString
 import kotlin.math.pow
 
 class DirectMappedCache(
@@ -36,25 +35,34 @@ class DirectMappedCache(
         }
 
         Logger.cacheMiss()
-        cacheLines[index] = memoryFetch(tag, index)
+        memoryFetch(tag, index)
         return cacheLines[index][offset]
     }
 
     override fun write(address: Int, value: Int) {
         val index = index(address)
+        val tag = tag(address)
         val offset = offset(address)
 
-        cacheLines[index][offset] = value
         memory.write(address, value)
+        if (isHit(index, tag)) {
+            Logger.cacheHit()
+            cacheLines[index][offset] = value
+        } else {
+            Logger.cacheMiss()
+            memoryFetch(tag, index)
+        }
     }
 
     private fun isHit(index: Int, tag: Int): Boolean {
         return valids[index] && (tags[index] == tag)
     }
 
-    private fun memoryFetch(tag: Int, index: Int): Array<Int> {
+    private fun memoryFetch(tag: Int, index: Int) {
+        Logger.cacheFetch()
         valids[index] = true
-        return Array(blockCount) {
+        tags[index] = tag
+        cacheLines[index] = Array(blockCount) {
             val address = address(tag, index, it)
             memory.read(address)
         }

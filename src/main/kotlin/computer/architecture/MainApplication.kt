@@ -9,7 +9,7 @@ import computer.architecture.utils.LoggingSignal
 fun main() {
     Logger.loggingSignal = loggingSignal
 
-    val fileToLoad = "sample/simple.bin"
+    val fileToLoad = "sample/input4.bin"
     val memory = Memory.load(20000000, fileToLoad)
 
     val controlUnit = ForwardingPipelineControlUnit(memory, TwoLevelLocalHistoryPredictionPcUnit())
@@ -20,14 +20,14 @@ fun main() {
 
 val loggingSignal = LoggingSignal(
     cycle = true,
-    cyclePrintPeriod = 1,
-    fetch = true,
-    decode = true,
-    execute = true,
-    memoryAccess = true,
-    writeBack = true,
+    cyclePrintPeriod = 1000000,
+    fetch = false,
+    decode = false,
+    execute = false,
+    memoryAccess = false,
+    writeBack = false,
     result = true,
     sleepTime = 0,
-    from = 0,
-    to = 20
+    from = Int.MAX_VALUE,
+    to = Int.MAX_VALUE
 )
