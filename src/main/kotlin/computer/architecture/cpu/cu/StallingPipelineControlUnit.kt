@@ -1,17 +1,17 @@
 package computer.architecture.cpu.cu
 
-import computer.architecture.component.Memory
 import computer.architecture.cpu.ControlSignal
 import computer.architecture.cpu.DataDependencyUnit
+import computer.architecture.cpu.cache.ICache
 import computer.architecture.cpu.dto.CycleResult
 import computer.architecture.cpu.pc.IProgramCounterUnit
 import computer.architecture.cpu.pc.NonePredictionPcUnit
 import computer.architecture.utils.Logger
 
 class StallingPipelineControlUnit(
-    memory: Memory,
+    cache: ICache,
     private val pcUnit: IProgramCounterUnit = NonePredictionPcUnit()
-) : SingleProcessingPipelineControlUnit(memory) {
+) : SingleProcessingPipelineControlUnit(cache) {
     private val dataDependencyUnit = DataDependencyUnit(registers.size)
 
     override fun cycleExecution(valid: Boolean, pc: Int): CycleResult {

@@ -1,6 +1,7 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
+import computer.architecture.cpu.cache.WriteThroughDirectMappedCache
 import computer.architecture.cpu.cu.MultiProcessingPipelineControlUnit
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
@@ -29,13 +30,15 @@ internal class MultiProcessingControlUnitTest {
         "sample/input4.bin,85"
     )
     fun multiProcessing(path: String, expected: Int) {
-        val memory1 = Memory.load(20000000, path)
-        val memory2 = Memory.load(20000000, path)
-        val memory3 = Memory.load(20000000, path)
-        val memory4 = Memory.load(20000000, path)
-        val memory5 = Memory.load(20000000, path)
+        val memory = Memory.load(20000000, path)
 
-        val controlUnit = MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5))
+        val cache1 = WriteThroughDirectMappedCache(memory)
+        val cache2 = WriteThroughDirectMappedCache(memory)
+        val cache3 = WriteThroughDirectMappedCache(memory)
+        val cache4 = WriteThroughDirectMappedCache(memory)
+        val cache5 = WriteThroughDirectMappedCache(memory)
+
+        val controlUnit = MultiProcessingPipelineControlUnit(listOf(cache1, cache2, cache3, cache4, cache5))
         val processResult = controlUnit.process()
 
         assertThat(processResult[0]).isEqualTo(expected)
@@ -48,7 +51,11 @@ internal class MultiProcessingControlUnitTest {
         val memory2 = Memory.load(20000000, "sample/simple3.bin")
         val memory3 = Memory.load(20000000, "sample/fib.bin")
 
-        val controlUnit = MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3))
+        val cache1 = WriteThroughDirectMappedCache(memory1)
+        val cache2 = WriteThroughDirectMappedCache(memory2)
+        val cache3 = WriteThroughDirectMappedCache(memory3)
+
+        val controlUnit = MultiProcessingPipelineControlUnit(listOf(cache1, cache2, cache3))
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(listOf(55, 5050, 55))
@@ -63,8 +70,14 @@ internal class MultiProcessingControlUnitTest {
         val memory5 = Memory.load(17000000, "sample/gcd.bin")
         val memory6 = Memory.load(17000000, "sample/fib.bin")
 
-        val controlUnit =
-            MultiProcessingPipelineControlUnit(listOf(memory1, memory2, memory3, memory4, memory5, memory6))
+        val cache1 = WriteThroughDirectMappedCache(memory1)
+        val cache2 = WriteThroughDirectMappedCache(memory2)
+        val cache3 = WriteThroughDirectMappedCache(memory3)
+        val cache4 = WriteThroughDirectMappedCache(memory4)
+        val cache5 = WriteThroughDirectMappedCache(memory5)
+        val cache6 = WriteThroughDirectMappedCache(memory6)
+
+        val controlUnit = MultiProcessingPipelineControlUnit(listOf(cache1, cache2, cache3, cache4, cache5, cache6))
         val processResult = controlUnit.process()
 
         assertThat(processResult).isEqualTo(listOf(0, 100, 5050, 55, 1, 55))

@@ -7,17 +7,17 @@ import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.cpu.ALUnit
 import computer.architecture.cpu.DecodeUnit
 import computer.architecture.cpu.SchedulingUnit
+import computer.architecture.cpu.cache.ICache
 import computer.architecture.cpu.cache.WriteBackDirectMappedCache
 import computer.architecture.cpu.dto.*
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
 class MultiProcessingPipelineControlUnit(
-    memories: List<Memory>
+    private val caches: List<ICache>
 ) : IControlUnit {
-    private val caches = memories.map { WriteBackDirectMappedCache(it, 4, 8) }
-    private val registers: List<Registers> = List(memories.size) { Registers(32) }
-    private val schedulingUnit = SchedulingUnit(memories.size)
+    private val registers: List<Registers> = List(caches.size) { Registers(32) }
+    private val schedulingUnit = SchedulingUnit(caches.size)
     private val latches = Latches()
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()

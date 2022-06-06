@@ -8,19 +8,19 @@ import computer.architecture.component.Or.Companion.or
 import computer.architecture.cpu.ALUnit
 import computer.architecture.cpu.DecodeUnit
 import computer.architecture.cpu.StallUnit
+import computer.architecture.cpu.cache.ICache
 import computer.architecture.cpu.cache.WriteThroughDirectMappedCache
 import computer.architecture.cpu.dto.*
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
 abstract class SingleProcessingPipelineControlUnit(
-    memory: Memory,
+    private val cache : ICache
 ) : IControlUnit {
     protected val registers = Registers(32)
     protected val stallUnit = StallUnit()
     protected val latches = Latches()
 
-    private val cache = WriteThroughDirectMappedCache(memory, 4, 8)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()
 

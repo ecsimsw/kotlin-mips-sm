@@ -5,15 +5,16 @@ import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.cpu.ALUnit
 import computer.architecture.cpu.DecodeUnit
+import computer.architecture.cpu.cache.ICache
 import computer.architecture.cpu.cache.WriteBackDirectMappedCache
+import computer.architecture.cpu.cache.WriteThroughDirectMappedCache
 import computer.architecture.cpu.dto.*
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
 class SingleCycleControlUnit(
-    memory: Memory
+    private val cache : ICache
 ) : IControlUnit {
-    private val cache = WriteBackDirectMappedCache(memory, 4, 8)
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
     private val alu = ALUnit()

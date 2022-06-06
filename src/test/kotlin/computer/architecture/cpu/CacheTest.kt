@@ -20,26 +20,6 @@ internal class CacheTest {
         Logger.init()
     }
 
-    @ParameterizedTest
-    @CsvSource(
-        "sample/simple.bin,0",
-        "sample/simple2.bin,100",
-        "sample/simple3.bin,5050",
-        "sample/simple4.bin,55",
-        "sample/gcd.bin,1",
-        "sample/fib.bin,55",
-        "sample/input4.bin,85"
-    )
-    fun multiProcessing(path: String, expected: Int) {
-        val memory1 = Memory.load(20000000, path)
-
-        val controlUnit = MultiProcessingPipelineControlUnit(listOf(memory1))
-        val processResult = controlUnit.process()
-
-        assertThat(processResult[0]).isEqualTo(expected)
-        Logger.printProcessResult(processResult[0])
-    }
-
     @Nested
     inner class AddressConvertingTest {
 
