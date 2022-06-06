@@ -14,16 +14,12 @@ class WriteThroughDirectMappedCache(
         val index = index(address)
         val offset = offset(address)
 
+        if (isHit(tag, index)) {
+            cacheLines[index][offset] = value
+        }
+
         Logger.memoryWrite()
         memory.write(address, value)
-
-        if (isHit(tag, index)) {
-            Logger.cacheHit()
-            cacheLines[index][offset] = value
-        } else {
-            Logger.cacheMiss()
-            memoryFetch(tag, index)
-        }
     }
 
     override fun memoryFetch(tag: Int, index: Int) {

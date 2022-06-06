@@ -15,11 +15,11 @@ abstract class DirectMappedCache(
         }
     }
 
-    protected val linesCount = 2.0.pow(indexBits).toInt()
+    protected val lineCount = 2.0.pow(indexBits).toInt()
     protected val blockCount = 2.0.pow(offsetBits).toInt()
-    protected val valids = Array(linesCount) { false }
-    protected val tags = Array(linesCount) { 0 }
-    protected val cacheLines = Array(linesCount) { Array(blockCount) { 0 } }
+    protected val valids = Array(lineCount) { false }
+    protected val tags = Array(lineCount) { 0 }
+    protected val cacheLines = Array(lineCount) { Array(blockCount) { 0 } }
 
     override fun read(address: Int): Int {
         val tag = tag(address)
@@ -44,7 +44,7 @@ abstract class DirectMappedCache(
 
     fun tag(address: Int) = address ushr (addressBits - tagBits)
 
-    fun index(address: Int) = (address shr byteOffsetBits shr offsetBits) % linesCount
+    fun index(address: Int) = (address shr byteOffsetBits shr offsetBits) % lineCount
 
     fun offset(address: Int) = (address shr byteOffsetBits) % blockCount
 
