@@ -2,7 +2,11 @@ package computer.architecture.cpu
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cache.WriteBackDirectMappedCache
+import computer.architecture.cpu.cache.WriteThroughDirectMappedCache
+import computer.architecture.cpu.cu.ForwardingPipelineControlUnit
 import computer.architecture.cpu.cu.MultiProcessingPipelineControlUnit
+import computer.architecture.cpu.pc.TwoLevelLocalHistoryPredictionPcUnit
+import computer.architecture.cpu.utils.Utils.Companion.checkProcessResult
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 import org.assertj.core.api.Assertions.assertThat
@@ -18,6 +22,46 @@ internal class CacheTest {
     fun initLogger() {
         Logger.loggingSignal = LoggingSignal(result = true)
         Logger.init()
+    }
+
+    private val pcUnit = TwoLevelLocalHistoryPredictionPcUnit()
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun writeThroughDirectMappedCache(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+        val cache = WriteThroughDirectMappedCache(memory)
+
+        val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
+        val processResult = controlUnit.process()
+        checkProcessResult(processResult[0], expected)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun writeBackDirectMappedCache(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+        val cache = WriteBackDirectMappedCache(memory)
+
+        val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
+        val processResult = controlUnit.process()
+        checkProcessResult(processResult[0], expected)
     }
 
     @Nested

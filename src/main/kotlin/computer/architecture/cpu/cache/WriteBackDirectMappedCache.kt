@@ -2,6 +2,7 @@ package computer.architecture.cpu.cache
 
 import computer.architecture.component.Memory
 import computer.architecture.utils.Logger
+import computer.architecture.utils.toHexString
 
 class WriteBackDirectMappedCache(
     private val memory: Memory,
@@ -16,13 +17,19 @@ class WriteBackDirectMappedCache(
         val index = index(address)
         val offset = offset(address)
 
+        if(address == 0xFF6544) {
+            println("[write] FF6544 ${value}")
+        }
+
         if (isHit(tag, index)) {
             Logger.cacheHit()
             dirties[index] = true
+            Logger.log("[hit write] ${address.toHexString(8)} ${value}")
             cacheLines[index][offset] = value
         } else {
             Logger.cacheMiss()
             memoryFetch(tag, index)
+            Logger.log("[miss write] ${address.toHexString(8)} ${value}")
             cacheLines[index][offset] = value
         }
     }
@@ -33,6 +40,7 @@ class WriteBackDirectMappedCache(
         if (dirties[index]) {
             cacheLines[index].forEachIndexed { offset, data ->
                 val address = address(tags[index], index, offset)
+                Logger.log("[flush write] ${address.toHexString(8)} ${data}")
                 memory.write(address, data)
             }
         }
@@ -42,7 +50,9 @@ class WriteBackDirectMappedCache(
         tags[index] = tag
         cacheLines[index] = Array(blockCount) {
             val address = address(tag, index, it)
+            Logger.log("[fetch] ${address.toHexString(8)} ${memory.read(address)}")
             memory.read(address)
         }
+        Logger.log("")
     }
 }

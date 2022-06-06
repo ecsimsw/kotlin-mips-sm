@@ -6,9 +6,10 @@ import computer.architecture.cpu.dto.*
 open class Logger {
 
     companion object {
-        var loggingSignal: LoggingSignal = LoggingSignal()
+        var loggingSignal = LoggingSignal()
+        private var printControl = LoggingSignal()
 
-        private var cycleCount = 0
+        var cycleCount = 0
         private var numberOfExecutedMA = 0
         private var numberOfWriteBack = 0
         private var numberOfTakenBranches = 0
@@ -36,6 +37,7 @@ open class Logger {
             hitCount = 0
             missCount = 0
             cacheFetchCount = 0
+            printControl = loggingSignal.copy()
         }
 
         fun log(
@@ -105,9 +107,9 @@ open class Logger {
             }
             this.cycleCount = cycleCount
             try {
-                Thread.sleep(loggingSignal.sleepTime)
-                if (!loggingSignal.cycle) return
-                if (this.cycleCount % loggingSignal.cyclePrintPeriod == 0) {
+                Thread.sleep(printControl.sleepTime)
+                if (!printControl.cycle) return
+                if (this.cycleCount % printControl.cyclePrintPeriod == 0) {
                     println("cycle : ${this.cycleCount}")
                 }
             } catch (e: InterruptedException) {
@@ -115,18 +117,18 @@ open class Logger {
         }
 
         private fun checkPrintRange(cycleCount: Int) {
-            if (cycleCount >= loggingSignal.from && cycleCount <= loggingSignal.to) {
-                loggingSignal.fetch = true
-                loggingSignal.decode = true
-                loggingSignal.execute = true
-                loggingSignal.memoryAccess = true
-                loggingSignal.writeBack = true
+            if (cycleCount >= printControl.from && cycleCount <= printControl.to) {
+                printControl.fetch = loggingSignal.fetch
+                printControl.decode = loggingSignal.fetch
+                printControl.execute = loggingSignal.fetch
+                printControl.memoryAccess = loggingSignal.fetch
+                printControl.writeBack = loggingSignal.fetch
             } else {
-                loggingSignal.fetch = false
-                loggingSignal.decode = false
-                loggingSignal.execute = false
-                loggingSignal.memoryAccess = false
-                loggingSignal.writeBack = false
+                printControl.fetch = false
+                printControl.decode = false
+                printControl.execute = false
+                printControl.memoryAccess = false
+                printControl.writeBack = false
             }
         }
 
@@ -159,7 +161,7 @@ open class Logger {
         }
 
         private fun printFetchResult(result: FetchResult) {
-            if (!loggingSignal.fetch) return
+            if (!printControl.fetch) return
             if (!result.valid) {
                 printStep("IF", result.pc)
                 printNop()
@@ -174,7 +176,7 @@ open class Logger {
 
         private fun printDecodeResult(result: DecodeResult) {
             val opcode = result.controlSignal.opcode
-            if (!loggingSignal.decode) return
+            if (!printControl.decode) return
             if (!result.valid) {
                 printStep("ID", result.pc)
                 printNop()
@@ -201,7 +203,7 @@ open class Logger {
         }
 
         private fun printExecutionResult(result: ExecutionResult) {
-            if (!loggingSignal.execute) return
+            if (!printControl.execute) return
             if (!result.valid) {
                 printStep("EX", result.pc)
                 printNop()
@@ -215,7 +217,7 @@ open class Logger {
         }
 
         private fun printMemoryAccessResult(result: MemoryAccessResult) {
-            if (!loggingSignal.memoryAccess) return
+            if (!printControl.memoryAccess) return
             if (!result.valid) {
                 printStep("MA", result.pc)
                 printNop()
@@ -235,7 +237,7 @@ open class Logger {
         }
 
         private fun printWriteBackResult(result: WriteBackResult) {
-            if (!loggingSignal.writeBack) return
+            if (!printControl.writeBack) return
             if (!result.valid) {
                 printStep("WB", result.pc)
                 printNop()
@@ -252,7 +254,7 @@ open class Logger {
         }
 
         fun printProcessResult(resultValue: Int) {
-            if (!loggingSignal.result) return
+            if (!printControl.result) return
 
             println("=== Result === ")
             println("cycle count : $cycleCount")
@@ -314,6 +316,12 @@ open class Logger {
 
         private fun printNop() {
             println("[NOP]")
+        }
+        
+        fun log(msg : String) {
+            if (cycleCount >= printControl.from && cycleCount <= printControl.to) {
+                println(msg)
+            }
         }
     }
 }

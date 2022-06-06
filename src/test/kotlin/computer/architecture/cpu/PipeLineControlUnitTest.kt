@@ -7,6 +7,7 @@ import computer.architecture.cpu.cu.SingleCycleControlUnit
 import computer.architecture.cpu.cu.StallingPipelineControlUnit
 import computer.architecture.cpu.pc.*
 import computer.architecture.cpu.prediction.*
+import computer.architecture.cpu.utils.Utils.Companion.checkProcessResult
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 import org.assertj.core.api.Assertions.assertThat
@@ -287,10 +288,5 @@ internal class PipeLineControlUnitTest {
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
-    }
-
-    private fun checkProcessResult(processResult: Int, expected: Int) {
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
     }
 }

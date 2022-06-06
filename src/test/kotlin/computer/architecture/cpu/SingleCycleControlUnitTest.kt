@@ -4,6 +4,7 @@ import computer.architecture.component.Memory
 import computer.architecture.cpu.cache.WriteBackDirectMappedCache
 import computer.architecture.cpu.cache.WriteThroughDirectMappedCache
 import computer.architecture.cpu.cu.SingleCycleControlUnit
+import computer.architecture.cpu.utils.Utils.Companion.checkProcessResult
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 import org.assertj.core.api.Assertions.assertThat
@@ -36,10 +37,5 @@ internal class SingleCycleControlUnitTest {
         val processResult = controlUnit.process()
 
         checkProcessResult(processResult[0], expected)
-    }
-
-    private fun checkProcessResult(processResult: Int, expected: Int) {
-        assertThat(processResult).isEqualTo(expected)
-        Logger.printProcessResult(processResult)
     }
 }
