@@ -130,9 +130,66 @@ internal class CacheTest {
         "sample/fib.bin,55",
         "sample/input4.bin,85"
     )
-    fun writeBackSetAssociativeMappedCache(path: String, expected: Int) {
+    fun writeBack2WaySetAssociativeMappedCache(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
         val cache = WriteBackSetAssociativeMappedCache(memory, 4, 7, 1)
+
+        val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
+        val processResult = controlUnit.process()
+        checkProcessResult(processResult[0], expected)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun writeBack4WaySetAssociativeMappedCache(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+        val cache = WriteBackSetAssociativeMappedCache(memory, 4, 6, 2)
+
+        val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
+        val processResult = controlUnit.process()
+        checkProcessResult(processResult[0], expected)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun writeBack8WaySetAssociativeMappedCache(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+        val cache = WriteBackSetAssociativeMappedCache(memory, 4, 5, 3)
+
+        val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
+        val processResult = controlUnit.process()
+        checkProcessResult(processResult[0], expected)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "sample/simple.bin,0",
+        "sample/simple2.bin,100",
+        "sample/simple3.bin,5050",
+        "sample/simple4.bin,55",
+        "sample/gcd.bin,1",
+        "sample/fib.bin,55",
+        "sample/input4.bin,85"
+    )
+    fun writeBack16WaySetAssociativeMappedCache(path: String, expected: Int) {
+        val memory = Memory.load(20000000, path)
+        val cache = WriteBackSetAssociativeMappedCache(memory, 4, 4, 4)
 
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
         val processResult = controlUnit.process()
