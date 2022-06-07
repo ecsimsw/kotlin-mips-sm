@@ -18,14 +18,13 @@ open class DynamicBranchPredictionPcUnit(
         nextExMa: ExecutionResult
     ): Int {
         if (nextExMa.valid && nextExMa.controlSignal.branch) {
+            state.update(nextExMa.branch)
             if (takenCorrect(nextExMa, nextIfId)) {
-                state.update(false)
                 Logger.predictionSucceed()
             } else {
                 nextIfId.valid = false
                 nextIdEx.valid = false
                 val nextPc = nextPc(nextExMa)
-                state.update(true)
                 nextExMa.controlSignal.isEnd = nextPc == -1
                 Logger.predictionFailed()
                 return nextPc
