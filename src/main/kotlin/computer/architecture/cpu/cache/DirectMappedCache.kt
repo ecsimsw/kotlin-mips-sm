@@ -36,17 +36,23 @@ abstract class DirectMappedCache(
         }
     }
 
-    abstract override fun write(address: Int, value: Int)
-
     abstract fun memoryFetch(tag: Int, index: Int)
 
-    fun isHit(tag: Int, index: Int) = valids[index] && (tags[index] == tag)
+    fun isHit(tag: Int, index: Int): Boolean {
+        return valids[index] && (tags[index] == tag)
+    }
 
-    protected fun tag(address: Int) = address ushr (addressBits - tagBits)
+    protected fun tag(address: Int): Int {
+        return address ushr (addressBits - tagBits)
+    }
 
-    protected fun index(address: Int) = (address shr byteOffsetBits shr offsetBits) % lineCount
+    protected fun index(address: Int): Int {
+        return (address shr byteOffsetBits shr offsetBits) % lineCount
+    }
 
-    protected fun offset(address: Int) = (address shr byteOffsetBits) % blockCount
+    protected fun offset(address: Int): Int {
+        return (address shr byteOffsetBits) % blockCount
+    }
 
     protected fun address(tag: Int, index: Int, offset: Int): Int {
         return ((((tag shl indexBits) + index) shl offsetBits) + offset) shl byteOffsetBits + 0

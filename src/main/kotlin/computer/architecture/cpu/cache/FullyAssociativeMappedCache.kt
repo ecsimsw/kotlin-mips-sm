@@ -42,9 +42,13 @@ abstract class FullyAssociativeMappedCache(
 
     abstract fun memoryFetch(tag: Int): Int
 
-    fun tag(address: Int) = address ushr (addressBits - tagBits)
+    fun tag(address: Int): Int {
+        return address ushr (addressBits - tagBits)
+    }
 
-    fun offset(address: Int) = (address shr byteOffsetBits) % blockCount
+    fun offset(address: Int): Int {
+        return (address shr byteOffsetBits) % blockCount
+    }
 
     fun index(tag: Int): Int {
         for (i in 0 until lineCount) {

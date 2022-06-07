@@ -113,7 +113,7 @@ internal class CacheTest {
     )
     fun setAssociativeMappedCache(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = SetAssociativeMappedCache(memory, 4, 7, 1)
+        val cache = WriteThroughSetAssociativeMappedCache(memory, 4, 7, 1)
 
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
         val processResult = controlUnit.process()

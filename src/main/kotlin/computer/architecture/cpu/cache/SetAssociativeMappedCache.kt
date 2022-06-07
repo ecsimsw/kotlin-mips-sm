@@ -1,89 +1,66 @@
 package computer.architecture.cpu.cache
 
-import computer.architecture.component.Memory
 import computer.architecture.utils.Logger
 import kotlin.math.pow
 
-class SetAssociativeMappedCache(
-    private val memory: Memory,
-    private val offsetBits : Int = 4,
-    private val indexBits: Int = 7,
-    private val setBits : Int = 1,
+abstract class SetAssociativeMappedCache(
+    private val offsetBits: Int,
+    private val indexBits: Int,
+    private val setBits: Int,
 ) : ICache {
     private val addressBits = 32
     private val byteOffsetBits = 2
-
     private val tagBits = (addressBits - byteOffsetBits - offsetBits - indexBits).also {
         if (it < 0) {
             throw IllegalArgumentException("tag bits can't be under 0")
         }
     }
 
-    private val setSize = 2.0.pow(setBits).toInt()
-    private val lineSizePerSet = 2.0.pow(indexBits).toInt()
-    private val blockSize = 2.0.pow(offsetBits).toInt()
-
-    private val lineSets = Array(setSize) {
-        CacheLine.listOf(lineSizePerSet, blockSize)
-    }
+    protected val setSize = 2.0.pow(setBits).toInt()
+    protected val lineSize = 2.0.pow(indexBits).toInt()
+    protected val blockSize = 2.0.pow(offsetBits).toInt()
+    protected val lineSets = Array(setSize) { CacheLine.listOf(lineSize, blockSize) }
 
     override fun read(address: Int): Int {
         val tag = tag(address)
         val lineIndex = index(address)
         val offset = offset(address)
 
+        var setIndex = setIndex(tag, lineIndex)
+        return if(setIndex != -1) {
+            Logger.cacheHit()
+            lineSets[setIndex][lineIndex].datas[offset]
+        } else {
+            Logger.cacheMiss()
+            setIndex = memoryFetch(tag, lineIndex)
+            lineSets[setIndex][lineIndex].datas[offset]
+        }
+    }
+
+    abstract fun memoryFetch(tag: Int, lineIndex: Int) : Int
+
+    protected fun setIndex(tag: Int, lineIndex: Int): Int {
         for (setIndex in 0 until setSize) {
-            if (isHit(setIndex, tag, lineIndex)) {
-                Logger.cacheHit()
-                return lineSets[setIndex][lineIndex].datas[offset]
+            if (lineSets[setIndex][lineIndex].valid && lineSets[setIndex][lineIndex].tag == tag) {
+                return setIndex
             }
         }
-
-        Logger.cacheMiss()
-        Logger.memoryFetch()
-        for (setIndex in 0 until setSize) {
-            if (!lineSets[setIndex][lineIndex].valid) {
-                lineSets[setIndex][lineIndex].valid = true
-                lineSets[setIndex][lineIndex].tag = tag
-                lineSets[setIndex][lineIndex].datas = readLine(tag, lineIndex)
-                return lineSets[setIndex][lineIndex].datas[offset]
-            }
-        }
-        lineSets[0][lineIndex].valid = true
-        lineSets[0][lineIndex].tag = tag
-        lineSets[0][lineIndex].datas = readLine(tag, lineIndex)
-        return lineSets[0][lineIndex].datas[offset]
+        return -1
     }
 
-    override fun write(address: Int, value: Int) {
-        val tag = tag(address)
-        val lineIndex = index(address)
-        val offset = offset(address)
-
-        for (setIndex in 0 until setSize) {
-            if (isHit(setIndex, tag, lineIndex)) {
-                lineSets[setIndex][lineIndex].datas[offset] = value
-            }
-        }
-        Logger.memoryWrite()
-        memory.write(address, value)
+    protected fun tag(address: Int): Int {
+        return address ushr (addressBits - tagBits)
     }
 
-    private fun readLine(tag: Int, lineIndex: Int) = Array(blockSize) {
-        memory.read(address(tag, lineIndex, it))
+    protected fun index(address: Int): Int {
+        return (address shr byteOffsetBits shr offsetBits) % lineSize
     }
 
-    private fun isHit(setIndex: Int, tag: Int, lineIndex: Int): Boolean {
-        return lineSets[setIndex][lineIndex].valid && lineSets[setIndex][lineIndex].tag == tag
+    protected fun offset(address: Int): Int {
+        return (address shr byteOffsetBits) % blockSize
     }
 
-    private fun tag(address: Int) = address ushr (addressBits - tagBits)
-
-    private fun index(address: Int) = (address shr byteOffsetBits shr offsetBits) % lineSizePerSet
-
-    private fun offset(address: Int) = (address shr byteOffsetBits) % blockSize
-
-    private fun address(tag: Int, index: Int, offset: Int): Int {
+    protected fun address(tag: Int, index: Int, offset: Int): Int {
         return ((((tag shl indexBits) + index) shl offsetBits) + offset) shl byteOffsetBits + 0
     }
 }

@@ -28,14 +28,14 @@ class WriteBackFullyAssociativeMappedCache(
 
     override fun memoryFetch(tag: Int): Int {
         for (i in 0 until lineCount) {
+            if (valids[i] && tags[i] == tag) {
+                return i
+            }
+
             if (!valids[i]) {
                 valids[i] = true
                 tags[i] = tag
                 cacheLines[i] = readBlockLine(tag)
-                return i
-            }
-
-            if (valids[i] && tags[i] == tag) {
                 return i
             }
         }

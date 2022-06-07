@@ -33,14 +33,14 @@ class WriteThroughFullyAssociativeMappedCache(
         }
 
         for (i in 0 until lineCount) {
-            if (!valids[i]) {
-                valids[i] = true
-                tags[i] = tag
+            if (valids[i] && tags[i] == tag) {
                 cacheLines[i] = readLine
                 return i
             }
 
-            if (valids[i] && tags[i] == tag) {
+            if (!valids[i]) {
+                valids[i] = true
+                tags[i] = tag
                 cacheLines[i] = readLine
                 return i
             }
