@@ -51,10 +51,12 @@ class WriteBackFullyAssociativeMappedCache(
         return fetchIndex
     }
 
-    private fun readBlockLine(tag: Int) = Array(blockCount) {
+    private fun readBlockLine(tag: Int) : Array<Int> {
         Logger.memoryFetch()
-        val address = address(tag, it)
-        memory.read(address)
+        return Array(blockCount) {
+            val address = address(tag, it)
+            memory.read(address)
+        }
     }
 
     private fun updateDirties(index: Int) {
