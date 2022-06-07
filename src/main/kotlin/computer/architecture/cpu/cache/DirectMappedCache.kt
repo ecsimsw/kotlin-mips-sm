@@ -15,11 +15,9 @@ abstract class DirectMappedCache(
         }
     }
 
-    protected val lineCount = 2.0.pow(indexBits).toInt()
-    protected val blockCount = 2.0.pow(offsetBits).toInt()
-    protected val valids = Array(lineCount) { false }
-    protected val tags = Array(lineCount) { 0 }
-    protected val cacheLines = Array(lineCount) { Array(blockCount) { 0 } }
+    protected val lineSize = 2.0.pow(indexBits).toInt()
+    protected val blockSize = 2.0.pow(offsetBits).toInt()
+    protected val cacheLines = CacheLine.listOf(lineSize, blockSize)
 
     override fun read(address: Int): Int {
         val tag = tag(address)
@@ -28,18 +26,18 @@ abstract class DirectMappedCache(
 
         return if (isHit(tag, index)) {
             Logger.cacheHit()
-            cacheLines[index][offset]
+            cacheLines[index].datas[offset]
         } else {
             Logger.cacheMiss()
             memoryFetch(tag, index)
-            cacheLines[index][offset]
+            cacheLines[index].datas[offset]
         }
     }
 
     abstract fun memoryFetch(tag: Int, index: Int)
 
     fun isHit(tag: Int, index: Int): Boolean {
-        return valids[index] && (tags[index] == tag)
+        return cacheLines[index].valid && (cacheLines[index].tag == tag)
     }
 
     protected fun tag(address: Int): Int {
@@ -47,11 +45,11 @@ abstract class DirectMappedCache(
     }
 
     protected fun index(address: Int): Int {
-        return (address shr byteOffsetBits shr offsetBits) % lineCount
+        return (address shr byteOffsetBits shr offsetBits) % lineSize
     }
 
     protected fun offset(address: Int): Int {
-        return (address shr byteOffsetBits) % blockCount
+        return (address shr byteOffsetBits) % blockSize
     }
 
     protected fun address(tag: Int, index: Int, offset: Int): Int {

@@ -61,7 +61,7 @@ class WriteBackSetAssociativeMappedCache(
         }
     }
 
-    private fun readBlockLine(tag: Int, lineIndex: Int) : Array<Int> {
+    private fun readBlockLine(tag: Int, lineIndex: Int): Array<Int> {
         Logger.memoryFetch()
         return Array(blockSize) {
             val address = address(tag, lineIndex, it)

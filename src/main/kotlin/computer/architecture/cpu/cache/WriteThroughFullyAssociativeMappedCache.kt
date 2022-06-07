@@ -17,7 +17,7 @@ class WriteThroughFullyAssociativeMappedCache(
         val offset = offset(address)
 
         if (index != -1) {
-            cacheLines[index][offset] = value
+            cacheLines[index].datas[offset] = value
         }
 
         Logger.memoryWrite()
@@ -27,30 +27,30 @@ class WriteThroughFullyAssociativeMappedCache(
     override fun memoryFetch(tag: Int): Int {
         Logger.memoryFetch()
 
-        val readLine = Array(blockCount) {
+        val readLine = Array(blockSize) {
             val address = address(tag, it)
             memory.read(address)
         }
 
-        for (i in 0 until lineCount) {
-            if (valids[i] && tags[i] == tag) {
-                cacheLines[i] = readLine
+        for (i in 0 until lineSize) {
+            if (cacheLines[i].valid && cacheLines[i].tag == tag) {
+                cacheLines[i].datas = readLine
                 return i
             }
 
-            if (!valids[i]) {
-                valids[i] = true
-                tags[i] = tag
-                cacheLines[i] = readLine
+            if (!cacheLines[i].valid) {
+                cacheLines[i].valid = true
+                cacheLines[i].tag = tag
+                cacheLines[i].datas = readLine
                 return i
             }
         }
 
         val fetchIndex = oldestLineIndex
-        valids[fetchIndex] = true
-        tags[fetchIndex] = tag
-        cacheLines[fetchIndex] = readLine
-        oldestLineIndex = (oldestLineIndex + 1) % lineCount
+        cacheLines[fetchIndex].valid = true
+        cacheLines[fetchIndex].tag = tag
+        cacheLines[fetchIndex].datas = readLine
+        oldestLineIndex = (oldestLineIndex + 1) % lineSize
         return fetchIndex
     }
 }

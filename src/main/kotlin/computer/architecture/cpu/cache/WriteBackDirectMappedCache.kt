@@ -9,7 +9,7 @@ class WriteBackDirectMappedCache(
     indexBits: Int = 8,
 ) : DirectMappedCache(offsetBits, indexBits) {
 
-    private val dirties = Array(lineCount) { false }
+    private val dirties = Array(lineSize) { false }
 
     override fun write(address: Int, value: Int) {
         val tag = tag(address)
@@ -18,7 +18,7 @@ class WriteBackDirectMappedCache(
 
         if (isHit(tag, index)) {
             dirties[index] = true
-            cacheLines[index][offset] = value
+            cacheLines[index].datas[offset] = value
         } else {
             Logger.memoryWrite()
             memory.write(address, value)
@@ -29,13 +29,13 @@ class WriteBackDirectMappedCache(
         Logger.memoryFetch()
 
         updateDirties(index)
-        valids[index] = true
+        cacheLines[index].valid = true
         dirties[index] = false
-        tags[index] = tag
-        cacheLines[index] = readBlockLine(tag, index)
+        cacheLines[index].tag = tag
+        cacheLines[index].datas = readBlockLine(tag, index)
     }
 
-    private fun readBlockLine(tag: Int, index: Int) = Array(blockCount) {
+    private fun readBlockLine(tag: Int, index: Int) = Array(blockSize) {
         val address = address(tag, index, it)
         memory.read(address)
     }
@@ -43,8 +43,9 @@ class WriteBackDirectMappedCache(
     private fun updateDirties(index: Int) {
         if (dirties[index]) {
             Logger.memoryWrite()
-            cacheLines[index].forEachIndexed { offset, data ->
-                val address = address(tags[index], index, offset)
+            cacheLines[index].datas.forEachIndexed { offset, data ->
+                val tag = cacheLines[index].tag
+                val address = address(tag, index, offset)
                 memory.write(address, data)
             }
         }

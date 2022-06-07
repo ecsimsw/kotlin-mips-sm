@@ -27,7 +27,7 @@ abstract class SetAssociativeMappedCache(
         val offset = offset(address)
 
         var setIndex = setIndex(tag, lineIndex)
-        return if(setIndex != -1) {
+        return if (setIndex != -1) {
             Logger.cacheHit()
             lineSets[setIndex][lineIndex].datas[offset]
         } else {
@@ -37,7 +37,7 @@ abstract class SetAssociativeMappedCache(
         }
     }
 
-    abstract fun memoryFetch(tag: Int, lineIndex: Int) : Int
+    abstract fun memoryFetch(tag: Int, lineIndex: Int): Int
 
     protected fun setIndex(tag: Int, lineIndex: Int): Int {
         for (setIndex in 0 until setSize) {

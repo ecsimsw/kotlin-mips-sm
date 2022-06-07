@@ -9,7 +9,7 @@ class WriteBackFullyAssociativeMappedCache(
     lineBits: Int = 8
 ) : FullyAssociativeMappedCache(offsetBits, lineBits) {
 
-    private val dirties = Array(lineCount) { false }
+    private val dirties = Array(lineSize) { false }
     private var oldestLineIndex = 0
 
     override fun write(address: Int, value: Int) {
@@ -19,7 +19,7 @@ class WriteBackFullyAssociativeMappedCache(
 
         if (index != -1) {
             dirties[index] = true
-            cacheLines[index][offset] = value
+            cacheLines[index].datas[offset] = value
         } else {
             Logger.memoryWrite()
             memory.write(address, value)
@@ -27,33 +27,33 @@ class WriteBackFullyAssociativeMappedCache(
     }
 
     override fun memoryFetch(tag: Int): Int {
-        for (i in 0 until lineCount) {
-            if (valids[i] && tags[i] == tag) {
+        for (i in 0 until lineSize) {
+            if (cacheLines[i].valid && cacheLines[i].tag == tag) {
                 return i
             }
 
-            if (!valids[i]) {
-                valids[i] = true
-                tags[i] = tag
-                cacheLines[i] = readBlockLine(tag)
+            if (!cacheLines[i].valid) {
+                cacheLines[i].valid = true
+                cacheLines[i].tag = tag
+                cacheLines[i].datas = readBlockLine(tag)
                 return i
             }
         }
 
         updateDirties(oldestLineIndex)
-        valids[oldestLineIndex] = true
+        cacheLines[oldestLineIndex].valid = true
         dirties[oldestLineIndex] = false
-        tags[oldestLineIndex] = tag
-        cacheLines[oldestLineIndex] = readBlockLine(tag)
+        cacheLines[oldestLineIndex].tag = tag
+        cacheLines[oldestLineIndex].datas = readBlockLine(tag)
 
         val fetchIndex = oldestLineIndex
-        oldestLineIndex = (oldestLineIndex + 1) % lineCount
+        oldestLineIndex = (oldestLineIndex + 1) % lineSize
         return fetchIndex
     }
 
-    private fun readBlockLine(tag: Int) : Array<Int> {
+    private fun readBlockLine(tag: Int): Array<Int> {
         Logger.memoryFetch()
-        return Array(blockCount) {
+        return Array(blockSize) {
             val address = address(tag, it)
             memory.read(address)
         }
@@ -62,8 +62,9 @@ class WriteBackFullyAssociativeMappedCache(
     private fun updateDirties(index: Int) {
         if (dirties[index]) {
             Logger.memoryWrite()
-            cacheLines[index].forEachIndexed { offset, data ->
-                val address = address(tags[index], offset)
+            cacheLines[index].datas.forEachIndexed { offset, data ->
+                val tag = cacheLines[index].tag
+                val address = address(tag, offset)
                 memory.write(address, data)
             }
         }
