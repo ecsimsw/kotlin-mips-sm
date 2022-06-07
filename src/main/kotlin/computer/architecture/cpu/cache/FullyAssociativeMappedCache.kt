@@ -16,7 +16,7 @@ abstract class FullyAssociativeMappedCache(
         }
     }
 
-    protected val lineCount: Int = 2.0.pow(lineBits).toInt()
+    protected val lineCount = 2.0.pow(lineBits).toInt()
     protected val blockCount = 2.0.pow(offsetBits).toInt()
 
     protected val valids = Array(lineCount) { false }
