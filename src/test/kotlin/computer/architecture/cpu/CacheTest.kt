@@ -10,6 +10,7 @@ import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -56,7 +57,7 @@ internal class CacheTest {
     )
     fun writeBackDirectMappedCache(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteBackDirectMappedCache(memory)
+        val cache = WriteBackDirectMappedCache(memory, 4, 8)
 
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
         val processResult = controlUnit.process()
@@ -111,7 +112,7 @@ internal class CacheTest {
         "sample/fib.bin,55",
         "sample/input4.bin,85"
     )
-    fun writeThroughSetAssociativeMappedCache(path: String, expected: Int) {
+    fun writeThrough2waySetAssociativeMappedCache(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
         val cache = WriteThroughSetAssociativeMappedCache(memory, 4, 7, 1)
 

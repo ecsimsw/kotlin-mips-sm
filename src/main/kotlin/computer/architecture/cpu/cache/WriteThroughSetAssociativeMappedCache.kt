@@ -24,29 +24,30 @@ class WriteThroughSetAssociativeMappedCache(
     }
 
     override fun memoryFetch(tag: Int, lineIndex: Int): Int {
-        Logger.memoryFetch()
-
-        val readLine = Array(blockSize) {
-            memory.read(address(tag, lineIndex, it))
-        }
-
         for (setIndex in 0 until setSize) {
             if (lineSets[setIndex][lineIndex].valid && lineSets[setIndex][lineIndex].tag == tag) {
-                lineSets[setIndex][lineIndex].datas = readLine
                 return setIndex
             }
 
             if (!lineSets[setIndex][lineIndex].valid) {
                 lineSets[setIndex][lineIndex].valid = true
                 lineSets[setIndex][lineIndex].tag = tag
-                lineSets[setIndex][lineIndex].datas = readLine
+                lineSets[setIndex][lineIndex].datas = readBlockLine(tag, lineIndex)
                 return setIndex
             }
         }
 
         lineSets[0][lineIndex].valid = true
         lineSets[0][lineIndex].tag = tag
-        lineSets[0][lineIndex].datas = readLine
+        lineSets[0][lineIndex].datas = readBlockLine(tag, lineIndex)
         return 0
+    }
+
+    private fun readBlockLine(tag: Int, lineIndex: Int): Array<Int> {
+        Logger.memoryFetch()
+        return Array(blockSize) {
+            val address = address(tag, lineIndex, it)
+            memory.read(address)
+        }
     }
 }

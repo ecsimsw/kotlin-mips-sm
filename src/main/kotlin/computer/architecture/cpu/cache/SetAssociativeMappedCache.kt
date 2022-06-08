@@ -53,7 +53,7 @@ abstract class SetAssociativeMappedCache(
     }
 
     protected fun index(address: Int): Int {
-        return (address shr byteOffsetBits shr offsetBits) % lineSize
+        return ((address shr byteOffsetBits) shr offsetBits) % lineSize
     }
 
     protected fun offset(address: Int): Int {
