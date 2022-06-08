@@ -1,16 +1,15 @@
 package computer.architecture.cpu
 
 import computer.architecture.component.Memory
-import computer.architecture.cpu.cache.WriteThroughDirectMappedCache
 import computer.architecture.cpu.cu.ForwardingPipelineControlUnit
 import computer.architecture.cpu.cu.SingleCycleControlUnit
 import computer.architecture.cpu.cu.StallingPipelineControlUnit
 import computer.architecture.cpu.pc.*
 import computer.architecture.cpu.prediction.*
+import computer.architecture.cpu.utils.Utils.Companion.cache
 import computer.architecture.cpu.utils.Utils.Companion.checkProcessResult
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -35,7 +34,7 @@ internal class PipeLineControlUnitTest {
     )
     fun singleCycle(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val controlUnit = SingleCycleControlUnit(cache)
         val processResult = controlUnit.process()
 
@@ -54,7 +53,7 @@ internal class PipeLineControlUnitTest {
     )
     fun stall_stall(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val pcUnit = NonePredictionPcUnit()
         val controlUnit = StallingPipelineControlUnit(cache, pcUnit)
         val processResult = controlUnit.process()
@@ -74,7 +73,7 @@ internal class PipeLineControlUnitTest {
     )
     fun stall_alwaysNotTaken(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val predictionStrategy = AlwaysNotTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
         val controlUnit = StallingPipelineControlUnit(cache, pcUnit)
@@ -95,7 +94,7 @@ internal class PipeLineControlUnitTest {
     )
     fun stall_alwaysTaken(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val predictionStrategy = AlwaysTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
         val controlUnit = StallingPipelineControlUnit(cache, pcUnit)
@@ -116,7 +115,7 @@ internal class PipeLineControlUnitTest {
     )
     fun forwarding_stall(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val pcUnit = NonePredictionPcUnit()
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
         val processResult = controlUnit.process()
@@ -136,7 +135,7 @@ internal class PipeLineControlUnitTest {
     )
     fun forwarding_alwaysTaken(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val predictionStrategy = AlwaysTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
@@ -157,7 +156,7 @@ internal class PipeLineControlUnitTest {
     )
     fun forwarding_alwaysNotTaken(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val predictionStrategy = AlwaysNotTakenStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
@@ -178,7 +177,7 @@ internal class PipeLineControlUnitTest {
     )
     fun forwarding_btfnt(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val predictionStrategy = BTFNTStrategy()
         val pcUnit = StaticBranchPredictionPcUnit(predictionStrategy)
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
@@ -199,7 +198,7 @@ internal class PipeLineControlUnitTest {
     )
     fun forwarding_1bitPrediction(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val bitState = SingleBitStateMachine()
         val pcUnit = DynamicBranchPredictionPcUnit(bitState)
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
@@ -220,7 +219,7 @@ internal class PipeLineControlUnitTest {
     )
     fun forwarding_saturation2bitPrediction(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val bitState = SaturationTwoBitStateMachine()
         val pcUnit = DynamicBranchPredictionPcUnit(bitState)
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
@@ -241,7 +240,7 @@ internal class PipeLineControlUnitTest {
     )
     fun forwarding_hysteresis2bitPrediction(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val bitState = HysteresisTwoBitStateMachine()
         val pcUnit = DynamicBranchPredictionPcUnit(bitState)
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
@@ -262,7 +261,7 @@ internal class PipeLineControlUnitTest {
     )
     fun forwarding_2LevelGlobalHistoryBuffered(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val pcUnit = TwoLevelGlobalHistoryPredictionPcUnit()
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
         val processResult = controlUnit.process()
@@ -282,7 +281,7 @@ internal class PipeLineControlUnitTest {
     )
     fun forwarding_2LevelLocalHistoryBuffered(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val pcUnit = TwoLevelLocalHistoryPredictionPcUnit()
         val controlUnit = ForwardingPipelineControlUnit(cache, pcUnit)
         val processResult = controlUnit.process()

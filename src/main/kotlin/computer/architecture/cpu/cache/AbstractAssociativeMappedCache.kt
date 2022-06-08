@@ -1,10 +1,11 @@
 package computer.architecture.cpu.cache
 
 import computer.architecture.cpu.cache.replacement.CacheReplacementStrategy
+import computer.architecture.cpu.cache.replacement.RandomReplacementStrategy
 import computer.architecture.utils.Logger
 import kotlin.math.pow
 
-abstract class SetAssociativeMappedCache(
+abstract class AbstractAssociativeMappedCache(
     private val offsetBits: Int,
     private val indexBits: Int,
     private val setBits: Int,
@@ -22,6 +23,10 @@ abstract class SetAssociativeMappedCache(
     protected val lineSize = 2.0.pow(indexBits).toInt()
     protected val blockSize = 2.0.pow(offsetBits).toInt()
     protected open val lineSets = Array(setSize) { CacheLine.listOf(lineSize, blockSize) }
+
+    init {
+        replacementStrategy.init(setSize = setSize, lineSize = lineSize)
+    }
 
     override fun read(address: Int): Int {
         val tag = tag(address)

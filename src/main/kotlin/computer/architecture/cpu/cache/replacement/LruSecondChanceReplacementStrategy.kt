@@ -2,13 +2,19 @@ package computer.architecture.cpu.cache.replacement
 
 import java.util.*
 
-class LruSecondChanceReplacementStrategy(
-    private val setSize: Int,
-    private val lineSize: Int
-) : CacheReplacementStrategy {
+class LruSecondChanceReplacementStrategy : CacheReplacementStrategy {
 
-    private val usedHistories: Array<LinkedList<Int>> = Array(lineSize) { LinkedList() }
-    private val chanceHistories: Array<Array<Boolean>> = Array(lineSize) { Array(setSize) { false } }
+    private var setSize = 0
+    private var lineSize = 0
+    private lateinit var usedHistories: Array<LinkedList<Int>>
+    private lateinit var chanceHistories: Array<Array<Boolean>>
+
+    override fun init(setSize: Int, lineSize: Int) {
+        this.setSize = setSize
+        this.lineSize = lineSize
+        this.usedHistories = Array(lineSize) { LinkedList() }
+        this.chanceHistories = Array(lineSize) { Array(setSize) { false } }
+    }
 
     override fun use(setIndex: Int, lineIndex: Int) {
         val history = usedHistories[lineIndex]

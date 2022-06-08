@@ -3,10 +3,18 @@ package computer.architecture.cpu.cache.replacement
 import java.util.*
 
 class LruReplacementStrategy(
-    private val setSize: Int,
-    private val lineSize: Int
+
 ) : CacheReplacementStrategy {
-    private val usedHistories: Array<LinkedList<Int>> = Array(lineSize) { LinkedList() }
+
+    private var setSize: Int = 0
+    private var lineSize: Int = 0
+    private lateinit var usedHistories: Array<LinkedList<Int>>
+
+    override fun init(setSize: Int, lineSize: Int) {
+        this.setSize = setSize
+        this.lineSize = lineSize
+        this.usedHistories = Array(lineSize) { LinkedList() }
+    }
 
     override fun use(setIndex: Int, lineIndex: Int) {
         val history = usedHistories[lineIndex]

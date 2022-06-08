@@ -4,6 +4,7 @@ import computer.architecture.component.Memory
 import computer.architecture.cpu.cache.WriteBackDirectMappedCache
 import computer.architecture.cpu.cache.WriteThroughDirectMappedCache
 import computer.architecture.cpu.cu.SingleCycleControlUnit
+import computer.architecture.cpu.utils.Utils.Companion.cache
 import computer.architecture.cpu.utils.Utils.Companion.checkProcessResult
 import computer.architecture.utils.Logger
 import computer.architecture.utils.LoggingSignal
@@ -32,7 +33,7 @@ internal class SingleCycleControlUnitTest {
     )
     fun singleCycle(path: String, expected: Int) {
         val memory = Memory.load(20000000, path)
-        val cache = WriteThroughDirectMappedCache(memory)
+        val cache = cache(memory)
         val controlUnit = SingleCycleControlUnit(cache)
         val processResult = controlUnit.process()
 

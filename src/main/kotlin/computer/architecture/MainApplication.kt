@@ -4,6 +4,7 @@ import computer.architecture.component.Memory
 import computer.architecture.cpu.cache.ICache
 import computer.architecture.cpu.cache.WriteBackDirectMappedCache
 import computer.architecture.cpu.cache.WriteThroughDirectMappedCache
+import computer.architecture.cpu.cache.replacement.LruReplacementStrategy
 import computer.architecture.cpu.cu.ForwardingPipelineControlUnit
 import computer.architecture.cpu.pc.TwoLevelLocalHistoryPredictionPcUnit
 import computer.architecture.utils.Logger
@@ -15,7 +16,7 @@ fun main() {
     val fileToLoad = "sample/input4.bin"
     val memory = Memory.load(20000000, fileToLoad)
 
-    val cache = WriteBackDirectMappedCache(memory)
+    val cache = WriteBackDirectMappedCache(memory, 4, 8, LruReplacementStrategy())
     val controlUnit = ForwardingPipelineControlUnit(cache, TwoLevelLocalHistoryPredictionPcUnit())
     val processResult = controlUnit.process()
 

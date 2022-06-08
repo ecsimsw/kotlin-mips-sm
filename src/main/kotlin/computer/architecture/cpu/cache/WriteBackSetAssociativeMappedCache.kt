@@ -2,22 +2,16 @@ package computer.architecture.cpu.cache
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cache.replacement.CacheReplacementStrategy
-import computer.architecture.cpu.cache.replacement.LruReplacementStrategy
-import computer.architecture.cpu.cache.replacement.LruSecondChanceReplacementStrategy
 import computer.architecture.cpu.cache.replacement.RandomReplacementStrategy
 import computer.architecture.utils.Logger
-import kotlin.math.pow
 
-class WriteBackSetAssociativeMappedCache(
+open class WriteBackSetAssociativeMappedCache(
     private val memory: Memory,
     offsetBits: Int = 4,
     indexBits: Int = 7,
     setBits: Int = 1,
-    replacementStrategy: CacheReplacementStrategy = RandomReplacementStrategy(
-        setSize = 2.0.pow(setBits).toInt(),
-//        lineSize = 2.0.pow(indexBits).toInt()
-    ),
-) : SetAssociativeMappedCache(offsetBits, indexBits, setBits, replacementStrategy) {
+    replacementStrategy: CacheReplacementStrategy
+) : AbstractAssociativeMappedCache(offsetBits, indexBits, setBits, replacementStrategy) {
 
     private val dirties = Array(setSize) { Array(lineSize) { false } }
 
