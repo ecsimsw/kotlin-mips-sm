@@ -26,6 +26,7 @@ internal class CacheTest {
 
     private val pcUnit = TwoLevelLocalHistoryPredictionPcUnit()
 
+    @Disabled
     @ParameterizedTest
     @CsvSource(
         "sample/simple.bin,0",
@@ -45,6 +46,7 @@ internal class CacheTest {
         checkProcessResult(processResult[0], expected)
     }
 
+    @Disabled
     @ParameterizedTest
     @CsvSource(
         "sample/simple.bin,0",
@@ -64,6 +66,7 @@ internal class CacheTest {
         checkProcessResult(processResult[0], expected)
     }
 
+    @Disabled
     @ParameterizedTest
     @CsvSource(
         "sample/simple.bin,0",
@@ -83,6 +86,7 @@ internal class CacheTest {
         checkProcessResult(processResult[0], expected)
     }
 
+    @Disabled
     @ParameterizedTest
     @CsvSource(
         "sample/simple.bin,0",
@@ -102,6 +106,7 @@ internal class CacheTest {
         checkProcessResult(processResult[0], expected)
     }
 
+    @Disabled
     @ParameterizedTest
     @CsvSource(
         "sample/simple.bin,0",

@@ -1,5 +1,6 @@
 package computer.architecture.cpu.cache
 
+import computer.architecture.cpu.cache.replacement.CacheReplacementStrategy
 import computer.architecture.utils.Logger
 import kotlin.math.pow
 
@@ -7,6 +8,7 @@ abstract class SetAssociativeMappedCache(
     private val offsetBits: Int,
     private val indexBits: Int,
     private val setBits: Int,
+    protected val replacementStrategy: CacheReplacementStrategy
 ) : ICache {
     private val addressBits = 32
     private val byteOffsetBits = 2
@@ -19,7 +21,7 @@ abstract class SetAssociativeMappedCache(
     protected val setSize = 2.0.pow(setBits).toInt()
     protected val lineSize = 2.0.pow(indexBits).toInt()
     protected val blockSize = 2.0.pow(offsetBits).toInt()
-    protected val lineSets = Array(setSize) { CacheLine.listOf(lineSize, blockSize) }
+    protected open val lineSets = Array(setSize) { CacheLine.listOf(lineSize, blockSize) }
 
     override fun read(address: Int): Int {
         val tag = tag(address)
@@ -29,6 +31,7 @@ abstract class SetAssociativeMappedCache(
         var setIndex = setIndex(tag, lineIndex)
         return if (setIndex != -1) {
             Logger.cacheHit()
+            replacementStrategy.use(setIndex, lineIndex)
             lineSets[setIndex][lineIndex].datas[offset]
         } else {
             Logger.cacheMiss()
