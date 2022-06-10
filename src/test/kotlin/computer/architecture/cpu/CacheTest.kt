@@ -2,8 +2,9 @@ package computer.architecture.cpu
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cache.*
+import computer.architecture.cpu.cache.replacement.FIFOReplacementStrategy
 import computer.architecture.cpu.cache.replacement.LruReplacementStrategy
-import computer.architecture.cpu.cache.replacement.LruSecondChanceReplacementStrategy
+import computer.architecture.cpu.cache.replacement.SecondChanceReplacementStrategy
 import computer.architecture.cpu.cache.replacement.RandomReplacementStrategy
 import computer.architecture.cpu.cu.ForwardingPipelineControlUnit
 import computer.architecture.cpu.pc.TwoLevelLocalHistoryPredictionPcUnit
@@ -222,9 +223,42 @@ internal class CacheTest {
     @Nested
     inner class ReplacementTest {
 
+        private val fifo = FIFOReplacementStrategy()
+        private val secondChance = SecondChanceReplacementStrategy()
         private val random = RandomReplacementStrategy()
         private val lru = LruReplacementStrategy()
-        private val lruSecondChance = LruSecondChanceReplacementStrategy()
+
+        @ParameterizedTest
+        @CsvSource(
+            "sample/simple.bin,0",
+            "sample/simple2.bin,100",
+            "sample/simple3.bin,5050",
+            "sample/simple4.bin,55",
+            "sample/gcd.bin,1",
+            "sample/fib.bin,55",
+            "sample/input4.bin,85"
+        )
+        fun fifo_4way(path: String, expected: Int) {
+            val memory = Memory.load(20000000, path)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 6, 2,  fifo)
+            testResult(cache, expected)
+        }
+
+        @ParameterizedTest
+        @CsvSource(
+            "sample/simple.bin,0",
+            "sample/simple2.bin,100",
+            "sample/simple3.bin,5050",
+            "sample/simple4.bin,55",
+            "sample/gcd.bin,1",
+            "sample/fib.bin,55",
+            "sample/input4.bin,85"
+        )
+        fun secondChance_4way(path: String, expected: Int) {
+            val memory = Memory.load(20000000, path)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 6, 2,  secondChance)
+            testResult(cache, expected)
+        }
 
         @ParameterizedTest
         @CsvSource(
@@ -257,73 +291,10 @@ internal class CacheTest {
             val cache = WriteBackSetAssociativeMappedCache(memory, 4, 6, 2, lru)
             testResult(cache, expected)
         }
-
-        @ParameterizedTest
-        @CsvSource(
-            "sample/simple.bin,0",
-            "sample/simple2.bin,100",
-            "sample/simple3.bin,5050",
-            "sample/simple4.bin,55",
-            "sample/gcd.bin,1",
-            "sample/fib.bin,55",
-            "sample/input4.bin,85"
-        )
-        fun lru_secondChance_4way(path: String, expected: Int) {
-            val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 6, 2,  lruSecondChance)
-            testResult(cache, expected)
-        }
-
-        @ParameterizedTest
-        @CsvSource(
-            "sample/simple.bin,0",
-            "sample/simple2.bin,100",
-            "sample/simple3.bin,5050",
-            "sample/simple4.bin,55",
-            "sample/gcd.bin,1",
-            "sample/fib.bin,55",
-            "sample/input4.bin,85"
-        )
-        fun random256way(path: String, expected: Int) {
-            val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 2, 6, random)
-            testResult(cache, expected)
-        }
-
-        @ParameterizedTest
-        @CsvSource(
-            "sample/simple.bin,0",
-            "sample/simple2.bin,100",
-            "sample/simple3.bin,5050",
-            "sample/simple4.bin,55",
-            "sample/gcd.bin,1",
-            "sample/fib.bin,55",
-            "sample/input4.bin,85"
-        )
-        fun lru256way(path: String, expected: Int) {
-            val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 2, 6, lru)
-            testResult(cache, expected)
-        }
-
-        @ParameterizedTest
-        @CsvSource(
-            "sample/simple.bin,0",
-            "sample/simple2.bin,100",
-            "sample/simple3.bin,5050",
-            "sample/simple4.bin,55",
-            "sample/gcd.bin,1",
-            "sample/fib.bin,55",
-            "sample/input4.bin,85"
-        )
-        fun lru_secondChance_256way(path: String, expected: Int) {
-            val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 2, 6, lruSecondChance)
-            testResult(cache, expected)
-        }
     }
 
     @DisplayName("Write - miss 시, memory fetch 여부")
+    @Nested
     inner class WriteBackMiss {
 
         @ParameterizedTest
