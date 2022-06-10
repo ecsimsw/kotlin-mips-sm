@@ -23,6 +23,11 @@ open class Logger {
         private var missCount = 0
         private var memoryFetchCount = 0
         private var memoryWriteCount = 0
+        private var indexUsage = mutableMapOf<Int, Int>()
+        private var missedIndex = mutableMapOf<Int, Int>()
+        private var victimSetIndex = mutableMapOf<Int, MutableMap<Int, Int>>()
+        private var ffIndex = mutableMapOf<Int, Int>()
+        private var fsIndex = mutableMapOf<Int, Int>()
 
         fun init() {
             printControl = loggingSignal.copy()
@@ -40,6 +45,9 @@ open class Logger {
             missCount = 0
             memoryFetchCount = 0
             memoryWriteCount = 0
+            indexUsage = mutableMapOf()
+            missedIndex = mutableMapOf()
+            victimSetIndex = mutableMapOf()
         }
 
         fun log(
@@ -166,6 +174,28 @@ open class Logger {
             memoryWriteCount++
         }
 
+        fun indexSet(index : Int) {
+            indexUsage[index] = indexUsage.getOrDefault(index, 0) + 1
+        }
+
+        fun indexMiss(index : Int) {
+            missedIndex[index] = missedIndex.getOrDefault(index, 0) + 1
+        }
+
+        fun victim(lineIndex : Int, setIndex: Int) {
+            val victimMap : MutableMap<Int, Int> = victimSetIndex.getOrDefault(lineIndex, mutableMapOf())
+            victimMap[setIndex] = victimMap.getOrDefault(setIndex, 0) +1
+            victimSetIndex[lineIndex] = victimMap
+        }
+
+        fun ff(addr : Int) {
+            ffIndex[addr] = ffIndex.getOrDefault(addr, 0) + 1
+        }
+
+        fun fs(addr : Int) {
+            fsIndex[addr] = ffIndex.getOrDefault(addr, 0) + 1
+        }
+
         private fun printFetchResult(result: FetchResult) {
             if (!printControl.fetch) return
             if (!result.valid) {
@@ -276,6 +306,44 @@ open class Logger {
                 println("cache hit ratio : 0%")
             } else {
                 println("cache hit ratio : ${hitCount.toFloat() / (hitCount + missCount) * 100}%")
+            }
+            println()
+
+            println("=== Cache result === ")
+            println("Line usage ratio")
+            val indexLine = indexUsage.values.sum()
+            indexUsage.forEach { index , value ->
+                println("index -> ${index} : ${value.toFloat()/indexLine * 100}%")
+            }
+            println()
+
+            println("Miss line ratio")
+            val missedLine = missedIndex.values.sum()
+            missedIndex.forEach { index , value ->
+                println("index -> ${index} : ${value.toFloat()/missedLine * 100}%")
+            }
+            println()
+
+            println("victim line ratio")
+            victimSetIndex.forEach { index , value ->
+                println("index -> ${index}")
+                value.forEach { set, value ->
+                    println("${set} : $value")
+                }
+            }
+            println()
+
+            println("55 line ratio")
+            var sum = ffIndex.values.sum()
+            ffIndex.forEach { index , value ->
+                    println("${index} : ${value.toFloat()/sum * 100} ")
+            }
+            println()
+
+            println("56 line ratio")
+            sum = fsIndex.values.sum()
+            fsIndex.forEach { index , value ->
+                println("${index} : ${value.toFloat()/sum * 100} ")
             }
             println()
 

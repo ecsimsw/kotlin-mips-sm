@@ -22,7 +22,7 @@ abstract class AbstractAssociativeMappedCache(
     protected val setSize = 2.0.pow(setBits).toInt()
     protected val lineSize = 2.0.pow(indexBits).toInt()
     protected val blockSize = 2.0.pow(offsetBits).toInt()
-    protected open val lineSets = Array(setSize) { CacheLine.listOf(lineSize, blockSize) }
+    open val lineSets = Array(setSize) { CacheLine.listOf(lineSize, blockSize) }
 
     init {
         replacementStrategy.init(setSize = setSize, lineSize = lineSize)
@@ -32,6 +32,8 @@ abstract class AbstractAssociativeMappedCache(
         val tag = tag(address)
         val lineIndex = index(address)
         val offset = offset(address)
+
+        Logger.indexSet(lineIndex)
 
         var setIndex = setIndex(tag, lineIndex)
         return if (setIndex != -1) {

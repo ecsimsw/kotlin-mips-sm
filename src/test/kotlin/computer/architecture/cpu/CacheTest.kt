@@ -238,7 +238,7 @@ internal class CacheTest {
         )
         fun random4way(path: String, expected: Int) {
             val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 2, 6, random)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 6, 2,  random)
             testResult(cache, expected)
         }
 
@@ -254,7 +254,7 @@ internal class CacheTest {
         )
         fun lru4way(path: String, expected: Int) {
             val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 2, 6, lru)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 6, 2, lru)
             testResult(cache, expected)
         }
 
@@ -270,7 +270,7 @@ internal class CacheTest {
         )
         fun lru_secondChance_4way(path: String, expected: Int) {
             val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 2, 6, lruSecondChance)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 6, 2,  lruSecondChance)
             testResult(cache, expected)
         }
 
@@ -319,6 +319,58 @@ internal class CacheTest {
         fun lru_secondChance_256way(path: String, expected: Int) {
             val memory = Memory.load(20000000, path)
             val cache = WriteBackSetAssociativeMappedCache(memory, 4, 2, 6, lruSecondChance)
+            testResult(cache, expected)
+        }
+    }
+
+    @DisplayName("Write - miss 시, memory fetch 여부")
+    inner class WriteBackMiss {
+
+        @ParameterizedTest
+        @CsvSource(
+            "sample/simple.bin,0",
+            "sample/simple2.bin,100",
+            "sample/simple3.bin,5050",
+            "sample/simple4.bin,55",
+            "sample/gcd.bin,1",
+            "sample/fib.bin,55",
+            "sample/input4.bin,85"
+        )
+        fun lru4wayMemoryFetch(path: String, expected: Int) {
+            val memory = Memory.load(20000000, path)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 6, 2, replacementStrategy)
+            testResult(cache, expected)
+        }
+
+        @ParameterizedTest
+        @CsvSource(
+            "sample/simple.bin,0",
+            "sample/simple2.bin,100",
+            "sample/simple3.bin,5050",
+            "sample/simple4.bin,55",
+            "sample/gcd.bin,1",
+            "sample/fib.bin,55",
+            "sample/input4.bin,85"
+        )
+        fun lru4wayNoneFetch(path: String, expected: Int) {
+            val memory = Memory.load(20000000, path)
+            val cache = object : WriteBackSetAssociativeMappedCache(memory, 4, 6, 2, replacementStrategy) {
+                override fun write(address: Int, value: Int) {
+                    val tag = tag(address)
+                    val lineIndex = index(address)
+                    val offset = offset(address)
+                    val setIndex = setIndex(tag, lineIndex)
+                    if (setIndex != -1) {
+                        Logger.cacheHit()
+                        replacementStrategy.use(setIndex, lineIndex)
+                        dirties[setIndex][lineIndex] = true
+                        lineSets[setIndex][lineIndex].datas[offset] = value
+                    } else {
+                        Logger.memoryWrite()
+                        memory.write(address, value)
+                    }
+                }
+            }
             testResult(cache, expected)
         }
     }

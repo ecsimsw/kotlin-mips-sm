@@ -13,7 +13,7 @@ open class WriteBackSetAssociativeMappedCache(
     replacementStrategy: CacheReplacementStrategy
 ) : AbstractAssociativeMappedCache(offsetBits, indexBits, setBits, replacementStrategy) {
 
-    private val dirties = Array(setSize) { Array(lineSize) { false } }
+    protected val dirties = Array(setSize) { Array(lineSize) { false } }
 
     override fun write(address: Int, value: Int) {
         val tag = tag(address)
@@ -22,11 +22,15 @@ open class WriteBackSetAssociativeMappedCache(
 
         val setIndex = setIndex(tag, lineIndex)
         if (setIndex != -1) {
+            Logger.cacheHit()
+            replacementStrategy.use(setIndex, lineIndex)
             dirties[setIndex][lineIndex] = true
             lineSets[setIndex][lineIndex].datas[offset] = value
         } else {
-            Logger.memoryWrite()
-            memory.write(address, value)
+            Logger.cacheMiss()
+            val newSetIndex = memoryFetch(tag, lineIndex)
+            dirties[newSetIndex][lineIndex]= true
+            lineSets[newSetIndex][lineIndex].datas[offset] = value
         }
     }
 

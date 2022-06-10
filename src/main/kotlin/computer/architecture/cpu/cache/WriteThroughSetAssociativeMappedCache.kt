@@ -19,7 +19,10 @@ open class WriteThroughSetAssociativeMappedCache(
 
         val setIndex = setIndex(tag, lineIndex)
         if (setIndex != -1) {
+            Logger.cacheHit()
             lineSets[setIndex][lineIndex].datas[offset] = value
+        } else {
+            Logger.cacheMiss()
         }
         Logger.memoryWrite()
         memory.write(address, value)

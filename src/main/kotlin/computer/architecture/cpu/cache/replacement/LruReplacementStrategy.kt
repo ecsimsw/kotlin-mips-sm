@@ -29,7 +29,12 @@ class LruReplacementStrategy(
     override fun nextVictim(lineIndex: Int): Int {
         val history = usedHistories[lineIndex]
         if (history.size < setSize) {
-            return -1
+            for(i in 0 until setSize) {
+                if(!history.contains(i)){
+                    history.addLast(i)
+                    return i
+                }
+            }
         }
         return history.first
     }
