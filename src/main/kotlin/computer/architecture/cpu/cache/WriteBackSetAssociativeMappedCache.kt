@@ -44,9 +44,7 @@ open class WriteBackSetAssociativeMappedCache(
 
             if (!lineSets[setIndex][lineIndex].valid) {
                 dirties[setIndex][lineIndex] = false
-                lineSets[setIndex][lineIndex].valid = true
-                lineSets[setIndex][lineIndex].tag = tag
-                lineSets[setIndex][lineIndex].datas = readBlockLine(tag, lineIndex)
+                lineSets[setIndex][lineIndex].fetch(tag, readBlockLine(tag, lineIndex))
                 return setIndex
             }
         }
@@ -54,9 +52,7 @@ open class WriteBackSetAssociativeMappedCache(
         val victimSet = replacementStrategy.nextVictim(lineIndex)
         updateDirties(victimSet, lineIndex)
         dirties[victimSet][lineIndex] = false
-        lineSets[victimSet][lineIndex].valid = true
-        lineSets[victimSet][lineIndex].tag = tag
-        lineSets[victimSet][lineIndex].datas = readBlockLine(tag, lineIndex)
+        lineSets[victimSet][lineIndex].fetch(tag, readBlockLine(tag, lineIndex))
         return victimSet
     }
 

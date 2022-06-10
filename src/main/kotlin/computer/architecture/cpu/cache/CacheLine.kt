@@ -12,4 +12,10 @@ data class CacheLine(
             }
         }
     }
+
+    fun fetch(tag: Int, datas: Array<Int>) {
+        this.valid = true
+        this.tag = tag
+        this.datas = datas
+    }
 }

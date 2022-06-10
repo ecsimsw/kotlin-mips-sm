@@ -33,19 +33,13 @@ open class WriteThroughSetAssociativeMappedCache(
             if (lineSets[setIndex][lineIndex].valid && lineSets[setIndex][lineIndex].tag == tag) {
                 return setIndex
             }
-
             if (!lineSets[setIndex][lineIndex].valid) {
-                lineSets[setIndex][lineIndex].valid = true
-                lineSets[setIndex][lineIndex].tag = tag
-                lineSets[setIndex][lineIndex].datas = readBlockLine(tag, lineIndex)
+                lineSets[setIndex][lineIndex].fetch(tag, readBlockLine(tag, lineIndex))
                 return setIndex
             }
         }
-
         val victimSet = replacementStrategy.nextVictim(lineIndex)
-        lineSets[victimSet][lineIndex].valid = true
-        lineSets[victimSet][lineIndex].tag = tag
-        lineSets[victimSet][lineIndex].datas = readBlockLine(tag, lineIndex)
+        lineSets[victimSet][lineIndex].fetch(tag, readBlockLine(tag, lineIndex))
         return victimSet
     }
 
