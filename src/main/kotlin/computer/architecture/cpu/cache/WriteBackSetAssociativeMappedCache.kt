@@ -2,6 +2,7 @@ package computer.architecture.cpu.cache
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cache.replacement.CacheReplacementStrategy
+import computer.architecture.cpu.cache.replacement.LruReplacementStrategy
 import computer.architecture.cpu.cache.replacement.RandomReplacementStrategy
 import computer.architecture.utils.Logger
 
@@ -11,7 +12,7 @@ open class WriteBackSetAssociativeMappedCache(
     indexBits: Int = 7,
     setBits: Int = 1,
     replacementStrategy: CacheReplacementStrategy
-) : AbstractAssociativeMappedCache(offsetBits, indexBits, setBits, replacementStrategy) {
+) : AbstractAssociativeMappedCache(offsetBits, indexBits, setBits, replacementStrategy as LruReplacementStrategy) {
 
     protected val dirties = Array(setSize) { Array(lineSize) { false } }
 
@@ -21,6 +22,13 @@ open class WriteBackSetAssociativeMappedCache(
         val offset = offset(address)
 
         val setIndex = setIndex(tag, lineIndex)
+
+        if(lineIndex == 0) {
+            print("$setIndex : ")
+            replacementStrategy.usedHistories[lineIndex].forEach { print("$it, ")}
+            println()
+        }
+
         if (setIndex != -1) {
             Logger.cacheHit()
             replacementStrategy.use(setIndex, lineIndex)

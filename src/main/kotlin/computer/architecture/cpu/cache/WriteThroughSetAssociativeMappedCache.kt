@@ -2,6 +2,7 @@ package computer.architecture.cpu.cache
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cache.replacement.CacheReplacementStrategy
+import computer.architecture.cpu.cache.replacement.LruReplacementStrategy
 import computer.architecture.utils.Logger
 
 open class WriteThroughSetAssociativeMappedCache(
@@ -10,7 +11,7 @@ open class WriteThroughSetAssociativeMappedCache(
     indexBits: Int = 7,
     setBits: Int = 1,
     replacementStrategy: CacheReplacementStrategy
-) : AbstractAssociativeMappedCache(offsetBits, indexBits, setBits, replacementStrategy) {
+) : AbstractAssociativeMappedCache(offsetBits, indexBits, setBits, replacementStrategy as LruReplacementStrategy) {
 
     override fun write(address: Int, value: Int) {
         val tag = tag(address)
