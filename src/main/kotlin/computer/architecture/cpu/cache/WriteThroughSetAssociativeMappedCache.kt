@@ -2,6 +2,7 @@ package computer.architecture.cpu.cache
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cache.replacement.CacheReplacementStrategy
+import computer.architecture.cpu.cache.replacement.RandomReplacementStrategy
 import computer.architecture.utils.Logger
 
 open class WriteThroughSetAssociativeMappedCache(
@@ -9,7 +10,7 @@ open class WriteThroughSetAssociativeMappedCache(
     offsetBits: Int = 4,
     indexBits: Int = 7,
     setBits: Int = 1,
-    replacementStrategy: CacheReplacementStrategy
+    replacementStrategy: CacheReplacementStrategy = RandomReplacementStrategy()
 ) : AbstractAssociativeMappedCache(offsetBits, indexBits, setBits, replacementStrategy) {
 
     override fun write(address: Int, value: Int) {
