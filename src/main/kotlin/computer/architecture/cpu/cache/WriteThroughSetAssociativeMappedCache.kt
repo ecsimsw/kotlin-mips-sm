@@ -18,15 +18,18 @@ open class WriteThroughSetAssociativeMappedCache(
         val lineIndex = index(address)
         val offset = offset(address)
 
+        Logger.memoryWrite()
+        memory.write(address, value)
+
         val setIndex = setIndex(tag, lineIndex)
         if (setIndex != -1) {
             Logger.cacheHit()
+            replacementStrategy.use(setIndex, lineIndex)
             lineSets[setIndex][lineIndex].datas[offset] = value
         } else {
             Logger.cacheMiss()
+            memoryFetch(tag, lineIndex)
         }
-        Logger.memoryWrite()
-        memory.write(address, value)
     }
 
     override fun memoryFetch(tag: Int, lineIndex: Int): Int {

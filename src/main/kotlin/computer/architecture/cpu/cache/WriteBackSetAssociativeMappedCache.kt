@@ -22,13 +22,6 @@ open class WriteBackSetAssociativeMappedCache(
         val offset = offset(address)
 
         val setIndex = setIndex(tag, lineIndex)
-
-        if(lineIndex == 0) {
-            print("$setIndex : ")
-            replacementStrategy.usedHistories[lineIndex].forEach { print("$it, ")}
-            println()
-        }
-
         if (setIndex != -1) {
             Logger.cacheHit()
             replacementStrategy.use(setIndex, lineIndex)

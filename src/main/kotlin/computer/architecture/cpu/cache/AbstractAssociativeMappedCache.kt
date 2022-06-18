@@ -1,8 +1,6 @@
 package computer.architecture.cpu.cache
 
 import computer.architecture.cpu.cache.replacement.CacheReplacementStrategy
-import computer.architecture.cpu.cache.replacement.LruReplacementStrategy
-import computer.architecture.cpu.cache.replacement.RandomReplacementStrategy
 import computer.architecture.utils.Logger
 import kotlin.math.pow
 
@@ -10,7 +8,7 @@ abstract class AbstractAssociativeMappedCache(
     private val offsetBits: Int,
     private val indexBits: Int,
     private val setBits: Int,
-    protected val replacementStrategy: LruReplacementStrategy
+    protected val replacementStrategy: CacheReplacementStrategy
 ) : ICache {
     private val addressBits = 32
     private val byteOffsetBits = 2
@@ -34,22 +32,7 @@ abstract class AbstractAssociativeMappedCache(
         val lineIndex = index(address)
         val offset = offset(address)
 
-        Logger.indexSet(lineIndex)
-
         var setIndex = setIndex(tag, lineIndex)
-
-        if(lineIndex == 0) {
-            print("setIndex : $setIndex, tag : ${tag}")
-            println()
-            replacementStrategy.usedHistories[lineIndex].forEach { print("$it, ")}
-            println()
-            print("${lineSets[0][lineIndex].tag}" )
-            print("${lineSets[1][lineIndex].tag}" )
-            print("${lineSets[2][lineIndex].tag}" )
-            print("${lineSets[3][lineIndex].tag}" )
-            println()
-        }
-
         return if (setIndex != -1) {
             Logger.cacheHit()
             replacementStrategy.use(setIndex, lineIndex)
