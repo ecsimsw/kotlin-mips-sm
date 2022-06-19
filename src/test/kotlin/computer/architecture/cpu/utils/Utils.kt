@@ -2,6 +2,7 @@ package computer.architecture.cpu.utils
 
 import computer.architecture.component.Memory
 import computer.architecture.cpu.cache.ICache
+import computer.architecture.cpu.cache.NoCachedMemory
 import computer.architecture.cpu.cache.WriteBackSetAssociativeMappedCache
 import computer.architecture.cpu.cache.replacement.LruReplacementStrategy
 import computer.architecture.utils.Logger
@@ -15,7 +16,7 @@ class Utils {
         }
 
         fun cache(memory : Memory) : ICache{
-            return WriteBackSetAssociativeMappedCache(memory, 4, 2, 6, LruReplacementStrategy())
+            return NoCachedMemory(memory)
         }
     }
 }

@@ -40,14 +40,14 @@ abstract class SingleProcessingPipelineControlUnit(
             val valid = stallUnit.valid && !isEnd
 
             cycleResult = cycleExecution(valid, pc)
-
             if (cycleResult.lastCycle) {
-                return listOf(cycleResult.value)
+                break
             }
-
             latches.flushAll()
             cycle++
         }
+        cache.flushAll()
+        return listOf(cycleResult.value)
     }
 
     fun fetch(valid: Boolean, pc: Int): FetchResult {

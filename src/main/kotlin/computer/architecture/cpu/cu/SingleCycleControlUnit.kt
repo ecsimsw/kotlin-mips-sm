@@ -1,19 +1,16 @@
 package computer.architecture.cpu.cu
 
 import computer.architecture.component.And.Companion.and
-import computer.architecture.component.Memory
 import computer.architecture.component.Mux.Companion.mux
 import computer.architecture.cpu.ALUnit
 import computer.architecture.cpu.DecodeUnit
 import computer.architecture.cpu.cache.ICache
-import computer.architecture.cpu.cache.WriteBackDirectMappedCache
-import computer.architecture.cpu.cache.WriteThroughDirectMappedCache
 import computer.architecture.cpu.dto.*
 import computer.architecture.cpu.register.Registers
 import computer.architecture.utils.Logger
 
 class SingleCycleControlUnit(
-    private val cache : ICache
+    private val cache: ICache
 ) : IControlUnit {
     private val registers = Registers(32)
     private val decodeUnit = DecodeUnit()
@@ -26,15 +23,14 @@ class SingleCycleControlUnit(
         Logger.init()
         while (true) {
             Logger.printCycle(cycle)
-
-            val pc = cycleResult.nextPc
-            if (pc == -1) {
-                return listOf(cycleResult.value)
+            if (cycleResult.nextPc == -1) {
+                break
             }
-
-            cycleResult = cycleExecution(pc)
+            cycleResult = cycleExecution(cycleResult.nextPc)
             cycle++
         }
+        cache.flushAll()
+        return listOf(cycleResult.value)
     }
 
     private fun cycleExecution(pc: Int): CycleResult {

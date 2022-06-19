@@ -48,10 +48,12 @@ open class WriteThroughSetAssociativeMappedCache(
     }
 
     private fun readBlockLine(tag: Int, lineIndex: Int): Array<Int> {
-        Logger.memoryFetch()
+        Logger.memoryRead()
         return Array(blockSize) {
             val address = address(tag, lineIndex, it)
             memory.read(address)
         }
     }
+
+    override fun flushAll() {}
 }

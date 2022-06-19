@@ -37,6 +37,7 @@ class MultiProcessingPipelineControlUnit(
             latches.flushAll()
             cycle++
         }
+        caches.forEach { it.flushAll() }
         return registers.map { it[2] }.toList()
     }
 

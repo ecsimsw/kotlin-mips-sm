@@ -35,7 +35,7 @@ open class WriteBackSetAssociativeMappedCache(
     }
 
     override fun memoryFetch(tag: Int, lineIndex: Int): Int {
-        Logger.memoryFetch()
+        Logger.memoryRead()
 
         for (setIndex in 0 until setSize) {
             if (lineSets[setIndex][lineIndex].valid && lineSets[setIndex][lineIndex].tag == tag) {
@@ -68,10 +68,26 @@ open class WriteBackSetAssociativeMappedCache(
     }
 
     private fun readBlockLine(tag: Int, lineIndex: Int): Array<Int> {
-        Logger.memoryFetch()
+        Logger.memoryRead()
         return Array(blockSize) {
             val address = address(tag, lineIndex, it)
             memory.read(address)
+        }
+    }
+
+    override fun flushAll() {
+        for (setIndex in 0 until setSize) {
+            dirties[setIndex].forEachIndexed { lineIndex, isDirty ->
+                if (isDirty) {
+                    Logger.memoryWrite()
+                    lineSets[setIndex][lineIndex].datas.forEachIndexed { offset, data ->
+                        val tag = lineSets[setIndex][lineIndex].tag
+                        val address = address(tag, lineIndex, offset)
+                        memory.write(address, data)
+                        dirties[setIndex][lineIndex] = false
+                    }
+                }
+            }
         }
     }
 }

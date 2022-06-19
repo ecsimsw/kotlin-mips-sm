@@ -46,6 +46,8 @@ abstract class AbstractAssociativeMappedCache(
 
     abstract fun memoryFetch(tag: Int, lineIndex: Int): Int
 
+    abstract override fun flushAll()
+
     protected fun setIndex(tag: Int, lineIndex: Int): Int {
         for (setIndex in 0 until setSize) {
             if (lineSets[setIndex][lineIndex].valid && lineSets[setIndex][lineIndex].tag == tag) {

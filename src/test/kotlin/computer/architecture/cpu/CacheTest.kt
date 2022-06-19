@@ -28,59 +28,6 @@ internal class CacheTest {
     private val pcUnit = TwoLevelLocalHistoryPredictionPcUnit()
     private val replacementStrategy = FIFOReplacementStrategy()
 
-    @DisplayName("FullyAssociativeMapped, SetAssociativeMapped, DirectMapped cache 성능을 비교한다.")
-    @Nested
-    inner class Cache {
-
-        @ParameterizedTest
-        @CsvSource(
-            "sample/simple.bin,0",
-            "sample/simple2.bin,100",
-            "sample/simple3.bin,5050",
-            "sample/simple4.bin,55",
-            "sample/gcd.bin,1",
-            "sample/fib.bin,55",
-            "sample/input4.bin,85"
-        )
-        fun writeBackFullyAssociativeMappedCache(path: String, expected: Int) {
-            val memory = Memory.load(20000000, path)
-            val cache = WriteBackFullyAssociativeMappedCache(memory, 4, 8, replacementStrategy)
-            testResult(cache, expected)
-        }
-
-        @ParameterizedTest
-        @CsvSource(
-            "sample/simple.bin,0",
-            "sample/simple2.bin,100",
-            "sample/simple3.bin,5050",
-            "sample/simple4.bin,55",
-            "sample/gcd.bin,1",
-            "sample/fib.bin,55",
-            "sample/input4.bin,85"
-        )
-        fun writeBack2waySetAssociativeMappedCache(path: String, expected: Int) {
-            val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 7, 1, replacementStrategy)
-            testResult(cache, expected)
-        }
-
-        @ParameterizedTest
-        @CsvSource(
-            "sample/simple.bin,0",
-            "sample/simple2.bin,100",
-            "sample/simple3.bin,5050",
-            "sample/simple4.bin,55",
-            "sample/gcd.bin,1",
-            "sample/fib.bin,55",
-            "sample/input4.bin,85"
-        )
-        fun writeBackDirectMappedCache(path: String, expected: Int) {
-            val memory = Memory.load(20000000, path)
-            val cache = WriteBackDirectMappedCache(memory, 4, 8)
-            testResult(cache, expected)
-        }
-    }
-
     @DisplayName("WriteThrough와 WriteBack의 MemoryWrite 횟수를 비교한다.")
     @Nested
     inner class WritePolicyTest {
@@ -134,9 +81,25 @@ internal class CacheTest {
         }
     }
 
-    @DisplayName("Set 수에 변화에 따른 성능 변화를 확인한다. (2,4,16,32,128,256)")
+    @DisplayName("Set 수에 변화에 따른 성능 변화를 확인한다. (direct,2,4,16,32,128,256,fully)")
     @Nested
     inner class SetWayTest {
+
+        @ParameterizedTest
+        @CsvSource(
+            "sample/simple.bin,0",
+            "sample/simple2.bin,100",
+            "sample/simple3.bin,5050",
+            "sample/simple4.bin,55",
+            "sample/gcd.bin,1",
+            "sample/fib.bin,55",
+            "sample/input4.bin,85"
+        )
+        fun writeBackDirectMappedCache(path: String, expected: Int) {
+            val memory = Memory.load(20000000, path)
+            val cache = WriteBackDirectMappedCache(memory, 4, 8)
+            testResult(cache, expected)
+        }
 
         @ParameterizedTest
         @CsvSource(
@@ -231,6 +194,22 @@ internal class CacheTest {
         fun writeBack256WaySetAssociativeMappedCache(path: String, expected: Int) {
             val memory = Memory.load(20000000, path)
             val cache = WriteBackSetAssociativeMappedCache(memory, 4, 2, 6, replacementStrategy)
+            testResult(cache, expected)
+        }
+
+        @ParameterizedTest
+        @CsvSource(
+            "sample/simple.bin,0",
+            "sample/simple2.bin,100",
+            "sample/simple3.bin,5050",
+            "sample/simple4.bin,55",
+            "sample/gcd.bin,1",
+            "sample/fib.bin,55",
+            "sample/input4.bin,85"
+        )
+        fun writeBackFullyAssociativeMappedCache(path: String, expected: Int) {
+            val memory = Memory.load(20000000, path)
+            val cache = WriteBackFullyAssociativeMappedCache(memory, 4, 8, replacementStrategy)
             testResult(cache, expected)
         }
     }

@@ -5,4 +5,6 @@ interface ICache {
     fun read(address: Int): Int
 
     fun write(address: Int, value: Int)
+
+    fun flushAll()
 }

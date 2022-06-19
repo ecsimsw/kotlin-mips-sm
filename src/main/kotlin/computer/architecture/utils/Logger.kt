@@ -21,13 +21,8 @@ open class Logger {
         private var predictionFailedCount = 0
         private var hitCount = 0
         private var missCount = 0
-        private var memoryFetchCount = 0
+        private var memoryReadCount = 0
         private var memoryWriteCount = 0
-        private var indexUsage = mutableMapOf<Int, Int>()
-        private var missedIndex = mutableMapOf<Int, Int>()
-        private var victimSetIndex = mutableMapOf<Int, MutableMap<Int, Int>>()
-        private var ffIndex = mutableMapOf<Int, Int>()
-        private var fsIndex = mutableMapOf<Int, Int>()
 
         fun init() {
             printControl = loggingSignal.copy()
@@ -43,11 +38,8 @@ open class Logger {
             predictionFailedCount = 0
             hitCount = 0
             missCount = 0
-            memoryFetchCount = 0
+            memoryReadCount = 0
             memoryWriteCount = 0
-            indexUsage = mutableMapOf()
-            missedIndex = mutableMapOf()
-            victimSetIndex = mutableMapOf()
         }
 
         fun log(
@@ -166,34 +158,12 @@ open class Logger {
             missCount++
         }
 
-        fun memoryFetch() {
-            memoryFetchCount++
+        fun memoryRead() {
+            memoryReadCount++
         }
 
         fun memoryWrite() {
             memoryWriteCount++
-        }
-
-        fun indexSet(index : Int) {
-            indexUsage[index] = indexUsage.getOrDefault(index, 0) + 1
-        }
-
-        fun indexMiss(index : Int) {
-            missedIndex[index] = missedIndex.getOrDefault(index, 0) + 1
-        }
-
-        fun victim(lineIndex : Int, setIndex: Int) {
-            val victimMap : MutableMap<Int, Int> = victimSetIndex.getOrDefault(lineIndex, mutableMapOf())
-            victimMap[setIndex] = victimMap.getOrDefault(setIndex, 0) +1
-            victimSetIndex[lineIndex] = victimMap
-        }
-
-        fun ff(addr : Int) {
-            ffIndex[addr] = ffIndex.getOrDefault(addr, 0) + 1
-        }
-
-        fun fs(addr : Int) {
-            fsIndex[addr] = ffIndex.getOrDefault(addr, 0) + 1
         }
 
         private fun printFetchResult(result: FetchResult) {
@@ -301,49 +271,11 @@ open class Logger {
             println("hit count : ${hitCount}")
             println("miss count : ${missCount}")
             println("memory write count : ${memoryWriteCount}")
-            println("memory fetch count : ${memoryFetchCount}")
+            println("memory fetch count : ${memoryReadCount}")
             if (hitCount + missCount == 0) {
                 println("cache hit ratio : 0%")
             } else {
                 println("cache hit ratio : ${hitCount.toFloat() / (hitCount + missCount) * 100}%")
-            }
-            println()
-
-            println("=== Cache result === ")
-            println("Line usage ratio")
-            val indexLine = indexUsage.values.sum()
-            indexUsage.forEach { index , value ->
-                println("index -> ${index} : ${value.toFloat()/indexLine * 100}%")
-            }
-            println()
-
-            println("Miss line ratio")
-            val missedLine = missedIndex.values.sum()
-            missedIndex.forEach { index , value ->
-                println("index -> ${index} : ${value.toFloat()/missedLine * 100}%")
-            }
-            println()
-
-            println("victim line ratio")
-            victimSetIndex.forEach { index , value ->
-                println("index -> ${index}")
-                value.forEach { set, value ->
-                    println("${set} : $value")
-                }
-            }
-            println()
-
-            println("55 line ratio")
-            var sum = ffIndex.values.sum()
-            ffIndex.forEach { index , value ->
-                    println("${index} : ${value.toFloat()/sum * 100} ")
-            }
-            println()
-
-            println("56 line ratio")
-            sum = fsIndex.values.sum()
-            fsIndex.forEach { index , value ->
-                println("${index} : ${value.toFloat()/sum * 100} ")
             }
             println()
 
@@ -392,8 +324,8 @@ open class Logger {
         private fun printNop() {
             println("[NOP]")
         }
-        
-        fun log(msg : String) {
+
+        fun log(msg: String) {
             if (cycleCount >= printControl.from && cycleCount <= printControl.to) {
                 println(msg)
             }
