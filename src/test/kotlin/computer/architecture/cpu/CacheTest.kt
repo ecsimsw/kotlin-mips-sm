@@ -346,8 +346,6 @@ internal class CacheTest {
     @Nested
     inner class BlockSizeTest {
 
-        private val fifo = FIFOReplacementStrategy()
-
         @ParameterizedTest
         @CsvSource(
             "sample/simple.bin,0",
@@ -360,7 +358,7 @@ internal class CacheTest {
         )
         fun block_4(path: String, expected: Int) {
             val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 2, 6, 2,  fifo)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 2, 10, 0,  replacementStrategy)
             testResult(cache, expected)
         }
 
@@ -376,7 +374,7 @@ internal class CacheTest {
         )
         fun block_16(path: String, expected: Int) {
             val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 6, 2,  fifo)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 4, 8, 0,  replacementStrategy)
             testResult(cache, expected)
         }
 
@@ -390,9 +388,9 @@ internal class CacheTest {
             "sample/fib.bin,55",
             "sample/input4.bin,85"
         )
-        fun block_32(path: String, expected: Int) {
+        fun block_64(path: String, expected: Int) {
             val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 6, 6, 2,  fifo)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 6, 6, 0,  replacementStrategy)
             testResult(cache, expected)
         }
 
@@ -406,9 +404,9 @@ internal class CacheTest {
             "sample/fib.bin,55",
             "sample/input4.bin,85"
         )
-        fun block_128(path: String, expected: Int) {
+        fun block_256(path: String, expected: Int) {
             val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 8, 6, 2,  fifo)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 8, 4, 0,  replacementStrategy)
             testResult(cache, expected)
         }
 
@@ -424,57 +422,7 @@ internal class CacheTest {
         )
         fun block_1024(path: String, expected: Int) {
             val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 10, 6, 2,  fifo)
-            testResult(cache, expected)
-        }
-
-        @ParameterizedTest
-        @CsvSource(
-            "sample/simple.bin,0",
-            "sample/simple2.bin,100",
-            "sample/simple3.bin,5050",
-            "sample/simple4.bin,55",
-            "sample/gcd.bin,1",
-            "sample/fib.bin,55",
-            "sample/input4.bin,85"
-        )
-        fun block_4096(path: String, expected: Int) {
-            val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 12, 6, 2,  fifo)
-            testResult(cache, expected)
-        }
-
-
-        @ParameterizedTest
-        @CsvSource(
-            "sample/simple.bin,0",
-            "sample/simple2.bin,100",
-            "sample/simple3.bin,5050",
-            "sample/simple4.bin,55",
-            "sample/gcd.bin,1",
-            "sample/fib.bin,55",
-            "sample/input4.bin,85"
-        )
-        fun block_16384(path: String, expected: Int) {
-            val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 14, 6, 2,  fifo)
-            testResult(cache, expected)
-        }
-
-
-        @ParameterizedTest
-        @CsvSource(
-            "sample/simple.bin,0",
-            "sample/simple2.bin,100",
-            "sample/simple3.bin,5050",
-            "sample/simple4.bin,55",
-            "sample/gcd.bin,1",
-            "sample/fib.bin,55",
-            "sample/input4.bin,85"
-        )
-        fun block_65536(path: String, expected: Int) {
-            val memory = Memory.load(20000000, path)
-            val cache = WriteBackSetAssociativeMappedCache(memory, 16, 6, 2,  fifo)
+            val cache = WriteBackSetAssociativeMappedCache(memory, 10, 2, 0,  replacementStrategy)
             testResult(cache, expected)
         }
     }
