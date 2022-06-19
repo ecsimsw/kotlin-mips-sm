@@ -35,8 +35,6 @@ open class WriteBackSetAssociativeMappedCache(
     }
 
     override fun memoryFetch(tag: Int, lineIndex: Int): Int {
-        Logger.memoryRead()
-
         for (setIndex in 0 until setSize) {
             if (lineSets[setIndex][lineIndex].valid && lineSets[setIndex][lineIndex].tag == tag) {
                 return setIndex
