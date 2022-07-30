@@ -133,8 +133,6 @@ class MultiProcessingPipelineControlUnit(
 
     override fun process(): List<Int> {
         var cycle = 0
-
-        Logger.init()
         while (!schedulingUnit.isAllEnd()) {
             val programInfo = schedulingUnit.next()
             val isProcessEnd = programInfo.processEnd
