@@ -3,11 +3,12 @@ MIPS binary file을 읽어 명령어를 해석하고 이를 실행시킬 수 있
    
 Pipeline : Single-cycle에서 Pipelining, BranchPrediction을 적용한 Multi-cycle으로 설계를 수정하며 각 단계별 사이클 수 변화를 테스트한다.   
 Cache : Cache를 적용하여 쓰기 정책, 교체 전략에 따른 Memory 접근 횟수 변화를 테스트한다.   
+
 </br>
 
 ## 1) Pipeline
 
-### 구현 내용
+### Implementation
 
 ControlUnit
  - 단일 프로그램을 싱글사이클로 처리할 수 있다. 
@@ -239,4 +240,251 @@ prediction도 없고, 스케줄링도 제대로 안 되는 간단히 만들어 �
  
 alwaysTaken, alwaysNotTaken, BFTNT, 1bit counter, 2bit counter 등, 예제 프로그램의 개수가 적고, 내용이 짧아 BranchPrediction 전략에 따른 성능 차이를 명확하게 보긴 어려웠다. 프로그램이 좀 더 길고 다양한 분기 상황들이 더 많아야 예측 전략 비교가 가능할 것이라고 생각한다. 다만 Pipelining, Forwarding, BranchPrediction, Branch target buffer 등 구조적인 부분에서의 발전과 성능 차이는 명확히 확인할 수 있었던 테스트였다고 생각한다.
  
+</br>
  
+## 2) Cache
+
+### Implementation
+ 
+Set size, Cache line 수, Block size를 조절할 수 있는 캐시를 구현한다.
+   - Direct mapped cache를 구현한다.
+   - N way set associative mapped cache를 구현한다.
+   - Fully associative mapped cache를 구현한다.
+ 
+쓰기 정책을 지정할 수 있다.
+   - Write through cache 정책을 구현한다.
+   - Write back cache 정책을 구현한다.
+ 
+다양한 교체 전략을 선택할 수 있다.
+   - FIFO 교체 전략을 구현한다.
+   - Random 교체 전략을 구현한다.
+   - Second chance 알고리즘 교체 전략을 구현한다.
+   - LRU 알고리즘 교체 전략을 구현한다.
+ 
+</br>
+
+### Class diagram 
+ 
+구현한 Cache와 교체 정책에 대한 Class 다이어그램은 다음과 같다.
+
+![R1280x0-2](https://user-images.githubusercontent.com/46060746/182003006-5b3dd47c-1a15-4889-b51d-be281c4cffd4.png)
+
+</br>
+
+### AbstractAssociativeMappedCache
+ 
+캐시는 주소 비트, byte offset 비트, 세트 수, cache line 수, 블록 사이즈 수를 변수로 하여 유동적으로 캐시를 구성할 수 있도록 하였다. 주소 비트와 byte offset 비트의 기본 값은 MIPS를 기준으로 하여 각각 32, 2비트이고, 이렇게 입력받은 주소 체계를 기준으로 나머지 indexBits, setBits, offsetBits로 캐시 구성이 가능한지 유효 여부를 확인한다. tag로 사용되는 비트 수는 이때 함께 계산된다.
+
+``` kotlin
+abstract class AbstractAssociativeMappedCache(
+    private val addressBits: Int = 32,
+    private val byteOffsetBits: Int = 2,
+    private val offsetBits: Int,
+    private val indexBits: Int,
+    private val setBits: Int,
+    protected val replacementStrategy: LruReplacementStrategy
+) : ICache {
+
+    open fun read(address: Int): Int { .. }
+
+    abstract fun memoryFetch(tag: Int, lineIndex: Int): Int
+ }
+```
+ 
+</br>
+ 
+### Direct mapped cache, N way set associative cache, Fully associative cache
+ 
+위 추상 클래스를 기반으로 하여 주소에서 표현될 비트 수를 달리하는 것만으로 Direct mapped cache, N way set associative cache, Fully associative cache를 표현할 수 있었다. 아래는 Set associative cache의 set 수를 0으로 하여 표현한 DirectMappedCache의 전체 코드이다. 
+```kotlin
+class WriteBackDirectMappedCache(
+    memory: Memory,
+    offsetBits: Int,
+    indexBits: Int
+) : WriteBackSetAssociativeMappedCache(
+    memory = memory,
+    offsetBits = offsetBits,
+    indexBits = indexBits,
+    setBits = 0
+)
+```
+
+반대로 FullyAssociativeMappedCache는 set 수가 최대이고, index 수를 0으로 하여 다음과 같이 표현할 수 있다. DirectMappedCache와의 차이점은 교체 전략이 불필요했던 Direct와 달리 FullyAssociative는 교체 전략이 필요하여 생성 시 주입을 받는다는 점뿐이다.
+
+```kotlin
+class WriteBackFullyAssociativeMappedCache(
+    memory: Memory,
+    offsetBits: Int,
+    lineBits: Int,
+    replacementStrategy: CacheReplacementStrategy
+) : WriteBackSetAssociativeMappedCache(
+    memory = memory,
+    offsetBits = offsetBits,
+    indexBits =  0,
+    setBits = lineBits,
+    replacementStrategy = replacementStrategy
+)
+``` 
+
+</br>
+
+### Cache write 
+ 
+Cache의 쓰기 정책으로 Write through(바로 쓰기), Write back (나중 쓰기)을 구현하였다. 먼저 WriteThrough의 경우 hit여부와 상관없이 우선 memory에 데이터를 쓰기 한다. 이후에 setIndex가 존재함에 따라(동일 tag가 존재하는 set의 인덱스 확인), hit와 miss여부를 확인한 후에 hit일 경우 캐시에 요청 데이터를 업데이트, miss일 경우 memory fetch를 하는 것으로 캐시 라인을 메모리와 동기화한다.
+
+``` kotlin
+override fun write(address: Int, value: Int) {
+    val tag = tag(address)
+    val lineIndex = index(address)
+    val offset = offset(address)
+
+    memory.write(address, value)
+
+    val setIndex = setIndex(tag, lineIndex)
+    if (setIndex != -1) {
+        replacementStrategy.use(setIndex, lineIndex)
+        lineSets[setIndex][lineIndex].datas[offset] = value
+    } else {
+        memoryFetch(tag, lineIndex)
+    }
+}
+```
+ 
+Write Through와 마찬가지로 쓰기 요청이 왔을 때 해당 index-tag 값을 갖고 있는 세트 여부를 확인하여 hit, miss여부를 확인한다.  차이점은 Write back에선 hit 시 캐시에만 데이터를 쓰고 해당 캐시 라인에 dirty 임을 표시한다. miss 시 memory fetch로 캐시 라인을 업데이트하고 해당 라인에 쓰기 요청을 반영, 마찬가지로 dirty 임을 표시한다. 
+
+``` kotlin
+override fun write(address: Int, value: Int) {
+    val tag = tag(address)
+    val lineIndex = index(address)
+    val offset = offset(address)
+
+    val setIndex = setIndex(tag, lineIndex)
+    if (setIndex != -1) {
+        replacementStrategy.use(setIndex, lineIndex)
+        dirties[setIndex][lineIndex] = true
+        lineSets[setIndex][lineIndex].datas[offset] = value
+    } else {
+        val newSetIndex = memoryFetch(tag, lineIndex)
+        dirties[newSetIndex][lineIndex]= true
+        lineSets[newSetIndex][lineIndex].datas[offset] = value
+    }
+}
+```
+
+이렇게 dirty로 표시된 캐시라인은 memory fetch가 이뤄지면서 교체 알고리즘에 의해 해당 라인이 교체 대상이 되는 경우에 메모리에 반영된다. 아래는 WriteBack에서 재정의된 memory fetch 코드이다. 교체 알고리즘에 의해 lineIndex의 교체되어야 하는 set가 결정되면 해당 라인이 dirty인지 확인하여 그때서야 memory write가 일어난다. 이후 dirty 여부를 다시 false로 초기화하고 캐시 라인에 메모리 동기화가 일어나게 된다.
+
+``` kotlin
+override fun memoryFetch(tag: Int, lineIndex: Int): Int {
+    for (setIndex in 0 until setSize) {
+        //cacheLine의 valid가 fale인 경우 해당 set를 바로 반환
+    }
+
+    val victimSet = replacementStrategy.nextVictim(lineIndex)
+    updateDirties(victimSet, lineIndex)
+    dirties[victimSet][lineIndex] = false
+    lineSets[victimSet][lineIndex].fetch(tag, readBlockLine(tag, lineIndex))
+    return victimSet
+}
+```
+</br>
+ 
+#### Replacement strategy
+ 
+교체 전략은 FIFO(first in, first out), Random, SecondChance, LRU 교체 정책 네 가지를 구현하였다. 그리고 이들을 CacheReplacementStragy이라는 인터페이스로 묶어 Cache에서 교체 전략을 자유롭게 선택할 수 있도록 구성하였다. 아래는 CacheReplacementStrategy의 구현 관계와 이 인터페이스와 AbstractAssociativeMappedCache의 의존성 관계를 보여주는 클래스 다이어그램이다. 
+
+</br>
+
+#### 정적 교체 전략 / FIFO, Random
+
+FIFO의 경우 마지막으로 교체된 index를 기억하고 여기에 매 교체시마다 1을 더하여 반환하게 된다. (기존 값+1)을 setSize로 나눈 값을 저장하게 되어 인덱스 오버플로우를 방지한다.
+
+``` kotlin
+override fun nextVictim(lineIndex: Int): Int {
+    lastUsed = (lastUsed + 1) % setSize
+    return lastUsed
+}
+```
+
+Random의 경우 0~setSize-1 까지의 인덱스를 반환하여 교체될 setIndex를 결정하게 된다.
+
+```kotlin
+override fun nextVictim(lineIndex: Int): Int {
+    return random.nextInt(setSize)
+}
+```
+
+</br>
+
+#### 동적 교체 전략 / SecondChance, LRU
+ 
+동적 교체 전략은 hit시 사용된 set를 기억하고, 다음 교체 대상에 이를 사용한다. SecondChance의 경우 (set * set당 cache line 수)만큼의 chance를 담는 배열을 만들어 사용한다. hit 되는 경우 이 set에 chance를 부여하고, 교체 대상으로 해당 set가 지정되는 경우 chance를 제거하는 전략을 구현하였다. 
+
+``` kotlin
+override fun use(setIndex: Int, lineIndex: Int) {
+    chanceHistories[lineIndex][setIndex] = true
+}
+
+override fun nextVictim(lineIndex: Int): Int {
+    while (true) {
+        lastUsed = (lastUsed + 1) % setSize
+        if (!chanceHistories[lineIndex][lastUsed]) {
+            return lastUsed
+        }
+        chanceHistories[lineIndex][lastUsed] = false
+    }
+}
+```
+
+LRU는 hit시 사용을 기록하고 사용에 가장 오래된 set를 교체 대상으로 하는 정책이다. 각 cacheLine 마다 사용된 set 인덱스를 기록하는 리스트를 선언하고 교체 대상 구하기에 이를 사용한다. hit 시 리스트에서 사용된 setIndex의 값을 리스트의 가장 마지막으로 순서를 이동하고, 교체 대상을 확인할 때는 리스트의 첫 요소를 반환하는 것으로 사용에 가장 오래된 set를 구할 수 있었다.
+
+``` kotlin
+override fun use(setIndex: Int, lineIndex: Int) {
+    val history = usedHistories[lineIndex]
+    history.remove(setIndex)
+    history.add(setIndex)
+}
+
+override fun nextVictim(lineIndex: Int): Int {
+    val history = usedHistories[lineIndex]
+    return history[0]
+}
+``` 
+
+</br>
+
+### Test result
+ 
+1. 쓰기 방식에 따른 Memory write 횟수를 비교한다. (Write back, Write through)
+
+![image](https://user-images.githubusercontent.com/46060746/182003243-48055f60-92ff-4e86-b91d-74550176ac50.png)
+
+- Block size : 16, Cache line : 256, Direct mapped cache
+ 
+ 
+2. 교체 Set 수에 따른 Hit률을 비교한다. (Direct mapped, 2way, 4way, 16way, 32way, 128way, 256way, Fully associative)
+
+![R1280x0-4](https://user-images.githubusercontent.com/46060746/182003256-903f9670-ad44-4677-9262-e672bccbcc9a.png)
+
+- block size : 16, Cache line : 256, Replacement strategy : FIFO, Write policy : write back
+ 
+ 
+3. 교체 알고리즘에 따른 Hit률을 비교한다. (FIFO, Random, Second chance, LRU)
+
+![image](https://user-images.githubusercontent.com/46060746/182003261-5d107e7e-3884-4ede-81be-23afd51e1852.png)
+
+- block size : 16, Cache line : 256, Set size : 4, Write policy : write back
+ 
+ 
+4. Block 사이즈에 따른 Hit률을 비교한다. (4, 16, 64, 256, 1024)
+
+![image](https://user-images.githubusercontent.com/46060746/182003266-0e97459c-cb54-4268-acc3-2eb4598c817f.png)
+
+- Cache line : 4096 / blockSize, DirectMapped, Replacement strategy : FIFO, Write policy : write back
+ 
+ 
+5. 캐시를 사용의 성능 향상률을 확인한다.
+
+![image](https://user-images.githubusercontent.com/46060746/182003269-8c3e56bf-d0d2-4f4e-bb40-7dac01811dd6.png)
+
+- Block size : 16, Cache line : 256, Set size : 4, Replacement strategy : Random, Write policy : write back
+- Input4 기준, 99.76%의 hit율로 메모리 쓰기에선 99.76%의, 메모리 읽기에선 99.75%의 접근 횟수 감소율을 얻을 수 있었다.
